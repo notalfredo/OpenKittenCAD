@@ -5,8 +5,6 @@
 extern int  yycolno;
 extern int  numIllegalChars;
 
-
-
 int main() {
     yyscan_t scanner;
 

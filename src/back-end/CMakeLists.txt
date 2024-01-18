@@ -16,7 +16,7 @@ find_package(BISON)
 FLEX_TARGET(
     MyScanner
     lexer.l
-    ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c
+    ${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.c
     COMPILE_FLAGS ""
     DEFINES_FILE "lexer.yy.h"
 )

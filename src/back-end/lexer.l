@@ -1,7 +1,11 @@
 %option reentrant
 
 /* Since we will be using Flex + Bison. */
-%option bison-bridge bison-locations 
+/*     TODO: SETUP BISON                */
+/*     IF WE SET UP THIS FLAG           */
+/*     WITHOUT SETTING UP BISON FIRST   */
+/*     WE GET A BUNCH OF  ERROS         */
+/* %option bison-bridge bison-locations */
 
 /* 
     Create the lexer exports header file with this name. 
