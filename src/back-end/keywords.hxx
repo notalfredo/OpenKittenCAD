@@ -1,6 +1,25 @@
 #if !defined( __KEYWORDS_H__ )
 #define __KEYWORDS_H__
 
+//Temp will move to bison later
+typedef enum tokens {
+    tok_ID,
+    tok_AND,
+    tok_NOT,     
+    tok_OR,    
+    tok_BREAK,
+    tok_CONTINUE,
+    tok_IF,
+    tok_ELIF,
+    tok_ELSE,   
+    tok_REPEAT,  
+    tok_UNTIL,   
+    tok_WHILE,  
+    tok_FOR,     
+    tok_LET,    
+}tokens;
+
+
 typedef struct {
     char *keyWord;
     int token;
