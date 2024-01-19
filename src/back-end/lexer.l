@@ -92,14 +92,106 @@ ID_AFTER   {ID_START}|{DIGIT}
 %% 
 
 
+[-+*/%^?{}();,]   {
+  // Single character token.  Just return the char itself.
+  return yytext[0];
+}
+
+"==" {
+    return tok_EQ;
+}
+
+"!=" {
+    return tok_NE;
+}
+
+">=" {
+    return tok_GE;
+}
+
+">" {
+    return tok_GT;
+}
+
+"and" {
+    return tok_AND;
+}
+
+"or" {
+    return tok_OR;
+}
+
+"not" {
+    return tok_NOT;
+}
+
+"union" {
+    return tok_UNION;
+}
+
+"difference" {
+    return tok_DIFFERENCE;
+}
+
+"intersection" {
+    return tok_INTERSECTION;
+}
+
+"for" {
+    return tok_FOR;
+}
+
+"repeat" {
+    return tok_REPEAT;
+}
+
+"until" {
+    return tok_UNTIL;
+}
+
+"while" {
+    return tok_WHILE;
+}
+
+"break" {
+    return tok_BREAK;
+}
+
+"continue" {
+    return tok_CONTINUE;
+}
+
+"if" {
+    return tok_IF;
+}
+
+"elif" {
+    return tok_ELIF;
+}
+
+"else" {
+    return tok_ELSE;
+}
+
+"let" {
+    return tok_LET;
+}
+
+
     /* ID or Keyword */
 {ID_START}{ID_AFTER}*  {
-    printf("Todo\n");
+    int result = isKeyWord(yytext);
+    if(result) {
+        return result;
+    }
+
+    return tok_ID;
 }
+
 
     /* Gargabe */
 .       {
-    printf("Todo\n");
+    return tok_ILLEGAL;
 }
 
 

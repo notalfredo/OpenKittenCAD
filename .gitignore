@@ -1,2 +1,2 @@
 *.git
-src/back-end/build/
+build/
