@@ -13,8 +13,8 @@ Copyright (c) 2021 Jason Dsouza <http://github.com/jasmcaus>
 #ifndef TAU_H_
 #define TAU_H_
 
-#include <tau/types.h>
-#include <tau/misc.h>
+#include <types.h>
+#include <misc.h>
 
 TAU_DISABLE_DEBUG_WARNINGS
 

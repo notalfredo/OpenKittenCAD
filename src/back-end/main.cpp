@@ -1,7 +1,7 @@
 #include <string.h>
 #include <iostream>
-#include <keywords.hxx>
 #include "lexer.yy.h"
+#include "keywords.hxx"
 
 extern int  yycolno;
 extern int  numIllegalChars;
