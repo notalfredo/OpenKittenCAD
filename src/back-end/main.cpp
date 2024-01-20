@@ -1,14 +1,36 @@
 #include <string.h>
-#include <iostream>
-#include "lexer.yy.h"
+
+
+//#include <FlexLexer.h>
+
+
+
+#include <iostream>     // std::cout
+#include <sstream>      // std::istringstream
+#include <string>       // std::string
+#include <streambuf>
+#include <fstream> 
+                        
 #include "keywords.hxx"
 
-extern int  yycolno;
-extern int  numIllegalChars;
+//extern int  yycolno;
+//extern int  numIllegalChars;
 
 int main() {
-    //yyscan_t scanner;
 
 
-    std::cout << "Hello world" << std::endl;
+    std::string stringvalues = "tokenize this";
+    std::istringstream inputStringStream(stringvalues);
+
+    std::string stringvalues2 = "             ";
+    std::istringstream outputStringStream(stringvalues2);
+
+
+    std::istream& inputStream = inputStringStream;
+    std::ofstream outputStream("test.txt");
+
+
+    //yyFlexLexer myTest(inputStream, outputStream);
+
+
 }
