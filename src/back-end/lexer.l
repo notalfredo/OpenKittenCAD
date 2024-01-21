@@ -80,89 +80,17 @@ ID_AFTER   {ID_START}|{DIGIT}
 %% 
 
 
-[-+*/%^?{}();,]   {
+[-+*/%^?{}();,>]   {
   // Single character token.  Just return the char itself.
   return yytext[0];
 }
 
-"==" {
-    return tok_EQ;
+[ \n\t\r]+ {
+    /*Space do nothing */
 }
 
-"!=" {
-    return tok_NE;
-}
-
-">=" {
-    return tok_GE;
-}
-
-">" {
-    return tok_GT;
-}
-
-"and" {
-    return tok_AND;
-}
-
-"or" {
-    return tok_OR;
-}
-
-"not" {
-    return tok_NOT;
-}
-
-"union" {
-    return tok_UNION;
-}
-
-"difference" {
-    return tok_DIFFERENCE;
-}
-
-"intersection" {
-    return tok_INTERSECTION;
-}
-
-"for" {
-    return tok_FOR;
-}
-
-"repeat" {
-    return tok_REPEAT;
-}
-
-"until" {
-    return tok_UNTIL;
-}
-
-"while" {
-    return tok_WHILE;
-}
-
-"break" {
-    return tok_BREAK;
-}
-
-"continue" {
-    return tok_CONTINUE;
-}
-
-"if" {
-    return tok_IF;
-}
-
-"elif" {
-    return tok_ELIF;
-}
-
-"else" {
-    return tok_ELSE;
-}
-
-"let" {
-    return tok_LET;
+[a-zA-Z] {
+    return tok_NUM;
 }
 
 
@@ -187,9 +115,30 @@ ID_AFTER   {ID_START}|{DIGIT}
     /*=================USER-CODE=================*/
 #include <keywords.hxx>
 
+const Keyword keywords[] = {
+  { "and",      tok_AND      },
+  { "not",      tok_NOT      },
+  { "or",       tok_OR       },
+  { "break",    tok_BREAK    },
+  { "continue", tok_CONTINUE },
+  { "if",       tok_IF       },
+  { "elif",     tok_ELIF     },
+  { "else",     tok_ELSE     },
+  { "repeat",   tok_REPEAT   },
+  { "until",    tok_UNTIL    },
+  { "while",    tok_WHILE    },
+  { "for",      tok_FOR      },
+  { "let",      tok_LET      },
+  { "==",       tok_EQ       },
+  { "!=",       tok_NE       },
+  { ">=",       tok_NE       },
+};
+
+const int NUM_KEYWORDS = (sizeof(keywords) / sizeof(Keyword));
+
 int isKeyWord(char * keyword){
     for(int index = 0; index < NUM_KEYWORDS; index++){
-        if(strcmp(keywords[index].keyWord, keyword)){
+        if(!strcmp(keywords[index].keyWord, keyword)) {
             return keywords[index].token;
         }
     }
