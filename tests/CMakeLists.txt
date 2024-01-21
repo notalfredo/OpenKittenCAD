@@ -5,6 +5,7 @@ enable_testing()
 add_executable(
     lexer_test 
     ./lexer_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.yy.cc
 )
 
 target_link_libraries(lexer_test PUBLIC tau)
