@@ -1,24 +1,10 @@
-%option header-file="FlexLexer.h"
-
-    /* Since we will be using Flex + Bison. */
-    /*     TODO: SETUP BISON                */
-    /*     IF WE SET UP THIS FLAG           */
-    /*     WITHOUT SETTING UP BISON FIRST   */
-    /*     WE GET A BUNCH OF  ERROS         */
-    /* %option bison-bridge bison-locations */
-
-    /* 
-    Create the lexer exports header file with this name. 
-    We want to expose the interface through which one can
-    interact with the generated lexial analyzer
-    */
+    /*ttFlexLexer for running test*/
 
     /* We dont have an interactive session. */ 
 %option never-interactive
 
 
     /* We will handle the nodefault rule. */
-%option nodefault
 
     /* We dont want yyinput() and yyunput(). */
 %option noinput nounput
@@ -51,6 +37,7 @@
 %option yylineno
 
 
+%option c++
 
 
     /* C items that can be used in the rules section */
