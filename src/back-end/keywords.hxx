@@ -16,12 +16,8 @@ typedef enum tokens {
     tok_OR,    
     tok_NOT,     
 
-    tok_UNION,
-    tok_DIFFERENCE,
-    tok_INTERSECTION,
 
     tok_ID,
-
 
     tok_FOR,     
     tok_REPEAT,  
@@ -34,8 +30,11 @@ typedef enum tokens {
     tok_ELIF,
     tok_ELSE,   
 
+    tok_FN,
     tok_LET,    
     tok_NUM,
+    tok_PIPE,
+    tok_ASSIGN,
 
 }tokens;
 

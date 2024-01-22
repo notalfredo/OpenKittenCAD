@@ -43,6 +43,7 @@
     /* C items that can be used in the rules section */
 %{
 #include <stdio.h> 
+#include <iostream> 
 #include <keywords.hxx>
 
 
@@ -67,35 +68,58 @@ int isKeyWord(char * keyword);
 
 %}
 
-DIGIT      [0-9]
-EXPONENT   [eE][-+]?{DIGIT}+
+DIGIT       [0-9]
+EXPONENT    [eE][-+]?{DIGIT}+
 
 
-ID_START   [_a-zA-Z]
-ID_AFTER   {ID_START}|{DIGIT}
+ALPHA       [_a-zA-Z]
+ALPHA_NUM   {ALPHA}|{DIGIT}
 
 
 
     /*===================RULES===================*/
 %% 
 
-
-[-+*/%^?{}();,>]   {
+[-+*/%^?{}();,>=]   {
   // Single character token.  Just return the char itself.
   return yytext[0];
 }
 
+"==" {
+    return tok_EQ; 
+}
+
+"!=" {
+    return tok_NE;
+}
+
+">=" {
+    return tok_GE;
+}
+
+"<=" {
+    return tok_LE;
+}
+
+"|>" {
+    return tok_PIPE;
+}
+
+":=" {
+    return tok_ASSIGN;
+}
+
+{DIGIT}+ |
+({DIGIT}*(({DIGIT}\.)|(\.{DIGIT})){DIGIT}*){EXPONENT}? {
+    return tok_NUM; 
+}
+
 [ \n\t\r]+ {
-    /*Space do nothing */
+    /*Space do nothing for white space*/
 }
-
-[a-zA-Z] {
-    return tok_NUM;
-}
-
 
     /* ID or Keyword */
-{ID_START}{ID_AFTER}*  {
+{ALPHA}{ALPHA_NUM}*  {
     int result = isKeyWord(yytext);
     if(result) {
         return result;
@@ -104,9 +128,9 @@ ID_AFTER   {ID_START}|{DIGIT}
     return tok_ID;
 }
 
-
     /* Gargabe */
 .       {
+    std::cout << "tok_ILLEGAL |" << YYText() << "| "<< std::endl;
     return tok_ILLEGAL;
 }
 
@@ -129,9 +153,7 @@ const Keyword keywords[] = {
   { "while",    tok_WHILE    },
   { "for",      tok_FOR      },
   { "let",      tok_LET      },
-  { "==",       tok_EQ       },
-  { "!=",       tok_NE       },
-  { ">=",       tok_NE       },
+  { "fn",       tok_FN       },
 };
 
 const int NUM_KEYWORDS = (sizeof(keywords) / sizeof(Keyword));

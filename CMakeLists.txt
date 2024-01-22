@@ -5,7 +5,7 @@ project(
     LANGUAGES CXX
 )
 
-add_definitions(-DMY_PATH="${CMAKE_BINARY_DIR}")
+add_definitions(-DTEST_DIR="${PROJECT_SOURCE_DIR}")
 
 add_subdirectory("./src/back-end/")
 add_subdirectory("./tau/")
