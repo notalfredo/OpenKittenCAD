@@ -151,6 +151,26 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
             std::cout << ";" << std::endl;
             return tok == expectedToken;
         }    
+        case '+': {
+            std::cout << "+" << std::endl;
+            return tok == expectedToken;
+        }    
+        case '-': {
+            std::cout << "-" << std::endl;
+            return tok == expectedToken;
+        }    
+        case '*': {
+            std::cout << "*" << std::endl;
+            return tok == expectedToken;
+        }    
+        case '%': {
+            std::cout << "%" << std::endl;
+            return tok == expectedToken;
+        }    
+        case '/': {
+            std::cout << "/" << std::endl;
+            return tok == expectedToken;
+        }    
         default: {
             std::cout << "UNKOWN TOKEN: |" << scannedText << "|" << std::endl;
             return 0;
@@ -159,18 +179,16 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
     return 0;
 }
 
+//"/home/alfredo/repos/OpenKittenCad/tests/input_tests/input.txt"
+const std::string testInputDir = TEST_DIR + std::string("/tests/input_tests");
+
+std::ifstream inputStream(testInputDir + "/input.kts");
+std::ofstream outputStream("test.txt");
+
+yyFlexLexer myTest(inputStream, outputStream);
     
-TEST(lexer, input) { 
-    //"/home/alfredo/repos/OpenKittenCad/tests/input_tests/input.txt"
-    const std::string testInputDir = TEST_DIR + std::string("/tests/input_tests");
-
-
-    std::ifstream inputStream(testInputDir + "/input.txt");
-    std::ofstream outputStream("test.txt");
-
-    yyFlexLexer myTest(inputStream, outputStream);
-
-    int testOneArr[] { 
+TEST(lexer, testOne) { 
+    int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
         tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
         tok_PIPE, tok_ID, '(', tok_NUM, ',', tok_NUM, ',',
@@ -185,18 +203,53 @@ TEST(lexer, input) {
     while ( ( tok = myTest.yylex() ) ) {
         std::cout << "Current text: \"" << myTest.YYText() << "\"" << std::endl;
 
-        if(index > (sizeof(testOneArr) / sizeof(int))) {
+        if(index > (sizeof(testArr) / sizeof(int))) {
             CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
             exit(1);
         }
-
         CHECK(tokEqToken(
                     tok,
-                    testOneArr[index],
+                    testArr[index],
                     0,
                     myTest.YYText()
         ));
+        index += 1;
+    }
+}
 
+
+
+TEST(lexer, testTwo) { 
+    std::ifstream inputStreamTwo(testInputDir + "/inputTwo.kts");
+    myTest.switch_streams(inputStreamTwo, outputStream);
+    int testArr[] { 
+        tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
+        tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
+        tok_PIPE, tok_ID, '(', tok_NUM, ',', tok_NUM, ',',
+        tok_NUM, ')', ';', tok_LET, tok_ID, tok_ASSIGN, 
+        tok_ID, '(', tok_ID, '=', tok_NUM, ')', ';',
+        tok_ID, '(', tok_ID, '(', tok_ID, ',', tok_ID,
+        ')', ',', tok_ID, '(', tok_ID, '(', tok_NUM,
+        '+', tok_NUM, ',', tok_NUM, '-', tok_NUM, ')', ',',
+        tok_ID, '(', tok_NUM, '*', tok_NUM, ',', tok_NUM,
+        '%', tok_NUM, ',', tok_NUM, '/', tok_NUM, ')',
+        ')', ')', '}',
+    };
+
+    int index = 0; int expectIllegal = 0; int tok;
+
+    while ( ( tok = myTest.yylex() ) ) {
+        std::cout << "Current text: \"" << myTest.YYText() << "\"" << std::endl;
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    myTest.YYText()
+        ));
         index += 1;
     }
 }
