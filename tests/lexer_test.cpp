@@ -236,6 +236,7 @@ TEST(lexer, testTwo) {
         ')', ')', '}',
     };
 
+
     int index = 0; int expectIllegal = 0; int tok;
 
     while ( ( tok = myTest.yylex() ) ) {
