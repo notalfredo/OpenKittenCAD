@@ -191,8 +191,8 @@ TEST(lexer, testOne) {
     int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
         tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
-        tok_PIPE, tok_ID, '(', tok_NUM, ',', tok_NUM, ',',
-        tok_NUM, ')', tok_PIPE, tok_ID, '(', tok_NUM, ')', ';',
+        tok_PIPE, tok_ID, '(', '%', ',', tok_NUM, ',', tok_NUM, ',',
+        tok_NUM, ')', tok_PIPE, tok_ID, '(', '%', ',', tok_NUM, ')', ';',
         tok_LET, tok_ID, tok_ASSIGN, tok_ID, '(', tok_ID, '=',
         tok_NUM, ',', tok_ID, '=', tok_NUM, ')', ';', tok_ID,
         '(', tok_ID, ',', tok_ID, ')', '}',
@@ -225,7 +225,7 @@ TEST(lexer, testTwo) {
     int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
         tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
-        tok_PIPE, tok_ID, '(', tok_NUM, ',', tok_NUM, ',',
+        tok_PIPE, tok_ID, '(', '%', ',', tok_NUM, ',', tok_NUM, ',',
         tok_NUM, ')', ';', tok_LET, tok_ID, tok_ASSIGN, 
         tok_ID, '(', tok_ID, '=', tok_NUM, ')', ';',
         tok_ID, '(', tok_ID, '(', tok_ID, ',', tok_ID,

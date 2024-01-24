@@ -1,6 +1,6 @@
 fn main() {
     let myCylinder := cylinder(size = 10.)
-                    |> scale(10, 3, 30);
+                    |> scale(%, 10, 3, 30);
 
     let mySphere := sphere(radius = 2);
                                
