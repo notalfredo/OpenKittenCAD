@@ -1,5 +1,8 @@
     /*ttFlexLexer for running test*/
 
+
+%option nodefault 
+
     /* We dont have an interactive session. */ 
 %option never-interactive
 
@@ -52,19 +55,20 @@ int yycolno;
 
 
 int isKeyWord(char * keyword);
-
+void yypanic(char * errorMessage);
 
     /* 
         This macro gets called the second we enter a rule,
         but before anything in that rule executes.
 
-    #define YY_USER_ACTION                        \
-    yylloc->first_line  = yylineno            \
-    yylloc->last_line   = yylineno            \
-    yylloc->first_column = yycolno             \
-    yylloc->last_column  = yycolno + yyleng - 1\
-    yycolno = yyleng                          
+        #define YY_USER_ACTION                           \
+            yylloc->first_line   = lineno()              \
+            yylloc->last_line    = lineno()              \
+            yylloc->first_column = yycolno               \
+            yylloc->last_column  = yycolno + YYLeng() - 1\
+            yycolno += YYLeng()                          \
     */
+
 
 %}
 
@@ -130,7 +134,8 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 
     /* Gargabe */
 .       {
-    std::cout << "tok_ILLEGAL |" << YYText() << "| "<< std::endl;
+    std::cout << "tok_ILLEGAL |" << YYText() << "| at ";
+    std::cout << "line = " << lineno() << " column = " << yycolno << std::endl; 
     return tok_ILLEGAL;
 }
 
@@ -157,6 +162,10 @@ const Keyword keywords[] = {
 };
 
 const int NUM_KEYWORDS = (sizeof(keywords) / sizeof(Keyword));
+
+void yypanic(char * errorMessage) {
+    std::cout << errorMessage << std::endl;
+}
 
 int isKeyWord(char * keyword){
     for(int index = 0; index < NUM_KEYWORDS; index++){
