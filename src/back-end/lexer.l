@@ -1,39 +1,31 @@
-  // Dalio, Brian A.
-  // dalioba
-  // 2023-04-16
 
-  //---- DEFINITIONS  --------------------------------------------
-
-/* Ensure the lexer is reentrant -- avoid the original mess of
-    global variables for everything. */
+    /* To avoid the use of global variables */
 %option reentrant
 
-/* Create the lexer exports header file with this name. */
+    /* Creating header file */
 %option header-file="lexer.yy.h"
 
-/* Our input is not from an interactive source. */
+    /* We dont have an interactive session */
 %option never-interactive
-/* Don't generate the default rule. */
+
+    /* Do not generate the default rule we handle it.*/
 %option nodefault
-/* We don't directly read the input. */
-%option noinput
-/* Don't include <unistd.h>. */
+
+    /* We dont want yyinput() and yyunput() */
+%option noinput nounput
+
+    /* Don't include <unistd.h> we dont need it. */
 %option nounistd
-/* We don't 'unput' a character back. */
-%option nounput
-/* Don't call yywrap() on EOF. */
+
+    /* Do not call yywrap() on EOF. */
 %option noyywrap
 
-/* These two options are doubled to get more detailed reports. */
-/* Write performance report to stderr. */
+    /* Error messages */
 %option perf-report perf-report
-/* Write statistics summary to stderr. */
 %option verbose verbose
-
-/* Generate warning messages for goofs. */
 %option warn
 
-/* Maintain current line number in yylineno. */
+    /* Maintain current line number in yylineno. */
 %option yylineno
 
 

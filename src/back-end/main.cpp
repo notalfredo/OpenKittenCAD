@@ -31,17 +31,4 @@ int main() {
     while ( (tok = yylex(scanner)) ) {
         std::cout << tok << std::endl;
     }
-
-    //std::string stringvalues = "TOKEN TEST 123";
-    //std::istringstream inputStringStream(stringvalues);
-
-    //std::istream& inputStream = inputStringStream;
-    //std::ofstream outputStream("test.txt");
-
-    //yyFlexLexer myTest(inputStream, outputStream);
-
-    //int tok;
-    //while ( ( tok = myTest.yylex() ) ) {
-    //    std::cout << tok << std::endl; 
-    //}
 }

@@ -7,7 +7,6 @@ find_package(FLEX REQUIRED)
 flex_target(
     MyScanner
     lexer.l
-    #${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.c
     lexer.yy.c
 )
 
@@ -17,8 +16,6 @@ add_executable(
     main.cpp
     ${FLEX_MyScanner_OUTPUTS}
 )
-
-message(">>> ${FLEX_MyScanner_OUTPUTS}")
 
 
 # Set the language for lex.yy.c to C++ 
