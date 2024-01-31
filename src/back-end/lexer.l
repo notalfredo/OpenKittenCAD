@@ -47,6 +47,7 @@
 
 
 int numIllegalCharacters;
+std::string flexString;
 
 const Keyword keywords[] = {
   { "and",      tok_AND      },
@@ -91,36 +92,44 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 %% 
 
 [-+*/%^?{}();,>=]   {
+  flexString = yytext;
   // Single character token.  Just return the char itself.
   return yytext[0];
 }
 
 "==" {
+    flexString = yytext;
     return tok_EQ; 
 }
 
 "!=" {
+    flexString = yytext;
     return tok_NE;
 }
 
 ">=" {
+    flexString = yytext;
     return tok_GE;
 }
 
 "<=" {
+    flexString = yytext;
     return tok_LE;
 }
 
 "|>" {
+    flexString = yytext;
     return tok_PIPE;
 }
 
 ":=" {
+    flexString = yytext;
     return tok_ASSIGN;
 }
 
 {DIGIT}+ |
 ({DIGIT}*(({DIGIT}\.)|(\.{DIGIT})){DIGIT}*){EXPONENT}? {
+    flexString = yytext;
     return tok_NUM; 
 }
 
@@ -130,11 +139,12 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 
     /* ID or Keyword */
 {ALPHA}{ALPHA_NUM}*  {
-    //int result = isKeyWord(yytext);
-    //if(result) {
-    //    return result;
-    //}
-    isKeyWord(yytext);
+    flexString = yytext;
+
+    int result = isKeyWord(yytext);
+    if(result) {
+        return result;
+    }
 
     return tok_ID;
 }

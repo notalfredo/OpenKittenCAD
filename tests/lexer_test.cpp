@@ -16,6 +16,7 @@
 #include <fstream> 
 
 
+extern std::string flexString;
 
 
 TAU_MAIN()
@@ -199,7 +200,7 @@ TEST(lexer, testOne) {
     };
 
     FILE *srcFP       = fopen( 
-    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/sam.txt",
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/input.kts",
     "r"
     );
     if ( srcFP == NULL ) {
@@ -209,67 +210,77 @@ TEST(lexer, testOne) {
     yyscan_t scanner;
     yylex_init( &scanner );
 
-    //yyrestart( srcFP, scanner );
+    yyrestart( srcFP, scanner );
 
-    //yyset_lineno( 1, scanner );
+    yyset_lineno( 1, scanner );
 
-    int tok;
+    int index = 0; int expectIllegal = 0; int tok;
 
+    while ( ( tok = yylex(scanner) ) ) {
+        std::cout << "Current text: \"" << flexString << "\"" << std::endl;
 
-
-    //int index = 0; int expectIllegal = 0; int tok;
-
-    //while ( ( tok = myTest.yylex() ) ) {
-    //    std::cout << "Current text: \"" << myTest.YYText() << "\"" << std::endl;
-
-    //    if(index > (sizeof(testArr) / sizeof(int))) {
-    //        CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
-    //        exit(1);
-    //    }
-    //    CHECK(tokEqToken(
-    //                tok,
-    //                testArr[index],
-    //                0,
-    //                myTest.YYText()
-    //    ));
-    //    index += 1;
-    //}
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    flexString.c_str()
+        ));
+        index += 1;
+    }
 }
 
 
 
 TEST(lexer, testTwo) { 
-    //std::ifstream inputStreamTwo(testInputDir + "/inputTwo.kts");
-    //myTest.switch_streams(inputStreamTwo, outputStream);
-    //int testArr[] { 
-    //    tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
-    //    tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
-    //    tok_PIPE, tok_ID, '(', '%', ',', tok_NUM, ',', tok_NUM, ',',
-    //    tok_NUM, ')', ';', tok_LET, tok_ID, tok_ASSIGN, 
-    //    tok_ID, '(', tok_ID, '=', tok_NUM, ')', ';',
-    //    tok_ID, '(', tok_ID, '(', tok_ID, ',', tok_ID,
-    //    ')', ',', tok_ID, '(', tok_ID, '(', tok_NUM,
-    //    '+', tok_NUM, ',', tok_NUM, '-', tok_NUM, ')', ',',
-    //    tok_ID, '(', tok_NUM, '*', tok_NUM, ',', tok_NUM,
-    //    '%', tok_NUM, ',', tok_NUM, '/', tok_NUM, ')',
-    //    ')', ')', '}',
-    //};
+    int testArr[] { 
+        tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
+        tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
+        tok_PIPE, tok_ID, '(', '%', ',', tok_NUM, ',', tok_NUM, ',',
+        tok_NUM, ')', ';', tok_LET, tok_ID, tok_ASSIGN, 
+        tok_ID, '(', tok_ID, '=', tok_NUM, ')', ';',
+        tok_ID, '(', tok_ID, '(', tok_ID, ',', tok_ID,
+        ')', ',', tok_ID, '(', tok_ID, '(', tok_NUM,
+        '+', tok_NUM, ',', tok_NUM, '-', tok_NUM, ')', ',',
+        tok_ID, '(', tok_NUM, '*', tok_NUM, ',', tok_NUM,
+        '%', tok_NUM, ',', tok_NUM, '/', tok_NUM, ')',
+        ')', ')', '}',
+    };
 
 
-    //int index = 0; int expectIllegal = 0; int tok;
+    FILE *srcFP       = fopen( 
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputTwo.kts",
+    "r"
+    );
+    if ( srcFP == NULL ) {
+        printf( "Unable to open file ");
+    }
 
-    //while ( ( tok = myTest.yylex() ) ) {
-    //    std::cout << "Current text: \"" << myTest.YYText() << "\"" << std::endl;
-    //    if(index > (sizeof(testArr) / sizeof(int))) {
-    //        CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
-    //        exit(1);
-    //    }
-    //    CHECK(tokEqToken(
-    //                tok,
-    //                testArr[index],
-    //                0,
-    //                myTest.YYText()
-    //    ));
-    //    index += 1;
-    //}
+    yyscan_t scanner;
+    yylex_init( &scanner );
+
+    yyrestart( srcFP, scanner );
+
+    yyset_lineno( 1, scanner );
+
+    int index = 0; int expectIllegal = 0; int tok;
+
+    while ( ( tok = yylex(scanner) ) ) {
+        std::cout << "Current text: \"" << flexString << "\"" << std::endl;
+
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    flexString.c_str()
+        ));
+        index += 1;
+    }
 }
