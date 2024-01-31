@@ -1,3 +1,2 @@
-*.git
 build/
 src/back-end/lexer.yy.*

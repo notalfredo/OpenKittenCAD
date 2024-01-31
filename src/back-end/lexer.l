@@ -1,148 +1,45 @@
-    /*ttFlexLexer for running test*/
 
+    /* To avoid the use of global variables */
+%option reentrant
 
-%option nodefault 
+    /* Creating header file */
+%option header-file="lexer.yy.h"
 
-    /* We dont have an interactive session. */ 
+    /* We dont have an interactive session */
 %option never-interactive
 
+    /* Do not generate the default rule we handle it.*/
+%option nodefault
 
-    /* We will handle the nodefault rule. */
-
-    /* We dont want yyinput() and yyunput(). */
+    /* We dont want yyinput() and yyunput() */
 %option noinput nounput
-
 
     /* Don't include <unistd.h> we dont need it. */
 %option nounistd
 
-
-    /* 
-        Not needed for now, in the future when users can work 
-        with multiple files we can start using it.
-    */
+    /* Do not call yywrap() on EOF. */
 %option noyywrap
 
-
-    /* 
-        These two options are doubled to get more detailed reports.
-        Write performance report to stderr.
-    */
+    /* Error messages */
 %option perf-report perf-report
-
-    /* Write statistics summary to stderr. */
 %option verbose verbose
-
-    /* Generate warning messages for mistakes. */
 %option warn
 
     /* Maintain current line number in yylineno. */
 %option yylineno
 
 
-%option c++
 
 
-    /* C items that can be used in the rules section */
 %{
-#include <stdio.h> 
-#include <iostream> 
-#include <keywords.hxx>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include "keywords.hxx"
 
 
 int numIllegalCharacters;
-int yycolno;
-
-
-int isKeyWord(char * keyword);
-void yypanic(char * errorMessage);
-
-    /* 
-        This macro gets called the second we enter a rule,
-        but before anything in that rule executes.
-
-        #define YY_USER_ACTION                           \
-            yylloc->first_line   = lineno()              \
-            yylloc->last_line    = lineno()              \
-            yylloc->first_column = yycolno               \
-            yylloc->last_column  = yycolno + YYLeng() - 1\
-            yycolno += YYLeng()                          \
-    */
-
-
-%}
-
-DIGIT       [0-9]
-EXPONENT    [eE][-+]?{DIGIT}+
-
-
-ALPHA       [_a-zA-Z]
-ALPHA_NUM   {ALPHA}|{DIGIT}
-
-
-
-    /*===================RULES===================*/
-%% 
-
-[-+*/%^?{}();,>=]   {
-  // Single character token.  Just return the char itself.
-  return yytext[0];
-}
-
-"==" {
-    return tok_EQ; 
-}
-
-"!=" {
-    return tok_NE;
-}
-
-">=" {
-    return tok_GE;
-}
-
-"<=" {
-    return tok_LE;
-}
-
-"|>" {
-    return tok_PIPE;
-}
-
-":=" {
-    return tok_ASSIGN;
-}
-
-{DIGIT}+ |
-({DIGIT}*(({DIGIT}\.)|(\.{DIGIT})){DIGIT}*){EXPONENT}? {
-    return tok_NUM; 
-}
-
-[ \n\t\r]+ {
-    /*Space do nothing for white space*/
-}
-
-    /* ID or Keyword */
-{ALPHA}{ALPHA_NUM}*  {
-    int result = isKeyWord(yytext);
-    if(result) {
-        return result;
-    }
-
-    return tok_ID;
-}
-
-    /* Gargabe */
-.       {
-    std::cout << "tok_ILLEGAL |" << YYText() << "| at ";
-    std::cout << "line = " << lineno() << " column = " << yycolno << std::endl; 
-    return tok_ILLEGAL;
-}
-
-
-%% 
-    /*=================USER-CODE=================*/
-#include <keywords.hxx>
+std::string flexString;
 
 const Keyword keywords[] = {
   { "and",      tok_AND      },
@@ -163,10 +60,6 @@ const Keyword keywords[] = {
 
 const int NUM_KEYWORDS = (sizeof(keywords) / sizeof(Keyword));
 
-void yypanic(char * errorMessage) {
-    std::cout << errorMessage << std::endl;
-}
-
 int isKeyWord(char * keyword){
     for(int index = 0; index < NUM_KEYWORDS; index++){
         if(!strcmp(keywords[index].keyWord, keyword)) {
@@ -175,3 +68,85 @@ int isKeyWord(char * keyword){
     }
     return 0;
 }
+
+%}
+
+DIGIT       [0-9]
+EXPONENT    [eE][-+]?{DIGIT}+
+
+
+ALPHA       [_a-zA-Z]
+ALPHA_NUM   {ALPHA}|{DIGIT}
+
+
+
+    /*===================RULES===================*/
+%% 
+
+[-+*/%^?{}();,>=]   {
+  flexString = yytext;
+  // Single character token.  Just return the char itself.
+  return yytext[0];
+}
+
+"==" {
+    flexString = yytext;
+    return tok_EQ; 
+}
+
+"!=" {
+    flexString = yytext;
+    return tok_NE;
+}
+
+">=" {
+    flexString = yytext;
+    return tok_GE;
+}
+
+"<=" {
+    flexString = yytext;
+    return tok_LE;
+}
+
+"|>" {
+    flexString = yytext;
+    return tok_PIPE;
+}
+
+":=" {
+    flexString = yytext;
+    return tok_ASSIGN;
+}
+
+{DIGIT}+ |
+({DIGIT}*(({DIGIT}\.)|(\.{DIGIT})){DIGIT}*){EXPONENT}? {
+    flexString = yytext;
+    return tok_NUM; 
+}
+
+[ \n\t\r]+ {
+    /*Space do nothing for white space*/
+}
+
+    /* ID or Keyword */
+{ALPHA}{ALPHA_NUM}*  {
+    flexString = yytext;
+
+    int result = isKeyWord(yytext);
+    if(result) {
+        return result;
+    }
+
+    return tok_ID;
+}
+
+    /* Gargabe */
+.       {
+    std::cout << "tok_ILLEGAL |" << yytext << "| at ";
+    std::cout << "line = " << yylineno << " column = " << yycolumn << std::endl; 
+    return tok_ILLEGAL;
+}
+
+
+%%
