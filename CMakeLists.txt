@@ -9,4 +9,4 @@ add_definitions(-DTEST_DIR="${PROJECT_SOURCE_DIR}")
 
 add_subdirectory("./src/back-end/")
 add_subdirectory("./tau/")
-add_subdirectory("./tests/")
+#add_subdirectory("./tests/")

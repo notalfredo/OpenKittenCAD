@@ -1,25 +1,21 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem /usr/local/flex/include/")
-enable_testing()
+# Test program CMakeLists.txt
 
+enable_testing()
 
 add_executable(
     lexer_test 
     ./lexer_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.yy.cc
+    /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.yy.c
 )
 
-target_link_libraries(lexer_test PUBLIC tau)
-target_link_libraries(lexer_test PUBLIC keywords)
+# Include necessary directories
+target_include_directories(lexer_test PRIVATE "${PROJECT_SOURCE_DIR}/src/back-end" "${CMAKE_CURRENT_BINARY_DIR}")
 
-
-set_target_properties(
-    lexer_test
-    PROPERTIES
-    LINKER_LANGUAGE
-    CXX
-)
+# Link against the keywords library, tau, and Flex library
+target_link_libraries(lexer_test PRIVATE keywords tau -ll)
 
 add_test(
     lexer_test
     lexer_test
 )
+
