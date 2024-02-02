@@ -1,2 +1,3 @@
 build/
 src/back-end/lexer.yy.*
+src/back-end/parser.tab.*

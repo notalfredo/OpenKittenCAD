@@ -5,7 +5,7 @@ BISON_TARGET(
     MyParser
     parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
-    DEFINES_FILE "parser.tab.h"
+    DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
 )
 
     # Flex target
@@ -13,7 +13,7 @@ FLEX_TARGET(
     MyScanner
     lexer.l
     ${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.c
-    DEFINES_FILE "lexer.yy.h"
+    DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.h"
 )
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)

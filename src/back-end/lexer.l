@@ -48,33 +48,6 @@
 int numIllegalCharacters;
 std::string flexString;
 
-const Keyword keywords[] = {
-  { "and",      tok_AND      },
-  { "not",      tok_NOT      },
-  { "or",       tok_OR       },
-  { "break",    tok_BREAK    },
-  { "continue", tok_CONTINUE },
-  { "if",       tok_IF       },
-  { "elif",     tok_ELIF     },
-  { "else",     tok_ELSE     },
-  { "repeat",   tok_REPEAT   },
-  { "until",    tok_UNTIL    },
-  { "while",    tok_WHILE    },
-  { "for",      tok_FOR      },
-  { "let",      tok_LET      },
-  { "fn",       tok_FN       },
-};
-
-const int NUM_KEYWORDS = (sizeof(keywords) / sizeof(Keyword));
-
-int isKeyWord(char * keyword){
-    for(int index = 0; index < NUM_KEYWORDS; index++){
-        if(!strcmp(keywords[index].keyWord, keyword)) {
-            return keywords[index].token;
-        }
-    }
-    return 0;
-}
 
 %}
 
@@ -140,10 +113,10 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 {ALPHA}{ALPHA_NUM}*  {
     flexString = yytext;
 
-    int result = isKeyWord(yytext);
-    if(result) {
-        return result;
-    }
+    //int result = isKeyWord(yytext);
+    //if(result) {
+    //    return result;
+    //}
 
     return tok_ID;
 }
