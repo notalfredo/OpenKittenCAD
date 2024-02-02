@@ -2,6 +2,10 @@
     /* To avoid the use of global variables */
 %option reentrant
 
+/* For a bridge with bison */
+%option bison-bridge
+%option bison-locations
+
     /* Creating header file */
 %option header-file="lexer.yy.h"
 
@@ -29,13 +33,16 @@
 %option yylineno
 
 
-
-
 %{
+
 #include <stdlib.h>
+
 #include <string.h>
+
 #include <iostream>
-#include "keywords.hxx"
+
+#include "parser.tab.h"
+
 
 
 int numIllegalCharacters;

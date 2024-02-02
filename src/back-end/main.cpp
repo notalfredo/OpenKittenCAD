@@ -1,7 +1,9 @@
 #include <string.h>
 
 //#include <FlexLexer.h>
+#include "parser.tab.h"
 #include "lexer.yy.h"
+
 
 #include <iostream>  
 #include <sstream>  
@@ -28,7 +30,7 @@ int main() {
     int tok;
 
 
-    while ( (tok = yylex(scanner)) ) {
-        std::cout << tok << std::endl;
-    }
+    //while ( (tok = yylex(scanner)) ) {
+    //    std::cout << tok << std::endl;
+    //}
 }
