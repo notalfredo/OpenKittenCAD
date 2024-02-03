@@ -24,83 +24,83 @@ extern std::string flexString;
 
 TAU_MAIN()
 
-char* tokToString(int tok) {
+std::string tokToString(int tok) {
     switch (tok) {
         case tok_ILLEGAL: {
-            return "tok_illegal";
+            return "tok_ILLEGAL";
         }
         case tok_EQ: {
-            return "tok_eq";
+            return "tok_EQ";
         }
         case '<': {
-            return "tok_lt";
+            return "tok_LT";
         }
         case '>': {
-            return "tok_gt";
+            return "tok_GT";
         }
         case tok_LE: {
-            return "tok_le";
+            return "tok_LE";
         }
         case tok_GE: {
-            return "tok_ge";
+            return "tok_GE";
         }
         case tok_NE: {
-            return "tok_ne";
+            return "tok_NE";
         }
         case tok_AND: {
-            return "tok_and";
+            return "tok_AND";
         }
         case tok_OR: {
-            return "tok_and";
+            return "tok_OR";
         }    
         //todo
         //case tok_not: {
         //    return "tok_not";
         //}     
         case tok_ID: {
-            return "tok_id";
+            return "tok_ID";
         }
         case tok_FOR: {
-            return "tok_for";
+            return "tok_FOR";
         }     
         case tok_REPEAT: {
-            return "tok_repeat";
+            return "tok_REPEAT";
         }  
         case tok_UNTIL: {
-            return "tok_until";
+            return "tok_UNTIL";
         }   
         case tok_WHILE: {
-            return "tok_while";
+            return "tok_WHILE";
         }  
         case tok_BREAK: {
-            return "tok_break";
+            return "tok_BREAK";
         }
         case tok_CONTINUE: {
-            return "tok_continue";
+            return "tok_CONTINUE";
         }
         case tok_IF: {
-            return "tok_if";
+            return "tok_IF";
         }
         case tok_ELIF: {
-            return "tok_elif";
+            return "tok_ELIF";
         }
         case tok_ELSE: {
-            return "tok_else";
+            return "tok_ELSE";
         }   
         case tok_LET: {
-            return "tok_let";
+            return "tok_LET";
         }    
         case tok_NUM: {
-            return "tok_num";
+            return "tok_NUM";
         }    
         case tok_FN: {
-            return "tok_fn";
+            return "tok_FN";
         }    
         case tok_PIPE: {
-            return "tok_pipe";
+            return "tok_PIPE";
         }    
         case tok_ASSIGN: {
-            return "tok_assign";
+            return "tok_ASSIGN";
         }    
         case '(': {
             return "(";
@@ -148,42 +148,33 @@ char* tokToString(int tok) {
 int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scannedText){
     switch (tok) {
         case tok_ILLEGAL: {
-            std::cout << "tok_illegal: " << std::endl;
             if (expectIllegal) {
                 return tok == expectedToken;
             }
             return 0;
         }
         case tok_EQ: {
-            std::cout << "tok_eq" << std::endl;
             return tok == expectedToken;
         }
         case '<': {
-            std::cout << "tok_lt" << std::endl;
             return tok == expectedToken;
         }
         case '>': {
-            std::cout << "tok_gt" << std::endl;
             return tok == expectedToken;
         }
         case tok_LE: {
-            std::cout << "tok_le" << std::endl;
             return tok == expectedToken;
         }
         case tok_GE: {
-            std::cout << "tok_ge" << std::endl;
             return tok == expectedToken;
         }
         case tok_NE: {
-            std::cout << "tok_ne" << std::endl;
             return tok == expectedToken;
         }
         case tok_AND: {
-            std::cout << "tok_and" << std::endl;
             return tok == expectedToken;
         }
         case tok_OR: {
-            std::cout << "tok_and" << std::endl;
             return tok == expectedToken;
         }    
         //todo
@@ -192,111 +183,84 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
         //    return tok == expectedToken;
         //}     
         case tok_ID: {
-            std::cout << "tok_id" << std::endl;
             return tok == expectedToken;
         }
         case tok_FOR: {
-            std::cout << "tok_for" << std::endl;
             return tok == expectedToken;
         }     
         case tok_REPEAT: {
-            std::cout << "tok_repeat" << std::endl;
             return tok == expectedToken;
         }  
         case tok_UNTIL: {
-            std::cout << "tok_until" << std::endl;
             return tok == expectedToken;
         }   
         case tok_WHILE: {
-            std::cout << "tok_while" << std::endl;
             return tok == expectedToken;
         }  
         case tok_BREAK: {
-            std::cout << "tok_break" << std::endl;
             return tok == expectedToken;
         }
         case tok_CONTINUE: {
-            std::cout << "tok_continue" << std::endl;
             return tok == expectedToken;
         }
         case tok_IF: {
-            std::cout << "tok_if" << std::endl;
             return tok == expectedToken;
         }
         case tok_ELIF: {
-            std::cout << "tok_elif" << std::endl;
             return tok == expectedToken;
         }
         case tok_ELSE: {
-            std::cout << "tok_else" << std::endl;
             return tok == expectedToken;
         }   
         case tok_LET: {
-            std::cout << "tok_let" << std::endl;
             return tok == expectedToken;
         }    
         case tok_NUM: {
-            std::cout << "tok_num" << std::endl;
             return tok == expectedToken;
         }    
         case tok_FN: {
-            std::cout << "tok_fn" << std::endl;
             return tok == expectedToken;
         }    
         case tok_PIPE: {
-            std::cout << "tok_pipe" << std::endl;
             return tok == expectedToken;
         }    
         case tok_ASSIGN: {
-            std::cout << "tok_assign" << std::endl;
             return tok == expectedToken;
         }    
         case '(': {
-            std::cout << "(" << std::endl;
             return tok == expectedToken;
         }    
         case ')': {
-            std::cout << ")" << std::endl;
             return tok == expectedToken;
         }    
         case '{': {
-            std::cout << "{" << std::endl;
             return tok == expectedToken;
         }    
         case '}': {
-            std::cout << "}" << std::endl;
             return tok == expectedToken;
         }    
         case '=': {
-            std::cout << "=" << std::endl;
             return tok == expectedToken;
         }    
         case ',': {
-            std::cout << "," << std::endl;
             return tok == expectedToken;
         }    
         case ';': {
-            std::cout << ";" << std::endl;
             return tok == expectedToken;
         }    
         case '+': {
-            std::cout << "+" << std::endl;
             return tok == expectedToken;
         }    
         case '-': {
-            std::cout << "-" << std::endl;
             return tok == expectedToken;
         }    
         case '*': {
-            std::cout << "*" << std::endl;
             return tok == expectedToken;
         }    
         case '%': {
-            std::cout << "%" << std::endl;
             return tok == expectedToken;
         }    
         case '/': {
-            std::cout << "/" << std::endl;
             return tok == expectedToken;
         }    
         default: {
@@ -353,18 +317,19 @@ TEST(lexer, testOne) {
             exit(1);
         }
 
-        //std::string l = str(tokToString(tok);
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
 
-        //std::string text = ">>>>> left : " << l << " " << ">>>>> right: " << tokToString(testArr[index]);
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
 
-                        
+        
+        std::cout << errMessage << std::endl;
         CHECK(tokEqToken(
                     tok,
                     testArr[index],
                     0,
                     flexString.c_str()
-        ),
-                ">>>>>>>>>>>"
+        )
         );
         index += 1;
     }
@@ -417,12 +382,21 @@ TEST(lexer, testTwo) {
             CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
             exit(1);
         }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
         CHECK(tokEqToken(
                     tok,
                     testArr[index],
                     0,
                     flexString.c_str()
-        ));
+        )
+        );
         index += 1;
     }
 }

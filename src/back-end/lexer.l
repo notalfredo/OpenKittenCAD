@@ -55,21 +55,21 @@ typedef struct keyword {
 } ktsKeywords;
 
 ktsKeywords ktsKeywordsArr[] = {
-    {"FN",       tok_FN},
-    {"LET",      tok_LET},
+    {"fn",       tok_FN},
+    {"let",      tok_LET},
 
-    {"BREAK",    tok_BREAK},
-    {"CONTINUE", tok_CONTINUE},
+    {"break",    tok_BREAK},
+    {"continue", tok_CONTINUE},
 
-    {"AND",      tok_AND},
-    {"OR",       tok_OR},
+    {"and",      tok_AND},
+    {"or",       tok_OR},
 
 
-    {"FOR",      tok_FOR},
+    {"for",      tok_FOR},
 
-    {"IF",       tok_IF},
-    {"ELIF",     tok_ELIF},
-    {"ELSE",     tok_ELSE},
+    {"if",       tok_IF},
+    {"elif",     tok_ELIF},
+    {"else",     tok_ELSE},
 
 };
 
@@ -78,7 +78,7 @@ const int KEYWORD_ARR_SIZE = sizeof(ktsKeywordsArr) /sizeof(ktsKeywords);
 int isKeyWord(char* id) {
     for(int index = 0; index < KEYWORD_ARR_SIZE; index++){
         if( !strcmp(id, ktsKeywordsArr[index].name) ){
-            return 1;
+            return ktsKeywordsArr[index].token;
         }
     }
     return 0; 
