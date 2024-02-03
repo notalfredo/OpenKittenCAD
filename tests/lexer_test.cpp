@@ -53,10 +53,6 @@ std::string tokToString(int tok) {
         case tok_OR: {
             return "tok_OR";
         }    
-        //todo
-        //case tok_not: {
-        //    return "tok_not";
-        //}     
         case tok_ID: {
             return "tok_ID";
         }
@@ -102,6 +98,12 @@ std::string tokToString(int tok) {
         case tok_ASSIGN: {
             return "tok_ASSIGN";
         }    
+        case tok_TYPE: {
+            return "tok_ASSIGN";
+        }    
+        case tok_RETURN: {
+            return "tok_RETURN";
+        }    
         case '(': {
             return "(";
         }    
@@ -137,6 +139,9 @@ std::string tokToString(int tok) {
         }    
         case '/': {
             return "/";
+        }    
+        case ':': {
+            return ":";
         }    
         default: {
             return "unknown token: |" ;
@@ -177,11 +182,6 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
         case tok_OR: {
             return tok == expectedToken;
         }    
-        //todo
-        //case tok_not: {
-        //    std::cout << "tok_not" << std::endl;
-        //    return tok == expectedToken;
-        //}     
         case tok_ID: {
             return tok == expectedToken;
         }
@@ -227,6 +227,12 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
         case tok_ASSIGN: {
             return tok == expectedToken;
         }    
+        case tok_TYPE: {
+            return tok == expectedToken;
+        }    
+        case tok_RETURN: {
+            return tok == expectedToken;
+        }    
         case '(': {
             return tok == expectedToken;
         }    
@@ -263,8 +269,11 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
         case '/': {
             return tok == expectedToken;
         }    
+        case ':': {
+            return tok == expectedToken;
+        }    
         default: {
-            std::cout << "unkown token: |" << scannedText << "|" << std::endl;
+            std::cout << "unkown token: >>" << scannedText << "<<" << std::endl;
             return 0;
         }
     }
@@ -336,7 +345,6 @@ TEST(lexer, testOne) {
 }
 
 
-
 TEST(lexer, testTwo) { 
     int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
@@ -355,6 +363,65 @@ TEST(lexer, testTwo) {
 
     FILE *srcFP       = fopen( 
     "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputTwo.kts",
+    "r"
+    );
+    if ( srcFP == NULL ) {
+        printf( "Unable to open file ");
+    }
+
+    yyscan_t scanner;
+    yylex_init( &scanner );
+
+    yyrestart( srcFP, scanner );
+
+    yyset_lineno( 1, scanner );
+
+
+    YYSTYPE yylval_param;
+    YYLTYPE yylloc_param;
+
+    int index = 0; int expectIllegal = 0; int tok;
+
+    while ( ( tok = yylex(&yylval_param, &yylloc_param ,scanner) ) ) {
+
+        std::cout << "Current text: \"" << flexString << "\"" << std::endl;
+
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    flexString.c_str()
+        )
+        );
+        index += 1;
+    }
+}
+
+
+TEST(lexer, testThree) { 
+    int testArr[] { 
+        tok_FN, tok_ID, '(', tok_ID, ':', tok_TYPE, ',', 
+        tok_ID, ':', tok_TYPE, ')', '{', tok_RETURN, tok_ID, 
+        '+', tok_ID, ';', '}', tok_FN, tok_ID, '(', ')',
+        '{', tok_LET, tok_ID, tok_ASSIGN, tok_ID, '(',
+        tok_NUM, ',', tok_NUM, ')', ';', '}'
+    };
+
+
+    FILE *srcFP       = fopen( 
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputThree.kts",
     "r"
     );
     if ( srcFP == NULL ) {

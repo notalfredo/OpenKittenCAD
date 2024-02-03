@@ -2,6 +2,8 @@
 #define NODE_H
 
 typedef enum idType {
+    num,
+    shape
 } ID_TYPE;
 
 
@@ -18,8 +20,8 @@ class NodeExpression: public Node {};
 
 
 class NodeBlock: public NodeStatement {
-    std::vector<NodeStatement> stms;
-    NodeBlock();
+    std::vector<NodeStatement*> stms;
+    NodeBlock(){}
 };
 
 
@@ -38,7 +40,11 @@ class NodeDouble: public NodeExpression {
 class NodeIdentifier: public NodeExpression {
     public:
         std::string idName;
-        NodeIdentifier(std::string idName): idName(idName) {}
+        ID_TYPE type;
+        NodeIdentifier(
+            ID_TYPE type,
+            std::string idName
+        ): idName(idName), type(type) {}
 };
 
 
@@ -60,12 +66,22 @@ class NodeBinaryOperator: public NodeExpression {
    =======================================================
 */  
 
+class NodeFunction: public NodeStatement {
+    public: 
+        std::vector<NodeIdentifier*> arguments;
+        NodeBlock* block;
+        NodeFunction(
+            std::vector<NodeIdentifier*> arguments,
+            NodeBlock* block
+        ): arguments(arguments), block(block) {}
+};
 
-class NodeBinaryAssign: public NodeExpression {
+
+class NodeBinaryAssign: public NodeStatement {
     public:
-        NodeIdentifier id;
+        NodeIdentifier* id;
         NodeExpression* assignment;
-        NodeBinaryAssign(NodeIdentifier id,
+        NodeBinaryAssign(NodeIdentifier* id,
                          NodeExpression* assignment
         ): id(id), assignment(assignment){}
 };
@@ -153,4 +169,10 @@ class NodeIf: public NodeStatement {
         NodeIf(NodeExpression* condition, NodeBlock* block):
             condition(condition), block(block) {};
 };
+
+
+//=============== FOR DEBUGGER ===============
+//extern void debugerSemantic();
+
+
 #endif

@@ -44,19 +44,26 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %union {
   Node*           node;
 
-  NodeIf*         if_node;
-  NodeElif*       elif_node;
-  NodeElse*       else_node;
+  NodeIf*         ifNode;
+  NodeElif*       elifNode;
+  NodeElse*       elseNode;
 
-  NodeFor*        for_node; 
-  NodeWhile*      while_node; 
-  NodeRepeat*     repeat_node;
-  NodeUntil*      until_node;
+  NodeFor*        forNode; 
+  NodeWhile*      whileNode; 
+  NodeRepeat*     repeatNode;
+  NodeUntil*      untilNode;
 
-  NodeDecl*       decl_node;
+  NodeDecl*       declNode;
 
-  NodeIdentifier* id_node;
-  NodeDouble*     double_node;
+  NodeStatement*  stmtNode;
+
+  NodeFunction*   functionNode;
+
+  NodeIdentifier* idNode;
+
+  NodeBlock*      blockNode;
+
+  NodeDouble*     doubleNode;
 }
 
 
@@ -66,37 +73,45 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_IF tok_ELIF tok_ELSE
 %token tok_FOR tok_WHILE
 %token tok_AND tok_OR
-%token tok_FN
+%token tok_FN tok_RETURN
 %token tok_LET
 %token tok_EQ tok_NE tok_GE tok_LE 
 %token tok_PIPE
 %token tok_ASSIGN
 
-%token <NodeIdentifier> tok_ID
-%token <NodeDouble> tok_NUM
+%token <std::string>    tok_ID
+%token <NodeDouble>     tok_NUM
+%token <ID_TYPE>        tok_TYPE
 
     /* Non-terminals */
-%type <NodeIf>     ifStmt
-%type <NodeElif>   elifStmt
-%type <NodeElse>   elseStmt
+%type <ifNode>                       ifStmt
+%type <elifNode>                     elifStmt
+%type <elseNode>                     elseStmt
 
-%type <NodeFor>    forStmt
-%type <NodeWhile>  whileStmt
-%type <NodeRepeat> repeatStmt
-%type <NodeUntil>  untilStmt
+%type <forNode>                      forStmt
+%type <whileNode>                    whileStmt
+%type <repeatNode>                   repeatStmt
+%type <untilNode>                    untilStmt
 
-%type <NodeDecl>   declStmt
+%type <declNode>                     declStmt
 
+%type <std::vector<stmtNode>>       stmtList stmt
 
+%type <functionNode>                 functionStmt
+
+%type <std::vector<idNode>>          identifierList
+
+%type <NodeBlock*>                   block
 
 %% //---- RULES --------------------------------------------------
 
 start
-  : block                    
+  : block {/*Do nothing*/}
   ;
 
-block : ;
-
+block 
+  : %empty
+  ;
 
 %% //---- USER CODE ----------------------------------------------
 

@@ -50,7 +50,7 @@ std::string flexString;
 
 
 typedef struct keyword {
-    char* name;
+    std::string name;
     int token;
 } ktsKeywords;
 
@@ -60,6 +60,7 @@ ktsKeywords ktsKeywordsArr[] = {
 
     {"break",    tok_BREAK},
     {"continue", tok_CONTINUE},
+    {"return",   tok_RETURN},
 
     {"and",      tok_AND},
     {"or",       tok_OR},
@@ -71,13 +72,14 @@ ktsKeywords ktsKeywordsArr[] = {
     {"elif",     tok_ELIF},
     {"else",     tok_ELSE},
 
+    {"else",     tok_ELSE},
 };
 
 const int KEYWORD_ARR_SIZE = sizeof(ktsKeywordsArr) /sizeof(ktsKeywords);
 
-int isKeyWord(char* id) {
+int isKeyWord(std::string id) {
     for(int index = 0; index < KEYWORD_ARR_SIZE; index++){
-        if( !strcmp(id, ktsKeywordsArr[index].name) ){
+        if( id == ktsKeywordsArr[index].name ){
             return ktsKeywordsArr[index].token;
         }
     }
@@ -99,7 +101,7 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
     /*===================RULES===================*/
 %% 
 
-[-+*/%^?{}();,>=]   {
+[-+*/%^?{}();,>=:]   {
   flexString = yytext;
   // Single character token.  Just return the char itself.
   return yytext[0];
@@ -133,6 +135,12 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 ":=" {
     flexString = yytext;
     return tok_ASSIGN;
+}
+
+"number" |
+"shape" {
+    flexString = yytext;
+    return tok_TYPE;
 }
 
 {DIGIT}+ |
