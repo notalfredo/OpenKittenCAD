@@ -49,6 +49,42 @@ int numIllegalCharacters;
 std::string flexString;
 
 
+typedef struct keyword {
+    char* name;
+    int token;
+} ktsKeywords;
+
+ktsKeywords ktsKeywordsArr[] = {
+    {"FN",       tok_FN},
+    {"LET",      tok_LET},
+
+    {"BREAK",    tok_BREAK},
+    {"CONTINUE", tok_CONTINUE},
+
+    {"AND",      tok_AND},
+    {"OR",       tok_OR},
+
+
+    {"FOR",      tok_FOR},
+
+    {"IF",       tok_IF},
+    {"ELIF",     tok_ELIF},
+    {"ELSE",     tok_ELSE},
+
+};
+
+const int KEYWORD_ARR_SIZE = sizeof(ktsKeywordsArr) /sizeof(ktsKeywords);
+
+int isKeyWord(char* id) {
+    for(int index = 0; index < KEYWORD_ARR_SIZE; index++){
+        if( !strcmp(id, ktsKeywordsArr[index].name) ){
+            return 1;
+        }
+    }
+    return 0; 
+}
+ 
+
 %}
 
 DIGIT       [0-9]
@@ -113,10 +149,10 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 {ALPHA}{ALPHA_NUM}*  {
     flexString = yytext;
 
-    //int result = isKeyWord(yytext);
-    //if(result) {
-    //    return result;
-    //}
+    int result = isKeyWord(yytext);
+    if(result) {
+        return result;
+    }
 
     return tok_ID;
 }

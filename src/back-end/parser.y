@@ -21,7 +21,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 //  state.  The type of a pointer to an instance of that state is
 //  called yyscan_t.
 %code requires {
-#include "node.hxx"
+  #include "node.hxx"
   typedef void *yyscan_t;
 }
 
@@ -42,15 +42,51 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 // The union of all possible attributes that can be returned by
 //  any category of token.
 %union {
-  Node *node;
+  Node*           node;
+
+  NodeIf*         if_node;
+  NodeElif*       elif_node;
+  NodeElse*       else_node;
+
+  NodeFor*        for_node; 
+  NodeWhile*      while_node; 
+  NodeRepeat*     repeat_node;
+  NodeUntil*      until_node;
+
+  NodeDecl*       decl_node;
+
+  NodeIdentifier* id_node;
+  NodeDouble*     double_node;
 }
 
-%token <Node> tok_ILLEGAL
-%token <Node> tok_EQ tok_LT tok_GT tok_LE tok_GE tok_NE
-%token <Node> tok_AND tok_OR tok_NOT
-%token <Node> tok_ID
-%token <Node> tok_FOR tok_REPEAT tok_UNTIL tok_WHILE tok_BREAK tok_CONTINUE
-%token <Node> tok_IF tok_ELIF tok_ELSE tok_FN tok_LET tok_NUM tok_PIPE tok_ASSIGN
+
+    /* Terminals */
+%token tok_ILLEGAL
+%token tok_BREAK tok_CONTINUE
+%token tok_IF tok_ELIF tok_ELSE
+%token tok_FOR
+%token tok_AND tok_OR
+%token tok_FN
+%token tok_LET
+%token tok_EQ tok_NE tok_GE tok_LE 
+%token tok_PIPE
+%token tok_ASSIGN
+
+%token <NodeIdentifier> tok_ID
+%token <NodeDouble> tok_NUM
+
+    /* Non-terminals */
+%type <NodeIf>     ifStmt
+%type <NodeElif>   elifStmt
+%type <NodeElse>   elseStmt
+
+%type <NodeFor>    forStmt
+%type <NodeWhile>  whileStmt
+%type <NodeRepeat> repeatStmt
+%type <NodeUntil>  untilStmt
+
+%type <NodeDecl>   declStmt
+
 
 
 %% //---- RULES --------------------------------------------------
