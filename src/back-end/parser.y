@@ -62,9 +62,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
     /* Terminals */
 %token tok_ILLEGAL
-%token tok_BREAK tok_CONTINUE
+%token tok_BREAK tok_CONTINUE tok_REPEAT tok_UNTIL
 %token tok_IF tok_ELIF tok_ELSE
-%token tok_FOR
+%token tok_FOR tok_WHILE
 %token tok_AND tok_OR
 %token tok_FN
 %token tok_LET

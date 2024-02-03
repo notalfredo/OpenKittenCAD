@@ -15,6 +15,7 @@ FLEX_TARGET(
     ${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.c
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.h"
 )
+ 
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
@@ -41,7 +42,6 @@ set_source_files_properties(
     lexer.yy.c
     PROPERTIES LANGUAGE CXX
 )
-
 
 # Link against the Flex library
 target_include_directories(driver PUBLIC ./)
