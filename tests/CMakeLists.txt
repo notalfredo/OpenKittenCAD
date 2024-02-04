@@ -77,14 +77,20 @@ target_include_directories(parser_test
 )
 
 
-target_link_libraries(parser_test tau)
 target_link_libraries(
     parser_test
-    ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libhelper.a
+    PUBLIC
+    tau
 )
 target_link_libraries(
     parser_test
+    PUBLIC
     ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libdebugger.a
+)
+target_link_libraries(
+    parser_test
+    PUBLIC
+    ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libhelper.a
 )
 
 add_test(

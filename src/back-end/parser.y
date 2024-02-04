@@ -130,21 +130,16 @@ stmt:
   ;
 
 stmtList:
-    stmt                 {
+    stmt ';'               {
         std::vector<NodeStatement*> stmtVec;
         stmtVec.push_back($1);
         $$ = &stmtVec;
   }
-  | stmtList ';' stmt    {
+  | stmtList ';' stmt ';'  {
         $$->push_back($3);
         $$ = $1; 
   }
   ;
-
-optSemiColon:
-    %empty
-  | ';'
-  ; 
 
 functionStmt:
     tok_FN tok_ID '(' identifierList ')' block  { $$ = new NodeFunction($4, $6); }

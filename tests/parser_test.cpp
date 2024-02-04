@@ -13,7 +13,7 @@
 
 
 
-extern void programToJson(std::vector<NodeStatement*>* head, char* fileLocation);
+extern void programToJson(std::vector<NodeStatement*>* head, const char* fileLocation);
 
 
 TAU_MAIN()
@@ -25,7 +25,7 @@ TEST(parser, testOne) {
 
 
     FILE *srcFP  = fopen( 
-    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/parserInputTest.kts",
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputFour.kts",
     "r"
     );
     if ( srcFP == NULL ) {
@@ -45,6 +45,8 @@ TEST(parser, testOne) {
 
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
+    }else {
+        programToJson((std::vector<NodeStatement*>*) result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);

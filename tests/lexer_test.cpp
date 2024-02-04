@@ -474,3 +474,60 @@ TEST(lexer, testThree) {
     yylex_destroy(scanner);
     fclose(srcFP);
 }
+
+
+TEST(lexer, testFour) { 
+    int testArr[] { 
+        tok_FN, tok_ID, '(', ')', '{', '}', ';'
+    };
+
+
+    FILE *srcFP       = fopen( 
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputFour.kts",
+    "r"
+    );
+    if ( srcFP == NULL ) {
+        printf( "Unable to open file ");
+    }
+
+    yyscan_t scanner;
+    yylex_init( &scanner );
+
+    yyrestart( srcFP, scanner );
+
+    yyset_lineno( 1, scanner );
+
+
+    YYSTYPE yylval_param;
+    YYLTYPE yylloc_param;
+
+    int index = 0; int expectIllegal = 0; int tok;
+
+    while ( ( tok = yylex(&yylval_param, &yylloc_param ,scanner) ) ) {
+
+        std::cout << "Current text: \"" << flexString << "\"" << std::endl;
+
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    flexString.c_str()
+        )
+        );
+        index += 1;
+    }
+    yylex_destroy(scanner);
+    fclose(srcFP);
+}
