@@ -22,6 +22,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 //  called yyscan_t.
 %code requires {
   #include "node.hxx"
+  #include <iostream>
   typedef void *yyscan_t;
 }
 
@@ -56,14 +57,20 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
   NodeDecl*       declNode;
 
   NodeStatement*  stmtNode;
+  std::vector<NodeStatement*>*  stmtList;
 
   NodeFunction*   functionNode;
 
   NodeIdentifier* idNode;
+  std::vector<NodeIdentifier*>* idNodeList;
 
   NodeBlock*      blockNode;
 
   NodeDouble*     doubleNode;
+  
+  ID_TYPE         idType;
+
+  char*           charPointer;
 }
 
 
@@ -79,9 +86,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_PIPE
 %token tok_ASSIGN
 
-%token <std::string>    tok_ID
+%token <charPointer>    tok_ID
 %token <NodeDouble>     tok_NUM
-%token <ID_TYPE>        tok_TYPE
+%token <idType>         tok_TYPE
 
     /* Non-terminals */
 %type <ifNode>                       ifStmt
@@ -95,22 +102,69 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <declNode>                     declStmt
 
-%type <std::vector<stmtNode>>       stmtList stmt
+%type <stmtList>                     stmtList 
+
+%type <stmtNode>                     stmt
+%type <idNodeList>                   identifierList;
 
 %type <functionNode>                 functionStmt
 
-%type <std::vector<idNode>>          identifierList
+%type <idNode>                       identifier
 
-%type <NodeBlock*>                   block
+%type <blockNode>                    block
 
 %% //---- RULES --------------------------------------------------
 
-start
-  : block {/*Do nothing*/}
+
+start:
+    stmtList    { *result = $1; }
+
+block:
+    '{' stmtList '}'    { $$ = new NodeBlock($2);   }
+  | '{'          '}'    { $$ = new NodeBlock(NULL); }
   ;
 
-block 
-  : %empty
+stmt:
+    block           { $$ = $1; }
+  | functionStmt    { $$ = $1; }
+  ;
+
+stmtList:
+    stmt                 {
+        std::vector<NodeStatement*> stmtVec;
+        stmtVec.push_back($1);
+        $$ = &stmtVec;
+  }
+  | stmtList ';' stmt    {
+        $$->push_back($3);
+        $$ = $1; 
+  }
+  ;
+
+optSemiColon:
+    %empty
+  | ';'
+  ; 
+
+functionStmt:
+    tok_FN tok_ID '(' identifierList ')' block  { $$ = new NodeFunction($4, $6); }
+  ;
+
+identifierList:
+    %empty                           { /* Returns empty id list */ } 
+  | identifierList ',' identifier    {
+        (*$$).push_back($3); 
+        $$ = $1;
+  }
+  | identifier                       { 
+        std::vector<NodeIdentifier*> idVec;
+        idVec.push_back($1);
+        $$ = &idVec;
+  }
+  ;
+
+identifier:
+    tok_ID ':' tok_TYPE    { $$ = new NodeIdentifier($1, $3); }
   ;
 
 %% //---- USER CODE ----------------------------------------------

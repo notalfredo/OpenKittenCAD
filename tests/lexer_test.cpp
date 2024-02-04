@@ -342,6 +342,9 @@ TEST(lexer, testOne) {
         );
         index += 1;
     }
+
+    yylex_destroy(scanner);
+    fclose(srcFP);
 }
 
 
@@ -407,6 +410,8 @@ TEST(lexer, testTwo) {
         );
         index += 1;
     }
+    yylex_destroy(scanner);
+    fclose(srcFP);
 }
 
 
@@ -466,4 +471,6 @@ TEST(lexer, testThree) {
         );
         index += 1;
     }
+    yylex_destroy(scanner);
+    fclose(srcFP);
 }
