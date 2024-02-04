@@ -2,6 +2,10 @@
     /* To avoid the use of global variables */
 %option reentrant
 
+/* For a bridge with bison */
+%option bison-bridge
+%option bison-locations
+
     /* Creating header file */
 %option header-file="lexer.yy.h"
 
@@ -29,45 +33,59 @@
 %option yylineno
 
 
-
-
 %{
+
 #include <stdlib.h>
+
 #include <string.h>
+
 #include <iostream>
-#include "keywords.hxx"
+
+#include "parser.tab.h"
+
 
 
 int numIllegalCharacters;
 std::string flexString;
 
-const Keyword keywords[] = {
-  { "and",      tok_AND      },
-  { "not",      tok_NOT      },
-  { "or",       tok_OR       },
-  { "break",    tok_BREAK    },
-  { "continue", tok_CONTINUE },
-  { "if",       tok_IF       },
-  { "elif",     tok_ELIF     },
-  { "else",     tok_ELSE     },
-  { "repeat",   tok_REPEAT   },
-  { "until",    tok_UNTIL    },
-  { "while",    tok_WHILE    },
-  { "for",      tok_FOR      },
-  { "let",      tok_LET      },
-  { "fn",       tok_FN       },
+
+typedef struct keyword {
+    std::string name;
+    int token;
+} ktsKeywords;
+
+ktsKeywords ktsKeywordsArr[] = {
+    {"fn",       tok_FN},
+    {"let",      tok_LET},
+
+    {"break",    tok_BREAK},
+    {"continue", tok_CONTINUE},
+    {"return",   tok_RETURN},
+
+    {"and",      tok_AND},
+    {"or",       tok_OR},
+
+
+    {"for",      tok_FOR},
+
+    {"if",       tok_IF},
+    {"elif",     tok_ELIF},
+    {"else",     tok_ELSE},
+
+    {"else",     tok_ELSE},
 };
 
-const int NUM_KEYWORDS = (sizeof(keywords) / sizeof(Keyword));
+const int KEYWORD_ARR_SIZE = sizeof(ktsKeywordsArr) /sizeof(ktsKeywords);
 
-int isKeyWord(char * keyword){
-    for(int index = 0; index < NUM_KEYWORDS; index++){
-        if(!strcmp(keywords[index].keyWord, keyword)) {
-            return keywords[index].token;
+int isKeyWord(std::string id) {
+    for(int index = 0; index < KEYWORD_ARR_SIZE; index++){
+        if( id == ktsKeywordsArr[index].name ){
+            return ktsKeywordsArr[index].token;
         }
     }
-    return 0;
+    return 0; 
 }
+ 
 
 %}
 
@@ -83,7 +101,7 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
     /*===================RULES===================*/
 %% 
 
-[-+*/%^?{}();,>=]   {
+[-+*/%^?{}();,>=:]   {
   flexString = yytext;
   // Single character token.  Just return the char itself.
   return yytext[0];
@@ -117,6 +135,12 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 ":=" {
     flexString = yytext;
     return tok_ASSIGN;
+}
+
+"number" |
+"shape" {
+    flexString = yytext;
+    return tok_TYPE;
 }
 
 {DIGIT}+ |

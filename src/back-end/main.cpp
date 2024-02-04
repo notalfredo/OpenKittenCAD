@@ -1,7 +1,8 @@
 #include <string.h>
 
-//#include <FlexLexer.h>
+#include "parser.tab.h"
 #include "lexer.yy.h"
+
 
 #include <iostream>  
 #include <sstream>  
@@ -11,11 +12,11 @@
 
 int main() {
     FILE *srcFP       = fopen( 
-    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/sam.txt",
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/input.kts",
     "r"
     );
     if ( srcFP == NULL ) {
-        printf( "Unable to open file ");
+        printf( "Unable to open file\n");
     }
 
     yyscan_t scanner;
@@ -27,8 +28,11 @@ int main() {
 
     int tok;
 
+    void *result = NULL;
+    int parseState = yyparse( scanner, &result );
+ 
 
-    while ( (tok = yylex(scanner)) ) {
-        std::cout << tok << std::endl;
-    }
+    //while ( (tok = yylex(scanner)) ) {
+    //    std::cout << tok << std::endl;
+    //}
 }

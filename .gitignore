@@ -1,2 +1,6 @@
 build/
 src/back-end/lexer.yy.*
+src/back-end/parser.tab.*
+tests/parser.tab.h
+tests/lexer.yy.h
+tests/json/*

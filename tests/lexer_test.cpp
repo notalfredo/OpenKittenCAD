@@ -1,11 +1,14 @@
 #include <cstdlib>
 #include <iostream>
+#include "tau.h"
 
-#include "keywords.hxx"
+
+
+#include "parser.tab.h"
 #include "lexer.yy.h"
 
 
-#include "tau.h"
+
 #include <unistd.h>
 
 
@@ -21,161 +24,256 @@ extern std::string flexString;
 
 TAU_MAIN()
 
+std::string tokToString(int tok) {
+    switch (tok) {
+        case tok_ILLEGAL: {
+            return "tok_ILLEGAL";
+        }
+        case tok_EQ: {
+            return "tok_EQ";
+        }
+        case '<': {
+            return "tok_LT";
+        }
+        case '>': {
+            return "tok_GT";
+        }
+        case tok_LE: {
+            return "tok_LE";
+        }
+        case tok_GE: {
+            return "tok_GE";
+        }
+        case tok_NE: {
+            return "tok_NE";
+        }
+        case tok_AND: {
+            return "tok_AND";
+        }
+        case tok_OR: {
+            return "tok_OR";
+        }    
+        case tok_ID: {
+            return "tok_ID";
+        }
+        case tok_FOR: {
+            return "tok_FOR";
+        }     
+        case tok_REPEAT: {
+            return "tok_REPEAT";
+        }  
+        case tok_UNTIL: {
+            return "tok_UNTIL";
+        }   
+        case tok_WHILE: {
+            return "tok_WHILE";
+        }  
+        case tok_BREAK: {
+            return "tok_BREAK";
+        }
+        case tok_CONTINUE: {
+            return "tok_CONTINUE";
+        }
+        case tok_IF: {
+            return "tok_IF";
+        }
+        case tok_ELIF: {
+            return "tok_ELIF";
+        }
+        case tok_ELSE: {
+            return "tok_ELSE";
+        }   
+        case tok_LET: {
+            return "tok_LET";
+        }    
+        case tok_NUM: {
+            return "tok_NUM";
+        }    
+        case tok_FN: {
+            return "tok_FN";
+        }    
+        case tok_PIPE: {
+            return "tok_PIPE";
+        }    
+        case tok_ASSIGN: {
+            return "tok_ASSIGN";
+        }    
+        case tok_TYPE: {
+            return "tok_ASSIGN";
+        }    
+        case tok_RETURN: {
+            return "tok_RETURN";
+        }    
+        case '(': {
+            return "(";
+        }    
+        case ')': {
+            return ")";
+        }    
+        case '{': {
+            return "{";
+        }    
+        case '}': {
+            return "}";
+        }    
+        case '=': {
+            return "=";
+        }    
+        case ',': {
+            return ",";
+        }    
+        case ';': {
+            return ";";
+        }    
+        case '+': {
+            return "+";
+        }    
+        case '-': {
+            return "-";
+        }    
+        case '*': {
+            return "*";
+        }    
+        case '%': {
+            return "%";
+        }    
+        case '/': {
+            return "/";
+        }    
+        case ':': {
+            return ":";
+        }    
+        default: {
+            return "unknown token: |" ;
+        }
+    }
+}
+
+
 int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scannedText){
     switch (tok) {
         case tok_ILLEGAL: {
-            std::cout << "tok_ILLEGAL: " << std::endl;
             if (expectIllegal) {
                 return tok == expectedToken;
             }
             return 0;
         }
         case tok_EQ: {
-            std::cout << "tok_EQ" << std::endl;
             return tok == expectedToken;
         }
-        case tok_LT: {
-            std::cout << "tok_LT" << std::endl;
+        case '<': {
             return tok == expectedToken;
         }
-        case tok_GT: {
-            std::cout << "tok_GT" << std::endl;
+        case '>': {
             return tok == expectedToken;
         }
         case tok_LE: {
-            std::cout << "tok_LE" << std::endl;
             return tok == expectedToken;
         }
         case tok_GE: {
-            std::cout << "tok_GE" << std::endl;
             return tok == expectedToken;
         }
         case tok_NE: {
-            std::cout << "tok_NE" << std::endl;
             return tok == expectedToken;
         }
         case tok_AND: {
-            std::cout << "tok_AND" << std::endl;
             return tok == expectedToken;
         }
         case tok_OR: {
-            std::cout << "tok_AND" << std::endl;
             return tok == expectedToken;
         }    
-        case tok_NOT: {
-            std::cout << "tok_NOT" << std::endl;
-            return tok == expectedToken;
-        }     
         case tok_ID: {
-            std::cout << "tok_ID" << std::endl;
             return tok == expectedToken;
         }
         case tok_FOR: {
-            std::cout << "tok_FOR" << std::endl;
             return tok == expectedToken;
         }     
         case tok_REPEAT: {
-            std::cout << "tok_REPEAT" << std::endl;
             return tok == expectedToken;
         }  
         case tok_UNTIL: {
-            std::cout << "tok_UNTIL" << std::endl;
             return tok == expectedToken;
         }   
         case tok_WHILE: {
-            std::cout << "tok_WHILE" << std::endl;
             return tok == expectedToken;
         }  
         case tok_BREAK: {
-            std::cout << "tok_BREAK" << std::endl;
             return tok == expectedToken;
         }
         case tok_CONTINUE: {
-            std::cout << "tok_CONTINUE" << std::endl;
             return tok == expectedToken;
         }
         case tok_IF: {
-            std::cout << "tok_IF" << std::endl;
             return tok == expectedToken;
         }
         case tok_ELIF: {
-            std::cout << "tok_ELIF" << std::endl;
             return tok == expectedToken;
         }
         case tok_ELSE: {
-            std::cout << "tok_ELSE" << std::endl;
             return tok == expectedToken;
         }   
         case tok_LET: {
-            std::cout << "tok_LET" << std::endl;
             return tok == expectedToken;
         }    
         case tok_NUM: {
-            std::cout << "tok_NUM" << std::endl;
             return tok == expectedToken;
         }    
         case tok_FN: {
-            std::cout << "tok_FN" << std::endl;
             return tok == expectedToken;
         }    
         case tok_PIPE: {
-            std::cout << "tok_PIPE" << std::endl;
             return tok == expectedToken;
         }    
         case tok_ASSIGN: {
-            std::cout << "tok_ASSIGN" << std::endl;
+            return tok == expectedToken;
+        }    
+        case tok_TYPE: {
+            return tok == expectedToken;
+        }    
+        case tok_RETURN: {
             return tok == expectedToken;
         }    
         case '(': {
-            std::cout << "(" << std::endl;
             return tok == expectedToken;
         }    
         case ')': {
-            std::cout << ")" << std::endl;
             return tok == expectedToken;
         }    
         case '{': {
-            std::cout << "{" << std::endl;
             return tok == expectedToken;
         }    
         case '}': {
-            std::cout << "}" << std::endl;
             return tok == expectedToken;
         }    
         case '=': {
-            std::cout << "=" << std::endl;
             return tok == expectedToken;
         }    
         case ',': {
-            std::cout << "," << std::endl;
             return tok == expectedToken;
         }    
         case ';': {
-            std::cout << ";" << std::endl;
             return tok == expectedToken;
         }    
         case '+': {
-            std::cout << "+" << std::endl;
             return tok == expectedToken;
         }    
         case '-': {
-            std::cout << "-" << std::endl;
             return tok == expectedToken;
         }    
         case '*': {
-            std::cout << "*" << std::endl;
             return tok == expectedToken;
         }    
         case '%': {
-            std::cout << "%" << std::endl;
             return tok == expectedToken;
         }    
         case '/': {
-            std::cout << "/" << std::endl;
+            return tok == expectedToken;
+        }    
+        case ':': {
             return tok == expectedToken;
         }    
         default: {
-            std::cout << "UNKOWN TOKEN: |" << scannedText << "|" << std::endl;
+            std::cout << "unkown token: >>" << scannedText << "<<" << std::endl;
             return 0;
         }
     }
@@ -214,25 +312,40 @@ TEST(lexer, testOne) {
 
     yyset_lineno( 1, scanner );
 
+    YYSTYPE yylval_param;
+    YYLTYPE yylloc_param;
+
     int index = 0; int expectIllegal = 0; int tok;
 
-    while ( ( tok = yylex(scanner) ) ) {
+    while ( ( tok = yylex(&yylval_param, &yylloc_param ,scanner) ) ) {
+
         std::cout << "Current text: \"" << flexString << "\"" << std::endl;
 
         if(index > (sizeof(testArr) / sizeof(int))) {
             CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
             exit(1);
         }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
         CHECK(tokEqToken(
                     tok,
                     testArr[index],
                     0,
                     flexString.c_str()
-        ));
+        )
+        );
         index += 1;
     }
-}
 
+    yylex_destroy(scanner);
+    fclose(srcFP);
+}
 
 
 TEST(lexer, testTwo) { 
@@ -266,21 +379,155 @@ TEST(lexer, testTwo) {
 
     yyset_lineno( 1, scanner );
 
+
+    YYSTYPE yylval_param;
+    YYLTYPE yylloc_param;
+
     int index = 0; int expectIllegal = 0; int tok;
 
-    while ( ( tok = yylex(scanner) ) ) {
+    while ( ( tok = yylex(&yylval_param, &yylloc_param ,scanner) ) ) {
+
         std::cout << "Current text: \"" << flexString << "\"" << std::endl;
 
         if(index > (sizeof(testArr) / sizeof(int))) {
             CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
             exit(1);
         }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
         CHECK(tokEqToken(
                     tok,
                     testArr[index],
                     0,
                     flexString.c_str()
-        ));
+        )
+        );
         index += 1;
     }
+    yylex_destroy(scanner);
+    fclose(srcFP);
+}
+
+
+TEST(lexer, testThree) { 
+    int testArr[] { 
+        tok_FN, tok_ID, '(', tok_ID, ':', tok_TYPE, ',', 
+        tok_ID, ':', tok_TYPE, ')', '{', tok_RETURN, tok_ID, 
+        '+', tok_ID, ';', '}', tok_FN, tok_ID, '(', ')',
+        '{', tok_LET, tok_ID, tok_ASSIGN, tok_ID, '(',
+        tok_NUM, ',', tok_NUM, ')', ';', '}'
+    };
+
+
+    FILE *srcFP       = fopen( 
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputThree.kts",
+    "r"
+    );
+    if ( srcFP == NULL ) {
+        printf( "Unable to open file ");
+    }
+
+    yyscan_t scanner;
+    yylex_init( &scanner );
+
+    yyrestart( srcFP, scanner );
+
+    yyset_lineno( 1, scanner );
+
+
+    YYSTYPE yylval_param;
+    YYLTYPE yylloc_param;
+
+    int index = 0; int expectIllegal = 0; int tok;
+
+    while ( ( tok = yylex(&yylval_param, &yylloc_param ,scanner) ) ) {
+
+        std::cout << "Current text: \"" << flexString << "\"" << std::endl;
+
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    flexString.c_str()
+        )
+        );
+        index += 1;
+    }
+    yylex_destroy(scanner);
+    fclose(srcFP);
+}
+
+
+TEST(lexer, testFour) { 
+    int testArr[] { 
+        tok_FN, tok_ID, '(', ')', '{', '}', ';'
+    };
+
+
+    FILE *srcFP       = fopen( 
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputFour.kts",
+    "r"
+    );
+    if ( srcFP == NULL ) {
+        printf( "Unable to open file ");
+    }
+
+    yyscan_t scanner;
+    yylex_init( &scanner );
+
+    yyrestart( srcFP, scanner );
+
+    yyset_lineno( 1, scanner );
+
+
+    YYSTYPE yylval_param;
+    YYLTYPE yylloc_param;
+
+    int index = 0; int expectIllegal = 0; int tok;
+
+    while ( ( tok = yylex(&yylval_param, &yylloc_param ,scanner) ) ) {
+
+        std::cout << "Current text: \"" << flexString << "\"" << std::endl;
+
+        if(index > (sizeof(testArr) / sizeof(int))) {
+            CHECK(0, "ABORT: len(index) > len(testOneArr)"); 
+            exit(1);
+        }
+
+        std::string receivedTokenStr = tokToString(tok);
+        std::string expectedTokenStr = tokToString(testArr[index]);
+
+        std::string  errMessage = ">>>>>Received: " + receivedTokenStr  + " Expected: " + expectedTokenStr;
+
+        
+        std::cout << errMessage << std::endl;
+        CHECK(tokEqToken(
+                    tok,
+                    testArr[index],
+                    0,
+                    flexString.c_str()
+        )
+        );
+        index += 1;
+    }
+    yylex_destroy(scanner);
+    fclose(srcFP);
 }
