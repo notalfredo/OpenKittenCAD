@@ -26,11 +26,18 @@ ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 include_directories(
     /home/alfredo/repos/OpenKittenCad/src/back-end/
-) # Add the current build directory to include paths
+) 
 
 add_executable(
     lexer_test 
     ./lexer_test.cpp
+    ${BISON_MyParser_OUTPUTS}
+    ${FLEX_MyScanner_OUTPUTS}
+)
+
+add_executable(
+    parser_test 
+    ./parser_test.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
@@ -48,7 +55,6 @@ set_source_files_properties(
     PROPERTIES LANGUAGE CXX
 )
 
-# Link against the Flex library
 target_include_directories(lexer_test
     PUBLIC
     ./
@@ -60,26 +66,36 @@ target_include_directories(lexer_test
 target_link_libraries(lexer_test PRIVATE tau)
 target_link_libraries(lexer_test PRIVATE -ly -ll)
 
-#add_executable(
-#    lexer_test 
-#    ./lexer_test.cpp
-#    /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.yy.c
-#)
-#
-#set_source_files_properties(
-#    /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.yy.c
-#    PROPERTIES LANGUAGE CXX
-#)
+
+target_include_directories(parser_test
+    PUBLIC
+    ./
+)
+target_include_directories(parser_test
+    PUBLIC
+    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
+)
 
 
-# Include necessary directories
-#target_include_directories(lexer_test PRIVATE "${PROJECT_SOURCE_DIR}/src/back-end" "${CMAKE_CURRENT_BINARY_DIR}")
-#
-## Link against the keywords library, tau, and Flex library
-#target_link_libraries(lexer_test PRIVATE tau -ll)
+target_link_libraries(parser_test tau)
+target_link_libraries(
+    parser_test
+    ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libhelper.a
+)
+target_link_libraries(
+    parser_test
+    ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libdebugger.a
+)
 
 add_test(
     lexer_test
     lexer_test
 )
+
+
+add_test(
+    parser_test
+    parser_test
+)
+
 

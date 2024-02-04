@@ -1,12 +1,15 @@
 #include "node.hxx"
+#include "DebuggerHelperFunc.hxx"
+
 #include <stdio.h>
 #include <vector>
 #include <iostream>
 
-    /*Private file pointer local to this module only*/
+
+/*Private variables and functions to this mmodule*/
 static FILE* _fptr = NULL;
 
-void stmtNodeVecToJson(std::vector<NodeStatement*>* stmtVec, int blockLevel){
+static void _stmtNodeVecToJson(std::vector<NodeStatement*>* stmtVec, int blockLevel){
     for(int index = 0; index < (*stmtVec).size(); index++){
         std::string nodeName = nodeTypeToString((*stmtVec)[index]->nodeType);
         fprintf(_fptr, nodeName.c_str());
@@ -14,6 +17,8 @@ void stmtNodeVecToJson(std::vector<NodeStatement*>* stmtVec, int blockLevel){
 }
 
 
+
+/* Entry point to this module */
 void programToJson(
     std::vector<NodeStatement*>* head,
     char* fileLocation){
@@ -24,5 +29,5 @@ void programToJson(
         return;
     }
 
-    stmtNodeVecToJson(head, 0);
+    _stmtNodeVecToJson(head, 0);
 }
