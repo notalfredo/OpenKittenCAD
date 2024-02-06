@@ -52,14 +52,22 @@ class Node {
 class NodeStatement: public Node {};
 class NodeExpression: public Node {};
 
-
-class NodeBlock: public NodeStatement {
+class NodeIdentifier: public Node {
     public:
-        std::vector<NodeStatement*>* stms;
-        NodeBlock(
-            std::vector<NodeStatement*>* stms
-        ): stms(stms) {
-            this->nodeType = BLOCK;
+        char* idName;
+        NodeIdentifier(
+            char* idName
+        ): idName(idName) {
+            this->nodeType = ID;
+        }
+};
+
+
+class NodeType: public Node {
+    public:
+        ID_TYPE idType;
+        NodeType(ID_TYPE idType): idType(idType) {
+            this->nodeType = ID;
         }
 };
 
@@ -75,19 +83,6 @@ class NodeDouble: public NodeExpression {
         NodeDouble(double value): value(value) {
             this->nodeType = DOUBLE;
         }; 
-};
-
-
-class NodeIdentifier: public NodeExpression {
-    public:
-        char* idName;
-        ID_TYPE type;
-        NodeIdentifier(
-            char* idName,
-            ID_TYPE type
-        ): idName(idName), type(type) {
-            this->nodeType = ID;
-        }
 };
 
 
@@ -111,18 +106,39 @@ class NodeBinaryOperator: public NodeExpression {
    =======================================================
 */  
 
+class NodeBlock: public NodeStatement {
+    public:
+        std::vector<NodeStatement*>* stms;
+        NodeBlock(
+            std::vector<NodeStatement*>* stms
+        ): stms(stms) {
+            this->nodeType = BLOCK;
+        }
+};
+
+class NodeDecl: public NodeStatement {
+    public:
+        NodeIdentifier* id;
+        NodeType* type;
+        NodeDecl(
+            NodeIdentifier* id,
+            NodeType* type
+        ): id(id), type(type) {
+            this->nodeType = DECL;
+        };
+};
+
 class NodeFunction: public NodeStatement {
     public: 
-        std::vector<NodeIdentifier*>* arguments;
+        std::vector<NodeDecl*>* arguments;
         NodeBlock* block;
         NodeFunction(
-            std::vector<NodeIdentifier*>* arguments,
+            std::vector<NodeDecl*>* arguments,
             NodeBlock* block
         ): arguments(arguments), block(block) {
             this->nodeType = FUNCTION;
         }
 };
-
 
 class NodeBinaryAssign: public NodeStatement {
     public:
@@ -136,19 +152,6 @@ class NodeBinaryAssign: public NodeStatement {
 };
 
 
-class NodeDecl: public NodeStatement {
-    public:
-        NodeIdentifier* id;
-        ID_TYPE type;
-        NodeExpression* assignment;
-        NodeDecl(
-            NodeIdentifier* id,
-            ID_TYPE type,
-            NodeExpression* assignment
-        ): id(id), type(type), assignment(assignment) {
-            this->nodeType = DECL;
-        };
-};
 
 
 class NodeRepeat: public NodeStatement {

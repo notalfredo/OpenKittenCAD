@@ -1,5 +1,6 @@
 //---- DEFINITIONS  ----------------------------------------------
 %{
+#define YYDEBUG 1
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -16,6 +17,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 //  and parser when we do this.  See the following %lex-param,
 //  %parse-param definitions.
 %define api.pure full
+
 
 // With reentrancy, we have to pass around all of the scanner
 //  state.  The type of a pointer to an instance of that state is
@@ -54,21 +56,26 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
   NodeRepeat*     repeatNode;
   NodeUntil*      untilNode;
 
-  NodeDecl*       declNode;
 
   NodeStatement*  stmtNode;
   std::vector<NodeStatement*>*  stmtList;
 
   NodeFunction*   functionNode;
 
+
+  NodeDecl*       declNode;
   NodeIdentifier* idNode;
+  NodeType*       typeNode;
+  std::vector<NodeDecl*>* declList;
+
+
   std::vector<NodeIdentifier*>* idNodeList;
 
   NodeBlock*      blockNode;
 
   NodeDouble*     doubleNode;
   
-  ID_TYPE         idType;
+  NodeType*       idType;
 
   char*           charPointer;
 }
@@ -86,7 +93,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_PIPE
 %token tok_ASSIGN
 
-%token <charPointer>    tok_ID
+%token <idNode>         tok_ID
+
 %token <NodeDouble>     tok_NUM
 %token <idType>         tok_TYPE
 
@@ -100,12 +108,16 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type <repeatNode>                   repeatStmt
 %type <untilNode>                    untilStmt
 
-%type <declNode>                     declStmt
+%type <declNode>                     functionDecl variableDecl
+%type <declList>                     variableDeclList
 
 %type <stmtList>                     stmtList 
 
 %type <stmtNode>                     stmt
+
+    //NODE NEEDED ANY MORE ???
 %type <idNodeList>                   identifierList;
+
 
 %type <functionNode>                 functionStmt
 
@@ -142,24 +154,24 @@ stmtList:
   ;
 
 functionStmt:
-    tok_FN tok_ID '(' identifierList ')' block  { $$ = new NodeFunction($4, $6); }
+    tok_FN tok_ID '(' variableDeclList ')' block  { $$ = new NodeFunction($4, $6); }
   ;
 
-identifierList:
+variableDeclList:
     %empty                           { /* Returns empty id list */ } 
-  | identifierList ',' identifier    {
+  | variableDeclList ',' variableDecl  {
         (*$$).push_back($3); 
         $$ = $1;
   }
-  | identifier                       { 
-        std::vector<NodeIdentifier*> idVec;
+  | variableDecl                       { 
+        std::vector<NodeDecl*> idVec;
         idVec.push_back($1);
         $$ = &idVec;
   }
   ;
 
-identifier:
-    tok_ID ':' tok_TYPE    { $$ = new NodeIdentifier($1, $3); }
+variableDecl:
+    tok_ID ':' tok_TYPE    { $$ = new NodeDecl($1, $3); }
   ;
 
 %% //---- USER CODE ----------------------------------------------
