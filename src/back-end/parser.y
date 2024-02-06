@@ -1,5 +1,6 @@
 //---- DEFINITIONS  ----------------------------------------------
 %{
+#define YYDEBUG 1
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -16,6 +17,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 //  and parser when we do this.  See the following %lex-param,
 //  %parse-param definitions.
 %define api.pure full
+
 
 // With reentrancy, we have to pass around all of the scanner
 //  state.  The type of a pointer to an instance of that state is

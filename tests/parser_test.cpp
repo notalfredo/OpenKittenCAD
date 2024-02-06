@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 
+extern int yydebug;
 
 extern void programToJson(std::vector<NodeStatement*>* head, const char* fileLocation);
 
@@ -39,9 +40,12 @@ TEST(parser, testOne) {
     yyset_lineno( 1, scanner );
 
 
+    yydebug = 1;
     void *result = NULL;
     int parseState = yyparse( scanner, &result );
+    
 
+    fprintf(stderr, "I AM PRINTED ON STDERR\n");
 
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
