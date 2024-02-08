@@ -22,8 +22,6 @@ static void _stmtNodeVecToJson(NodeStmtList* stmtVec, int blockLevel){
         else {
             std::cout << "NODE TYPE " << currentNode->nodeType << std::endl;
         }
-        //std::string nodeName = nodeTypeToString((*stmtVec)[index]->nodeType);
-        //fprintf(_fptr, nodeName.c_str());
     }
 }
 
