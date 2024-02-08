@@ -31,6 +31,8 @@ typedef enum nodeType {
     BIN_OP,
 
     DOUBLE,
+
+    STMT_LIST,
 } NODE_TYPE;
 
 
@@ -49,7 +51,10 @@ class Node {
         NODE_TYPE nodeType; 
 };
 
-class NodeStatement: public Node {};
+class NodeStatement: public Node {
+    public:
+        NodeStatement* nextStmt; 
+};
 class NodeExpression: public Node {};
 
 class NodeIdentifier: public Node {
@@ -106,13 +111,22 @@ class NodeBinaryOperator: public NodeExpression {
    =======================================================
 */  
 
+class NodeStmtList: public Node {
+    public:
+        NodeStatement* nextStmt; 
+        NodeStmtList(NodeStatement* nextStmt)
+            : nextStmt(nextStmt) {}
+};
+
+
 class NodeBlock: public NodeStatement {
     public:
-        std::vector<NodeStatement*>* stms;
+        NodeStmtList* stms;
         NodeBlock(
-            std::vector<NodeStatement*>* stms
+            NodeStmtList* stms
         ): stms(stms) {
             this->nodeType = BLOCK;
+            this->nextStmt = NULL;
         }
 };
 
@@ -125,6 +139,7 @@ class NodeDecl: public NodeStatement {
             NodeType* type
         ): id(id), type(type) {
             this->nodeType = DECL;
+            this->nextStmt = NULL;
         };
 };
 
@@ -136,6 +151,7 @@ class NodeFunction: public NodeStatement {
             std::vector<NodeDecl*>* arguments,
             NodeBlock* block
         ): arguments(arguments), block(block) {
+            this->nextStmt = NULL;
             this->nodeType = FUNCTION;
         }
 };
@@ -147,6 +163,7 @@ class NodeBinaryAssign: public NodeStatement {
         NodeBinaryAssign(NodeIdentifier* id,
                          NodeExpression* assignment
         ): id(id), assignment(assignment){
+            this->nextStmt = NULL;
             this->nodeType = ASSIGN;
         }
 };
@@ -158,6 +175,7 @@ class NodeRepeat: public NodeStatement {
     public:
         NodeBlock* block;
         NodeRepeat(NodeBlock* block): block(block) {
+            this->nextStmt = NULL;
             this->nodeType = REPEAT;
         };
 };
@@ -171,6 +189,7 @@ class NodeUntil: public NodeStatement {
             NodeExpression* condition,
             NodeBlock* block
         ): condition(condition), block(block)  {
+            this->nextStmt = NULL;
             this->nodeType = UNTIL;
         };
 };
@@ -184,6 +203,7 @@ class NodeWhile: public NodeStatement {
             NodeExpression* condition,
             NodeBlock* block
         ): condition(condition), block(block)  {
+            this->nextStmt = NULL;
             this->nodeType = WHILE;
         };
 
@@ -200,6 +220,7 @@ class NodeFor: public NodeStatement {
             NodeExpression* condition,
             NodeExpression* update
         ): localVal(localVal), condition(condition), update(update)  {
+            this->nextStmt = NULL;
             this->nodeType = FOR;
         };
 
@@ -211,6 +232,7 @@ class NodeElse: public NodeStatement {
         NodeExpression* condition;
         NodeBlock* block;
         NodeElse(NodeExpression* condition): condition(condition) {
+            this->nextStmt = NULL;
             this->nodeType = ELSE;
         };
 };
@@ -222,6 +244,7 @@ class NodeElif: public NodeStatement {
         NodeBlock* block;
         NodeElif(NodeExpression* condition, NodeBlock* block): 
             condition(condition), block(block) {
+            this->nextStmt = NULL;
             this->nodeType = ELIF;
         };
 };
@@ -234,9 +257,15 @@ class NodeIf: public NodeStatement {
         NodeBlock* block;
         NodeIf(NodeExpression* condition, NodeBlock* block):
             condition(condition), block(block) {
+            this->nextStmt = NULL;
             this->nodeType = IF;
         };
 };
+
+
+extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);
+extern int getStmtListSize(NodeStmtList* list);
+extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
 
 //=============== FOR DEBUGGER ===============

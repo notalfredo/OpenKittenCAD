@@ -58,7 +58,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 
   NodeStatement*  stmtNode;
-  std::vector<NodeStatement*>*  stmtList;
+  NodeStmtList*   stmtListNodes;
 
   NodeFunction*   functionNode;
 
@@ -111,7 +111,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type <declNode>                     functionDecl variableDecl
 %type <declList>                     variableDeclList
 
-%type <stmtList>                     stmtList 
+%type <stmtListNodes>                stmtList 
 
 %type <stmtNode>                     stmt
 
@@ -129,7 +129,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 
 start:
-    stmtList    { *result = $1; }
+    stmtList    { 
+        *result = $1; 
+    }
 
 block:
     '{' stmtList '}'    { $$ = new NodeBlock($2);   }
@@ -143,12 +145,11 @@ stmt:
 
 stmtList:
     stmt ';'               {
-        std::vector<NodeStatement*> stmtVec;
-        stmtVec.push_back($1);
-        $$ = &stmtVec;
+        NodeStmtList* myNewList = new NodeStmtList($1);
+        $$ = myNewList;
   }
   | stmtList ';' stmt ';'  {
-        $$->push_back($3);
+        appendToStmtList($$, $3);
         $$ = $1; 
   }
   ;
