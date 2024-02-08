@@ -31,6 +31,7 @@ include_directories(
 add_executable(
     lexer_test 
     ./lexer_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
@@ -38,6 +39,7 @@ add_executable(
 add_executable(
     parser_test 
     ./parser_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )

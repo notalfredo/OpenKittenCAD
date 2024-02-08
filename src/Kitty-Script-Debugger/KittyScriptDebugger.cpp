@@ -9,22 +9,28 @@
 /*Private variables and functions to this mmodule*/
 static FILE* _fptr = NULL;
 
-static void _stmtNodeVecToJson(std::vector<NodeStatement*>* stmtVec, int blockLevel){
-    for(int index = 0; index < (*stmtVec).size(); index++){
-        if(!(*stmtVec)[index]){
+static void _stmtNodeVecToJson(NodeStmtList* stmtVec, int blockLevel){
+
+    int stmtVecSize = getStmtListSize(stmtVec);
+    for(int index = 0; index < stmtVecSize; index++){
+
+        NodeStatement* currentNode = indexStmtList(stmtVec, index);
+        if( !currentNode ){
             std::cout << "ERROR ENCOUNTERED NULL" << std::endl;
             return;
         }
-        std::string nodeName = nodeTypeToString((*stmtVec)[index]->nodeType);
-        fprintf(_fptr, nodeName.c_str());
+        else {
+            std::cout << "NODE TYPE " << currentNode->nodeType << std::endl;
+        }
+        //std::string nodeName = nodeTypeToString((*stmtVec)[index]->nodeType);
+        //fprintf(_fptr, nodeName.c_str());
     }
 }
 
 
-
 /* Entry point to this module */
 void programToJson(
-    std::vector<NodeStatement*>* head,
+    NodeStmtList* head,
     const char* fileLocation){
      
     _fptr = fopen(fileLocation, "w+");

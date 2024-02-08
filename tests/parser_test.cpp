@@ -2,6 +2,7 @@
 #include <iostream>
 #include "tau.h"
 
+#include <node.hxx>
 
 
 #include "parser.tab.h"
@@ -14,7 +15,7 @@
 
 extern int yydebug;
 
-extern void programToJson(std::vector<NodeStatement*>* head, const char* fileLocation);
+extern void programToJson(NodeStmtList* head, const char* fileLocation);
 
 
 TAU_MAIN()
@@ -40,7 +41,7 @@ TEST(parser, testOne) {
     yyset_lineno( 1, scanner );
 
 
-    yydebug = 1;
+    //yydebug = 1;
     void *result = NULL;
     int parseState = yyparse( scanner, &result );
     
@@ -50,7 +51,7 @@ TEST(parser, testOne) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
     }else {
-        programToJson((std::vector<NodeStatement*>*) result, outputPath.c_str());
+        programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);
