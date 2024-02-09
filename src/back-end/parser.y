@@ -66,7 +66,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
   NodeDecl*       declNode;
   NodeIdentifier* idNode;
   NodeType*       typeNode;
-  std::vector<NodeDecl*>* declList;
+  NodeDeclList*   declList;
 
 
   std::vector<NodeIdentifier*>* idNodeList;
@@ -149,7 +149,7 @@ stmtList:
         $$ = myNewList;
   }
   | stmtList ';' stmt ';'  {
-        appendToStmtList($$, $3);
+        appendToStmtList($1, $3);
         $$ = $1; 
   }
   ;
@@ -161,13 +161,13 @@ functionStmt:
 variableDeclList:
     %empty                           { /* Returns empty id list */ } 
   | variableDeclList ',' variableDecl  {
-        (*$$).push_back($3); 
+        addDeclToList($1, $3);
         $$ = $1;
+
   }
   | variableDecl                       { 
-        std::vector<NodeDecl*> idVec;
-        idVec.push_back($1);
-        $$ = &idVec;
+        NodeDeclList* temp = new NodeDeclList($1); 
+        $$ = temp;
   }
   ;
 

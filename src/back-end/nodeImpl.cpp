@@ -4,38 +4,83 @@
 
 void appendToStmtList(NodeStmtList* list, NodeStatement* newMember)
 {
-    NodeStatement* temp = list->nextStmt;
-    while (temp) {
-        temp = temp->nextStmt;
+    NodeStatement* curr = list->nextStmt;
+    while (curr) {
+        curr = curr->nextStmt;
     }
-    temp->nextStmt = newMember;
+    curr->nextStmt = newMember;
 }
 
 
 int getStmtListSize(NodeStmtList* list)
 {
     int count = 0;
+    NodeStatement* curr = list->nextStmt;
 
-    NodeStatement* temp = list->nextStmt;
-    while (temp) {
+    while (curr) {
         count += 1;
-        temp = temp->nextStmt;
+        curr = curr->nextStmt;
     }
     return count;
 }
 
+
 NodeStatement* indexStmtList(NodeStmtList* list, int index)
 {
     int count = 0;
-    NodeStatement* temp = list->nextStmt;
+    NodeStatement* curr = list->nextStmt;
 
-    while (temp) {
+    while (curr) {
         if(index == count){
-            return temp;
+            return curr;
         }
         count += 1;
-        temp = temp->nextStmt;
+        curr = curr->nextStmt;
     }
+
     return NULL;
 }
 
+
+void addDeclToList(NodeDeclList* list, NodeDecl* newDecl)
+{
+    NodeDecl* curr = list->nextDecl;
+
+    while(curr){
+        curr = curr->nextDecl;
+    }
+
+    curr->nextDecl = newDecl;
+}
+
+
+int getDeclListSize(NodeDeclList* list)
+{
+    int size = 0;
+    NodeDecl* curr = list->nextDecl; 
+
+    while(curr){
+        size += 1;
+        curr = curr->nextDecl;
+    }
+
+    return size; 
+}
+
+
+NodeDecl* indexDeclList(NodeDeclList* list, int index)
+{
+    int count = 0;
+    NodeDecl* curr = list->nextDecl; 
+
+    while(curr){
+        if(count == index){
+            return curr;
+        }
+
+        count += 1;
+        curr = curr->nextDecl;
+    }
+
+    return NULL;
+}

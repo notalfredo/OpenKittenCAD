@@ -110,6 +110,20 @@ class NodeBinaryOperator: public NodeExpression {
                      NODE STATEMENTS  
    =======================================================
 */  
+class NodeDecl: public NodeStatement {
+    public:
+        NodeIdentifier* id;
+        NodeType* type;
+        NodeDecl* nextDecl;
+        NodeDecl(
+            NodeIdentifier* id,
+            NodeType* type
+        ): id(id), type(type) {
+            this->nodeType = DECL;
+            this->nextStmt = NULL;
+            this->nextDecl = NULL;
+        };
+};
 
 class NodeStmtList: public Node {
     public:
@@ -118,6 +132,12 @@ class NodeStmtList: public Node {
             : nextStmt(nextStmt) {}
 };
 
+class NodeDeclList: public Node {
+    public:
+        NodeDecl* nextDecl;
+        NodeDeclList(NodeDecl* nextDecl)
+            : nextDecl(nextDecl) {}
+};
 
 class NodeBlock: public NodeStatement {
     public:
@@ -130,25 +150,13 @@ class NodeBlock: public NodeStatement {
         }
 };
 
-class NodeDecl: public NodeStatement {
-    public:
-        NodeIdentifier* id;
-        NodeType* type;
-        NodeDecl(
-            NodeIdentifier* id,
-            NodeType* type
-        ): id(id), type(type) {
-            this->nodeType = DECL;
-            this->nextStmt = NULL;
-        };
-};
 
 class NodeFunction: public NodeStatement {
     public: 
-        std::vector<NodeDecl*>* arguments;
+        NodeDeclList* arguments;
         NodeBlock* block;
         NodeFunction(
-            std::vector<NodeDecl*>* arguments,
+            NodeDeclList* arguments,
             NodeBlock* block
         ): arguments(arguments), block(block) {
             this->nextStmt = NULL;
@@ -267,6 +275,10 @@ extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
+
+extern void addDeclToList(NodeDeclList* list, NodeDecl* newDecl);
+extern int getDeclListSize(NodeDeclList* list);
+extern NodeDecl* indexDeclList(NodeDeclList* list, int index);
 
 //=============== FOR DEBUGGER ===============
 extern void programToJson(std::vector<NodeStatement*>* head);
