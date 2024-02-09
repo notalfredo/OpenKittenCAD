@@ -87,12 +87,12 @@ target_link_libraries(
 target_link_libraries(
     parser_test
     PUBLIC
-    ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libdebugger.a
+    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
 )
 target_link_libraries(
     parser_test
     PUBLIC
-    ${CMAKE_SOURCE_DIR}/build/src/Kitty-Script-Debugger/libhelper.a
+    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
 )
 
 add_test(

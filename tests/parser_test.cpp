@@ -45,9 +45,6 @@ TEST(parser, testOne) {
     void *result = NULL;
     int parseState = yyparse( scanner, &result );
     
-
-    fprintf(stderr, "I AM PRINTED ON STDERR\n");
-
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
     }else {
