@@ -33,6 +33,7 @@ typedef enum nodeType {
     DOUBLE,
 
     STMT_LIST,
+    DECL_LIST,
 } NODE_TYPE;
 
 
@@ -119,9 +120,9 @@ class NodeDecl: public NodeStatement {
             NodeIdentifier* id,
             NodeType* type
         ): id(id), type(type) {
-            this->nodeType = DECL;
             this->nextStmt = NULL;
             this->nextDecl = NULL;
+            this->nodeType = DECL;
         };
 };
 
@@ -129,14 +130,18 @@ class NodeStmtList: public Node {
     public:
         NodeStatement* nextStmt; 
         NodeStmtList(NodeStatement* nextStmt)
-            : nextStmt(nextStmt) {}
+            : nextStmt(nextStmt) {
+            this->nodeType = STMT_LIST;
+        }
 };
 
 class NodeDeclList: public Node {
     public:
         NodeDecl* nextDecl;
         NodeDeclList(NodeDecl* nextDecl)
-            : nextDecl(nextDecl) {}
+            : nextDecl(nextDecl) {
+            this->nodeType = DECL_LIST;
+        }
 };
 
 class NodeBlock: public NodeStatement {
@@ -145,8 +150,8 @@ class NodeBlock: public NodeStatement {
         NodeBlock(
             NodeStmtList* stms
         ): stms(stms) {
-            this->nodeType = BLOCK;
             this->nextStmt = NULL;
+            this->nodeType = BLOCK;
         }
 };
 

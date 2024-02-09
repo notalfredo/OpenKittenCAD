@@ -18,29 +18,28 @@ void printTabs(int tabCount)
 }
 
 
-static void _stmtNodeVecToJson(NodeStmtList* stmtVec, int blockLevel)
-{
-    int stmtVecSize = getStmtListSize(stmtVec);
-
-    for(int index = 0; index < stmtVecSize; index++){
-        NodeStatement* currentNode = indexStmtList(stmtVec, index);
-
-        printTabs(blockLevel);    
-        fprintf(_fptr, "%s:{\n", nodeTypeToString(currentNode->nodeType).c_str());
-
-
-
-        printTabs(blockLevel);    
-        fprintf(_fptr, "}\n");
-    }
-}
-
-static void _dumpNode(Node* node)
+static void _dumpNode(Node* node, int blockLevel)
 {
     switch (node->nodeType) {
         case STMT_LIST: {
+            NodeStmtList* stmtVec = static_cast<NodeStmtList*>(node);
 
-        
+            int stmtVecSize = getStmtListSize(stmtVec);
+
+            for(int index = 0; index < stmtVecSize; index++) {
+                NodeStatement* currentNode = indexStmtList(stmtVec, index);
+                printTabs(blockLevel);    
+                fprintf(_fptr, "%s:{\n", nodeTypeToString(currentNode->nodeType).c_str());
+
+
+
+                printTabs(blockLevel);    
+                fprintf(_fptr, "}\n");
+            }
+            return;
+        }
+        default: {
+            std::cout << "HIT DEFAULT CASE: " << node->nodeType << std::endl;
         }
     }
 }
@@ -58,7 +57,7 @@ void programToJson(NodeStmtList* head, const char* fileLocation)
 
     fprintf(_fptr, "stmt_list:{\n"); 
 
-    _stmtNodeVecToJson(head, 1);
+    _dumpNode(head, 1);
 
     fprintf(_fptr, "}"); 
 }
