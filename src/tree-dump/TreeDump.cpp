@@ -50,7 +50,7 @@ static void _dumpNode(Node* node, int blockLevel)
             }
 
             //PRINT_COMMA ? printText(blockLevel, "],\n") : printText(blockLevel, "]\n");
-            printText(blockLevel, "],\n");
+            printText(blockLevel, "]\n");
             return;
         }
         case STMT_LIST: {
@@ -91,10 +91,21 @@ static void _dumpNode(Node* node, int blockLevel)
             printText(blockLevel,  "\"FUNCTION_NODE\": {\n");
 
             if(node){
-                _dumpNode(currFunc->id, blockLevel + 1);
-                _dumpNode(currFunc->arguments, blockLevel + 1);
-                _dumpNode(currFunc->returnType, blockLevel + 1);
-                _dumpNode(currFunc->block, blockLevel + 1);
+                    printText(blockLevel + 1,  "\"ID\": {\n");
+                    _dumpNode(currFunc->id, blockLevel + 2);
+                    printText(blockLevel + 1,  "},\n");
+
+                    printText(blockLevel + 1,  "\"ARGUMENTS\": {\n");
+                    _dumpNode(currFunc->arguments, blockLevel + 2);
+                    printText(blockLevel + 1,  "},\n");
+
+                    printText(blockLevel + 1,  "\"RETURN_TYPE\": {\n");
+                    _dumpNode(currFunc->returnType, blockLevel + 2);
+                    printText(blockLevel + 1,  "},\n");
+
+                    printText(blockLevel + 1,  "\"BLOCK\": {\n");
+                    _dumpNode(currFunc->block, blockLevel + 2);
+                    printText(blockLevel + 1,  "}\n");
             }
 
             printText(blockLevel, "}\n");
@@ -110,16 +121,23 @@ static void _dumpNode(Node* node, int blockLevel)
                 printText(blockLevel + 1, text.c_str());
             }
 
-            printText(blockLevel, "},\n");
+            printText(blockLevel, "}\n");
             return;
         }
+
         case DECL: {
             printText(blockLevel, "\"DECL_NODE\": {\n");
 
             if(node){
                 NodeDecl* declNode = static_cast<NodeDecl*>(node);
-                _dumpNode(declNode->id, blockLevel + 1);
-                _dumpNode(declNode->type, blockLevel + 1);
+
+                printText(blockLevel + 1, "\"ID\": {\n");
+                _dumpNode(declNode->id, blockLevel + 2);
+                printText(blockLevel + 1, "},\n");
+
+                printText(blockLevel + 1, "\"TYPE\": {\n");
+                _dumpNode(declNode->type, blockLevel + 2);
+                printText(blockLevel + 1, "},\n");
                 
                 printText(blockLevel + 1, "\"value\": {\n");
                 if(declNode->value){
@@ -139,7 +157,7 @@ static void _dumpNode(Node* node, int blockLevel)
             std::string temp = "\"type\" : \"" + idTypeToString(typeNode->idType) + "\"\n";
             printText(blockLevel + 1, temp.c_str() );
 
-            printText(blockLevel, "},\n");
+            printText(blockLevel, "}\n");
             return;
         }
         case BIN_OP: {
