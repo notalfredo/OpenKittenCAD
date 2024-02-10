@@ -22,12 +22,11 @@ TAU_MAIN()
 
 
 TEST(parser, testOne) { 
-
-    std::string outputPath =  "/home/alfredo/repos/OpenKittenCad/tests/json/output.json";
+    std::string outputPath =  "/home/alfredo/repos/OpenKittenCad/tests/json/parserOutputOne.json";
 
 
     FILE *srcFP  = fopen( 
-    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputFour.kts",
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/parserInputOne.kts",
     "r"
     );
     if ( srcFP == NULL ) {
@@ -41,7 +40,7 @@ TEST(parser, testOne) {
     yyset_lineno( 1, scanner );
 
 
-    yydebug = 1;
+    //yydebug = 1;
     void *result = NULL;
     int parseState = yyparse( scanner, &result );
     
@@ -53,4 +52,37 @@ TEST(parser, testOne) {
 
     yylex_destroy(scanner);
 }
+
+TEST(parser, testTwo) { 
+    std::string outputPath =  "/home/alfredo/repos/OpenKittenCad/tests/json/parserOutputTwo.json";
+
+
+    FILE *srcFP  = fopen( 
+    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/parserInputTwo.kts",
+    "r"
+    );
+    if ( srcFP == NULL ) {
+        printf( "Unable to open file exiting...");
+        return;
+    }
+
+    yyscan_t scanner;
+    yylex_init( &scanner );
+    yyrestart( srcFP, scanner );
+    yyset_lineno( 1, scanner );
+
+
+    //yydebug = 1;
+    void *result = NULL;
+    int parseState = yyparse( scanner, &result );
+    
+    if(parseState != 0){
+        std::cout << "PARSING FAILED" << std::endl; 
+    }else {
+        programToJson((NodeStmtList*)result, outputPath.c_str());
+    }
+
+    yylex_destroy(scanner);
+}
+
 

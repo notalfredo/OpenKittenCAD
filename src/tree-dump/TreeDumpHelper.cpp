@@ -1,6 +1,5 @@
 #include "TreeDumpHelper.hxx"
 
-
 std::string nodeTypeToString(NODE_TYPE type){
     switch (type) {
         case IF: {
@@ -71,6 +70,30 @@ std::string idTypeToString(ID_TYPE type){
         }
         default: {
             return "HIT DEFAULT IN idTypeToString(ID_TYPE type)";
+        }
+    }
+}
+
+
+std::string stringFromNodeOp(NODE_OP type){
+    switch (type) {
+        case OP_PLUS: {
+            return "PLUS";
+        }
+        case OP_SUB: {
+            return "SUB";
+        }
+        case OP_MUL: {
+            return "MUL";
+        }
+        case OP_DIV: {
+            return "DIV";
+        }
+        case OP_MOD: {
+            return "MOD";
+        }
+        default: {
+            return "IN stringFromNodeOp HIT DEFAULT CASE";
         }
     }
 }

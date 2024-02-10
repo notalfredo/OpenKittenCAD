@@ -1,6 +1,7 @@
 #include "node.hxx"
 #include "TreeDumpHelper.hxx"
 
+#include <bits/fs_fwd.h>
 #include <stdio.h>
 #include <vector>
 #include <iostream>
@@ -88,7 +89,6 @@ static void _dumpNode(Node* node, int blockLevel)
             return;
         }
         case ID: {
-            std::cout << blockLevel << std::endl;
             printTabs(blockLevel);
             fprintf(_fptr, "ID_NODE: {\n");
 
@@ -110,6 +110,19 @@ static void _dumpNode(Node* node, int blockLevel)
                 NodeDecl* declNode = static_cast<NodeDecl*>(node);
                 _dumpNode(declNode->id, blockLevel + 1);
                 _dumpNode(declNode->type, blockLevel + 1);
+                
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "value: {\n");
+                if(declNode->value){
+                    _dumpNode(declNode->value, blockLevel + 2);
+                }
+                else {
+                    printTabs(blockLevel + 2);
+                    fprintf(_fptr, "NONE\n");
+                }
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "},\n");
+
             }
 
             printTabs(blockLevel);
@@ -130,8 +143,48 @@ static void _dumpNode(Node* node, int blockLevel)
             fprintf(_fptr, "},\n");
             return;
         }
+        case BIN_OP: {
+            if(node){
+                NodeBinaryOperator* binOpNode = static_cast<NodeBinaryOperator*>(node);
+                printTabs(blockLevel);
+                fprintf(_fptr, "BIN_OP_NODE: {\n");
+
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "type: %s,\n", stringFromNodeOp(binOpNode->binaryOperatorType).c_str());
+
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "lhs: {\n");
+                _dumpNode(binOpNode->lhs, blockLevel + 2);
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "},\n");
+
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "rhs: {\n");
+                _dumpNode(binOpNode->rhs, blockLevel + 2);
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "},\n");
+
+                printTabs(blockLevel);
+                fprintf(_fptr, "},\n");
+            }
+            break;
+        }
+        case DOUBLE: {
+            if(node){
+                NodeNumber* numberNode = static_cast<NodeNumber*>(node); 
+                printTabs(blockLevel);
+                fprintf(_fptr, "DOUBLE_NODE: {\n");
+                
+                printTabs(blockLevel + 1);
+                fprintf(_fptr, "number: %f\n", numberNode->value);
+
+                printTabs(blockLevel);
+                fprintf(_fptr, "},\n");
+            }
+            return;
+        }
         default: {
-            std::cout << "HIT DEFAULT CASE: " << node->nodeType << std::endl;
+            std::cout << "HIT DEFAULT CASE: " << nodeTypeToString( node->nodeType) << std::endl;
         }
     }
 }

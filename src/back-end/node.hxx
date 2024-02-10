@@ -1,6 +1,14 @@
 #ifndef NODE_H
 #define NODE_H
 
+typedef enum nodeOp {
+    OP_PLUS, 
+    OP_SUB,
+    OP_MUL,
+    OP_DIV,
+    OP_MOD
+} NODE_OP;
+
 
 typedef enum idType {
     num,
@@ -33,6 +41,7 @@ typedef enum nodeType {
     BIN_OP,
 
     DOUBLE,
+    SHAPE,
 
     STMT_LIST,
     DECL_LIST,
@@ -60,7 +69,21 @@ class NodeStatement: public Node {
 };
 class NodeExpression: public Node {};
 
-class NodeIdentifier: public Node {
+
+class NodeType: public Node {
+    public:
+        ID_TYPE idType;
+        NodeType(ID_TYPE idType): idType(idType) {
+            this->nodeType = TYPE;
+        }
+};
+
+/* 
+   =======================================================
+                     NODE EXPRESSIONS
+   =======================================================
+*/  
+class NodeIdentifier: public NodeExpression {
     public:
         char* idName;
         NodeIdentifier(
@@ -71,26 +94,21 @@ class NodeIdentifier: public Node {
 };
 
 
-class NodeType: public Node {
+class NodeNumber: public NodeExpression {
     public:
-        ID_TYPE idType;
-        NodeType(ID_TYPE idType): idType(idType) {
-            this->nodeType = TYPE;
-        }
+        double value; 
+        NodeNumber(double value): value(value) {
+            this->nodeType = DOUBLE;
+        }; 
 };
 
 
-/* 
-   =======================================================
-                     NODE EXPRESSIONS
-   =======================================================
-*/  
-class NodeDouble: public NodeExpression {
+class NodeShape: public NodeExpression {
     public:
-        double value; 
-        NodeDouble(double value): value(value) {
-            this->nodeType = DOUBLE;
-        }; 
+        //TODO WHEN WE ADD OPEN CASCADE 
+        NodeShape(){
+            this->nodeType = SHAPE;
+        }
 };
 
 
@@ -98,10 +116,10 @@ class NodeBinaryOperator: public NodeExpression {
     public:
         NodeExpression* lhs;
         NodeExpression* rhs;
-        char binaryOperatorType;
+        NODE_OP binaryOperatorType;
         NodeBinaryOperator(NodeExpression* lhs,
                NodeExpression* rhs,
-               char binaryOperatorType
+               NODE_OP binaryOperatorType
         ): lhs(lhs), rhs(rhs), binaryOperatorType(binaryOperatorType) {
             this->nodeType =  BIN_OP;
         }
@@ -118,10 +136,12 @@ class NodeDecl: public NodeStatement {
         NodeIdentifier* id;
         NodeType* type;
         NodeDecl* nextDecl;
+        NodeExpression* value;
         NodeDecl(
             NodeIdentifier* id,
-            NodeType* type
-        ): id(id), type(type) {
+            NodeType* type,
+            NodeExpression* value
+        ): id(id), type(type), value(value) {
             this->nextStmt = NULL;
             this->nextDecl = NULL;
             this->nodeType = DECL;
