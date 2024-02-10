@@ -6,4 +6,6 @@
 
 std::string nodeTypeToString(NODE_TYPE type);
 
+std::string idTypeToString(ID_TYPE type);
+
 #endif

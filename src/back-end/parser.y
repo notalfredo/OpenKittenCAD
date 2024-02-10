@@ -92,6 +92,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_EQ tok_NE tok_GE tok_LE 
 %token tok_PIPE
 %token tok_ASSIGN
+%token tok_ARROW
+
 
 %token <idNode>         tok_ID
 
@@ -155,7 +157,13 @@ stmtList:
   ;
 
 functionStmt:
-    tok_FN tok_ID '(' variableDeclList ')' block  { $$ = new NodeFunction($4, $6); }
+    tok_FN tok_ID '(' variableDeclList ')' tok_ARROW tok_TYPE block  { 
+        $$ = new NodeFunction($2, $4, $7, $8); 
+    }
+    |
+    tok_FN tok_ID '(' variableDeclList ')' block  { 
+        $$ = new NodeFunction($2, $4, new NodeType(_void), $6); 
+    }
   ;
 
 variableDeclList:

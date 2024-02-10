@@ -4,7 +4,8 @@
 
 typedef enum idType {
     num,
-    shape
+    shape,
+    _void, //only used for functions
 } ID_TYPE;
 
 typedef enum nodeType {
@@ -23,6 +24,7 @@ typedef enum nodeType {
     FUNCTION,
 
     ID,
+    TYPE,
 
     BLOCK,
 
@@ -73,7 +75,7 @@ class NodeType: public Node {
     public:
         ID_TYPE idType;
         NodeType(ID_TYPE idType): idType(idType) {
-            this->nodeType = ID;
+            this->nodeType = TYPE;
         }
 };
 
@@ -158,12 +160,17 @@ class NodeBlock: public NodeStatement {
 
 class NodeFunction: public NodeStatement {
     public: 
+
+        NodeIdentifier* id;
         NodeDeclList* arguments;
+        NodeType*  returnType;
         NodeBlock* block;
         NodeFunction(
+            NodeIdentifier* id,
             NodeDeclList* arguments,
+            NodeType*  returnType,
             NodeBlock* block
-        ): arguments(arguments), block(block) {
+        ): id(id), arguments(arguments), returnType(returnType), block(block) {
             this->nextStmt = NULL;
             this->nodeType = FUNCTION;
         }

@@ -27,6 +27,9 @@ std::string nodeTypeToString(NODE_TYPE type){
         case DECL: {
             return "DECL";
         }
+        case DECL_LIST: {
+            return "DECL_LIST";
+        }
         case STMT: {
             return "STMT";
         }
@@ -50,6 +53,24 @@ std::string nodeTypeToString(NODE_TYPE type){
         }
         default: {
             return "UNKOWN NODE TYPE";
+        }
+    }
+}
+
+
+std::string idTypeToString(ID_TYPE type){
+    switch (type) {
+        case num: {
+            return "num";
+        }
+        case shape: {
+            return "shape";
+        }
+        case _void: {
+            return "void";
+        }
+        default: {
+            return "HIT DEFAULT IN idTypeToString(ID_TYPE type)";
         }
     }
 }

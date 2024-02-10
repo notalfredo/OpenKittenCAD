@@ -143,6 +143,13 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
     return tok_ASSIGN;
 }
 
+
+"->" {
+    flexString = yytext;
+    return tok_ARROW;
+}
+
+
 "number" |
 "shape" {
     flexString = yytext;
