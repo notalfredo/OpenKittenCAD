@@ -5,7 +5,7 @@
 void appendToStmtList(NodeStmtList* list, NodeStatement* newMember)
 {
     NodeStatement* curr = list->nextStmt;
-    while (curr) {
+    while (curr->nextStmt) {
         curr = curr->nextStmt;
     }
     curr->nextStmt = newMember;
@@ -47,7 +47,7 @@ void addDeclToList(NodeDeclList* list, NodeDecl* newDecl)
 {
     NodeDecl* curr = list->nextDecl;
 
-    while(curr){
+    while(curr->nextDecl){
         curr = curr->nextDecl;
     }
 

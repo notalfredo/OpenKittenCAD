@@ -112,7 +112,6 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <declNode>                     functionDecl variableDecl
 %type <declList>                     variableDeclList
-
 %type <stmtListNodes>                stmtList 
 
 %type <stmtNode>                     stmt
@@ -136,8 +135,8 @@ start:
     }
 
 block:
-    '{' stmtList '}'    { $$ = new NodeBlock($2);   }
-  | '{'          '}'    { $$ = new NodeBlock(NULL); }
+    '{' stmtList ';' '}'    { $$ = new NodeBlock($2);   }
+  | '{'              '}'    { $$ = new NodeBlock(NULL); }
   ;
 
 stmt:
@@ -146,13 +145,13 @@ stmt:
   ;
 
 stmtList:
-    stmt ';'               {
-        NodeStmtList* myNewList = new NodeStmtList($1);
-        $$ = myNewList;
-  }
-  | stmtList ';' stmt ';'  {
+  stmtList ';' stmt ';'  {
         appendToStmtList($1, $3);
         $$ = $1; 
+  }
+  | stmt                {
+        NodeStmtList* myNewList = new NodeStmtList($1);
+        $$ = myNewList;
   }
   ;
 
@@ -167,7 +166,10 @@ functionStmt:
   ;
 
 variableDeclList:
-    %empty                           { /* Returns empty id list */ } 
+    %empty                             {
+        NodeDeclList* temp = new NodeDeclList(NULL); 
+        $$ = temp;
+    } 
   | variableDeclList ',' variableDecl  {
         addDeclToList($1, $3);
         $$ = $1;
