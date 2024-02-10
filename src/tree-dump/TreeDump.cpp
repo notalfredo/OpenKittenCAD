@@ -49,7 +49,6 @@ static void _dumpNode(Node* node, int blockLevel)
                 }
             }
 
-            //PRINT_COMMA ? printText(blockLevel, "],\n") : printText(blockLevel, "]\n");
             printText(blockLevel, "]\n");
             return;
         }
