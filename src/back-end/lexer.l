@@ -90,7 +90,10 @@ NodeType* nodeTypeFromChar(char* tokenText){
     if(!strcmp(tokenText, "number")){
         return new NodeType(num);
     }
-    return new NodeType(shape);
+    else if(!strcmp(tokenText, "shape")){
+        return new NodeType(shape);
+    }
+    return new NodeType(_void);
 }
 
 %}
@@ -143,8 +146,16 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
     return tok_ASSIGN;
 }
 
+
+"->" {
+    flexString = yytext;
+    return tok_ARROW;
+}
+
+
 "number" |
-"shape" {
+"shape"  |
+"void"   {
     flexString = yytext;
     
     yylval->typeNode = nodeTypeFromChar(strdup(yytext));

@@ -92,6 +92,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_EQ tok_NE tok_GE tok_LE 
 %token tok_PIPE
 %token tok_ASSIGN
+%token tok_ARROW
+
 
 %token <idNode>         tok_ID
 
@@ -110,7 +112,6 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <declNode>                     functionDecl variableDecl
 %type <declList>                     variableDeclList
-
 %type <stmtListNodes>                stmtList 
 
 %type <stmtNode>                     stmt
@@ -134,8 +135,8 @@ start:
     }
 
 block:
-    '{' stmtList '}'    { $$ = new NodeBlock($2);   }
-  | '{'          '}'    { $$ = new NodeBlock(NULL); }
+    '{' stmtList ';' '}'    { $$ = new NodeBlock($2);   }
+  | '{'              '}'    { $$ = new NodeBlock(NULL); }
   ;
 
 stmt:
@@ -144,22 +145,31 @@ stmt:
   ;
 
 stmtList:
-    stmt ';'               {
-        NodeStmtList* myNewList = new NodeStmtList($1);
-        $$ = myNewList;
-  }
-  | stmtList ';' stmt ';'  {
+  stmtList ';' stmt ';'  {
         appendToStmtList($1, $3);
         $$ = $1; 
+  }
+  | stmt                {
+        NodeStmtList* myNewList = new NodeStmtList($1);
+        $$ = myNewList;
   }
   ;
 
 functionStmt:
-    tok_FN tok_ID '(' variableDeclList ')' block  { $$ = new NodeFunction($4, $6); }
+    tok_FN tok_ID '(' variableDeclList ')' tok_ARROW tok_TYPE block  { 
+        $$ = new NodeFunction($2, $4, $7, $8); 
+    }
+    |
+    tok_FN tok_ID '(' variableDeclList ')' block  { 
+        $$ = new NodeFunction($2, $4, new NodeType(_void), $6); 
+    }
   ;
 
 variableDeclList:
-    %empty                           { /* Returns empty id list */ } 
+    %empty                             {
+        NodeDeclList* temp = new NodeDeclList(NULL); 
+        $$ = temp;
+    } 
   | variableDeclList ',' variableDecl  {
         addDeclToList($1, $3);
         $$ = $1;

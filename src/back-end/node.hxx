@@ -4,7 +4,8 @@
 
 typedef enum idType {
     num,
-    shape
+    shape,
+    _void, //only used for functions
 } ID_TYPE;
 
 typedef enum nodeType {
@@ -23,6 +24,7 @@ typedef enum nodeType {
     FUNCTION,
 
     ID,
+    TYPE,
 
     BLOCK,
 
@@ -33,6 +35,7 @@ typedef enum nodeType {
     DOUBLE,
 
     STMT_LIST,
+    DECL_LIST,
 } NODE_TYPE;
 
 
@@ -72,7 +75,7 @@ class NodeType: public Node {
     public:
         ID_TYPE idType;
         NodeType(ID_TYPE idType): idType(idType) {
-            this->nodeType = ID;
+            this->nodeType = TYPE;
         }
 };
 
@@ -119,9 +122,9 @@ class NodeDecl: public NodeStatement {
             NodeIdentifier* id,
             NodeType* type
         ): id(id), type(type) {
-            this->nodeType = DECL;
             this->nextStmt = NULL;
             this->nextDecl = NULL;
+            this->nodeType = DECL;
         };
 };
 
@@ -129,14 +132,18 @@ class NodeStmtList: public Node {
     public:
         NodeStatement* nextStmt; 
         NodeStmtList(NodeStatement* nextStmt)
-            : nextStmt(nextStmt) {}
+            : nextStmt(nextStmt) {
+            this->nodeType = STMT_LIST;
+        }
 };
 
 class NodeDeclList: public Node {
     public:
         NodeDecl* nextDecl;
         NodeDeclList(NodeDecl* nextDecl)
-            : nextDecl(nextDecl) {}
+            : nextDecl(nextDecl) {
+            this->nodeType = DECL_LIST;
+        }
 };
 
 class NodeBlock: public NodeStatement {
@@ -145,20 +152,25 @@ class NodeBlock: public NodeStatement {
         NodeBlock(
             NodeStmtList* stms
         ): stms(stms) {
-            this->nodeType = BLOCK;
             this->nextStmt = NULL;
+            this->nodeType = BLOCK;
         }
 };
 
 
 class NodeFunction: public NodeStatement {
     public: 
+
+        NodeIdentifier* id;
         NodeDeclList* arguments;
+        NodeType*  returnType;
         NodeBlock* block;
         NodeFunction(
+            NodeIdentifier* id,
             NodeDeclList* arguments,
+            NodeType*  returnType,
             NodeBlock* block
-        ): arguments(arguments), block(block) {
+        ): id(id), arguments(arguments), returnType(returnType), block(block) {
             this->nextStmt = NULL;
             this->nodeType = FUNCTION;
         }
