@@ -11,13 +11,6 @@
 static FILE* _fptr = NULL;
 static int PRINT_COMMA = 0;
 
-void printTabs(int tabCount)
-{
-    for(int i = 0; i < tabCount; i++){
-        fprintf(_fptr, "\t");
-    }
-}
-
 void printText(int tabCount, const char* text)
 {
     for(int i = 0; i < tabCount; i++){
