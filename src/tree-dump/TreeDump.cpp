@@ -1,6 +1,7 @@
 #include "node.hxx"
 #include "TreeDumpHelper.hxx"
 
+#include <bits/fs_fwd.h>
 #include <stdio.h>
 #include <vector>
 #include <iostream>
@@ -8,130 +9,185 @@
 
 /*Private variables and functions to this mmodule*/
 static FILE* _fptr = NULL;
+static int PRINT_COMMA = 0;
 
-
-void printTabs(int tabCount)
+void printText(int tabCount, const char* text)
 {
     for(int i = 0; i < tabCount; i++){
         fprintf(_fptr, "\t");
     }
+    fprintf(_fptr, "%s", text);
 }
-
 
 
 static void _dumpNode(Node* node, int blockLevel)
 {
     switch (node->nodeType) {
         case DECL_LIST: {
-
-            printTabs(blockLevel);
-            fprintf(_fptr, "DECL_LIST_NODE: {\n");
+            printText(blockLevel, "\"DECL_LIST_NODE\": [\n");
 
             if(node){
                 NodeDeclList* declListNode = static_cast<NodeDeclList*>(node);
                 int size = getDeclListSize(declListNode);
                 for(int index = 0; index < size; index++){
-                    _dumpNode(indexDeclList(declListNode, index), blockLevel + 1);
+                    printText(blockLevel + 1, "{\n");
+                    _dumpNode(indexDeclList(declListNode, index), blockLevel + 2);
+
+                    if(index == size - 1){
+                        printText(blockLevel + 1, "}\n");
+                    }
+                    else{
+                        printText(blockLevel + 1, "},\n");
+                    }
                 }
             }
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "},\n");
-
+            printText(blockLevel, "]\n");
             return;
         }
         case STMT_LIST: {
-            printTabs(blockLevel);    
-            fprintf(_fptr, "STMT_LIST_NODE: {\n");
-
+            printText(blockLevel, "\"STMT_LIST_NODE\": [\n");
             if(node){
                 NodeStmtList* stmtVec = static_cast<NodeStmtList*>(node);
                 int stmtVecSize = getStmtListSize(stmtVec);
                 for(int index = 0; index < stmtVecSize; index++) {
-                    _dumpNode(indexStmtList(stmtVec, index), blockLevel + 1); 
+                    printText(blockLevel + 1, "{\n");
+                    _dumpNode(indexStmtList(stmtVec, index), blockLevel + 2); 
+
+                    if(index == stmtVecSize - 1){
+                        printText(blockLevel + 1, "}\n");
+                    }
+                    else{
+                        printText(blockLevel + 1, "},\n");
+                    }
                 }
             }
-
-            printTabs(blockLevel);    
-            fprintf(_fptr, "},\n");
-
+            printText(blockLevel, "]\n");
             return;
+
         }
         case BLOCK: {
             NodeBlock* block = static_cast<NodeBlock*>(node);
-            printTabs(blockLevel);
-            fprintf(_fptr, "BLOCK_NODE: {\n");
+
+            printText(blockLevel, "\"BLOCK_NODE\": {\n"); 
 
             if(block->stms){
                 _dumpNode(block->stms, blockLevel + 1);
             }
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "},\n");
-
+            printText(blockLevel, "}\n");
             return;
         }
         case FUNCTION: { 
             NodeFunction* currFunc = static_cast<NodeFunction*>(node);
-            printTabs(blockLevel);
-            fprintf(_fptr, "FUNCTION_NODE: {\n");
+            printText(blockLevel,  "\"FUNCTION_NODE\": {\n");
 
             if(node){
-                _dumpNode(currFunc->id, blockLevel + 1);
-                _dumpNode(currFunc->arguments, blockLevel + 1);
-                _dumpNode(currFunc->returnType, blockLevel + 1);
-                _dumpNode(currFunc->block, blockLevel + 1);
+                    printText(blockLevel + 1,  "\"ID\": {\n");
+                    _dumpNode(currFunc->id, blockLevel + 2);
+                    printText(blockLevel + 1,  "},\n");
+
+                    printText(blockLevel + 1,  "\"ARGUMENTS\": {\n");
+                    _dumpNode(currFunc->arguments, blockLevel + 2);
+                    printText(blockLevel + 1,  "},\n");
+
+                    printText(blockLevel + 1,  "\"RETURN_TYPE\": {\n");
+                    _dumpNode(currFunc->returnType, blockLevel + 2);
+                    printText(blockLevel + 1,  "},\n");
+
+                    printText(blockLevel + 1,  "\"BLOCK\": {\n");
+                    _dumpNode(currFunc->block, blockLevel + 2);
+                    printText(blockLevel + 1,  "}\n");
             }
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "},\n");
+            printText(blockLevel, "}\n");
             return;
         }
         case ID: {
-            std::cout << blockLevel << std::endl;
-            printTabs(blockLevel);
-            fprintf(_fptr, "ID_NODE: {\n");
+            printText(blockLevel,  "\"ID_NODE\": {\n");
 
-            printTabs(blockLevel + 1);
             if(node){
                 NodeIdentifier* idNode = static_cast<NodeIdentifier*>(node);
-                fprintf(_fptr, "name: %s,\n", idNode->idName);
+                std::string text = "\"name\": \"" + std::string(idNode->idName) + "\"\n";
+
+                printText(blockLevel + 1, text.c_str());
             }
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "},\n");
+            printText(blockLevel, "}\n");
             return;
         }
+
         case DECL: {
-            printTabs(blockLevel);
-            fprintf(_fptr, "DECL_NODE: {\n");
+            printText(blockLevel, "\"DECL_NODE\": {\n");
 
             if(node){
                 NodeDecl* declNode = static_cast<NodeDecl*>(node);
-                _dumpNode(declNode->id, blockLevel + 1);
-                _dumpNode(declNode->type, blockLevel + 1);
+
+                printText(blockLevel + 1, "\"ID\": {\n");
+                _dumpNode(declNode->id, blockLevel + 2);
+                printText(blockLevel + 1, "},\n");
+
+                printText(blockLevel + 1, "\"TYPE\": {\n");
+                _dumpNode(declNode->type, blockLevel + 2);
+                printText(blockLevel + 1, "},\n");
+                
+                printText(blockLevel + 1, "\"value\": {\n");
+                if(declNode->value){
+                    _dumpNode(declNode->value, blockLevel + 2);
+                }
+                printText(blockLevel + 1, "}\n");
             }
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "},\n");
-
+            printText(blockLevel, "}\n");
             return;
         }
         case TYPE: {
             NodeType* typeNode = static_cast<NodeType*>(node);
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "TYPE_NODE: {\n");
+            printText(blockLevel, "\"TYPE_NODE\": {\n");
 
-            printTabs(blockLevel + 1);
-            fprintf(_fptr, "type : %s,\n", idTypeToString(typeNode->idType).c_str());
+            std::string temp = "\"type\" : \"" + idTypeToString(typeNode->idType) + "\"\n";
+            printText(blockLevel + 1, temp.c_str() );
 
-            printTabs(blockLevel);
-            fprintf(_fptr, "},\n");
+            printText(blockLevel, "}\n");
+            return;
+        }
+        case BIN_OP: {
+            if(node){
+                NodeBinaryOperator* binOpNode = static_cast<NodeBinaryOperator*>(node);
+
+                printText(blockLevel,  "\"BIN_OP_NODE\": {\n");
+                std::string text = "\"type\": \"" + stringFromNodeOp(binOpNode->binaryOperatorType) + "\",\n";
+                printText(blockLevel + 1, text.c_str());
+
+
+                printText(blockLevel + 1, "\"lhs\": {\n");
+                _dumpNode(binOpNode->lhs, blockLevel + 2);
+                printText(blockLevel + 1, "},\n"); 
+
+                printText(blockLevel + 1, "\"rhs\": {\n");
+                _dumpNode(binOpNode->rhs, blockLevel + 2);
+                printText(blockLevel + 1, "}\n"); 
+
+                printText(blockLevel, "}\n"); 
+            }
+            break;
+        }
+        case DOUBLE: {
+            if(node){
+                NodeNumber* numberNode = static_cast<NodeNumber*>(node); 
+
+                printText(blockLevel, "\"DOUBLE_NODE\": {\n");
+
+                std::string text = "\"number\": " + std::to_string(numberNode->value) + "\n";
+                printText(blockLevel + 1, text.c_str());
+
+                printText(blockLevel, "}\n");
+            }
             return;
         }
         default: {
-            std::cout << "HIT DEFAULT CASE: " << node->nodeType << std::endl;
+            std::cout << "HIT DEFAULT CASE: " << nodeTypeToString( node->nodeType) << std::endl;
         }
     }
 }
@@ -149,7 +205,11 @@ void programToJson(NodeStmtList* head, const char* fileLocation)
 
 
     std::cout << "STARTING DUMPING NODE" << std::endl;
-    _dumpNode(head, 0);
+
+    printText(0, "{\n");
+    _dumpNode(head, 1);
+    printText(0, "}\n");
+
     std::cout << "ENDING DUMPING NODE" << std::endl;
 
 }

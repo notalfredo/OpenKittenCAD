@@ -5,7 +5,7 @@ BISON_TARGET(
     MyParser
     parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
-    COMPILE_FLAGS "--report=itemset"
+    COMPILE_FLAGS "--report=itemset --graph --report=lookaheads"
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
 )
 

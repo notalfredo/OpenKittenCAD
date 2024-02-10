@@ -166,6 +166,9 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 {DIGIT}+ |
 ({DIGIT}*(({DIGIT}\.)|(\.{DIGIT})){DIGIT}*){EXPONENT}? {
     flexString = yytext;
+
+    yylval->numberNode = new NodeNumber(strtod(yytext, NULL));    
+
     return tok_NUM; 
 }
 

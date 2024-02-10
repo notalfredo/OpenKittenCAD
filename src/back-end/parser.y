@@ -66,16 +66,15 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
   NodeDecl*       declNode;
   NodeIdentifier* idNode;
   NodeType*       typeNode;
-  NodeDeclList*   declList;
-
-
-  std::vector<NodeIdentifier*>* idNodeList;
+  NodeDeclList*   declList ;
 
   NodeBlock*      blockNode;
 
-  NodeDouble*     doubleNode;
+  NodeNumber*     numberNode;
   
   NodeType*       idType;
+
+  NodeExpression* exprNode;
 
   char*           charPointer;
 }
@@ -97,7 +96,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %token <idNode>         tok_ID
 
-%token <NodeDouble>     tok_NUM
+%token <numberNode>     tok_NUM
 %token <idType>         tok_TYPE
 
     /* Non-terminals */
@@ -110,15 +109,11 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type <repeatNode>                   repeatStmt
 %type <untilNode>                    untilStmt
 
-%type <declNode>                     functionDecl variableDecl
-%type <declList>                     variableDeclList
+%type <declNode>                     paramDecl declStmt
+%type <declList>                     paramDeclList
 %type <stmtListNodes>                stmtList 
 
 %type <stmtNode>                     stmt
-
-    //NODE NEEDED ANY MORE ???
-%type <idNodeList>                   identifierList;
-
 
 %type <functionNode>                 functionStmt
 
@@ -126,11 +121,18 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <blockNode>                    block
 
+%type<exprNode>                      initOpt expr
+
+
+
+%left '+' '-'
+
+
 %% //---- RULES --------------------------------------------------
 
 
 start:
-    stmtList    { 
+    stmtList ';'   { 
         *result = $1; 
     }
 
@@ -142,10 +144,11 @@ block:
 stmt:
     block           { $$ = $1; }
   | functionStmt    { $$ = $1; }
+  | declStmt        { $$ = $1; }
   ;
 
 stmtList:
-  stmtList ';' stmt ';'  {
+  stmtList ';' stmt {
         appendToStmtList($1, $3);
         $$ = $1; 
   }
@@ -156,34 +159,54 @@ stmtList:
   ;
 
 functionStmt:
-    tok_FN tok_ID '(' variableDeclList ')' tok_ARROW tok_TYPE block  { 
+    tok_FN tok_ID '(' paramDeclList ')' tok_ARROW tok_TYPE block  { 
         $$ = new NodeFunction($2, $4, $7, $8); 
     }
     |
-    tok_FN tok_ID '(' variableDeclList ')' block  { 
+    tok_FN tok_ID '(' paramDeclList ')' block  { 
         $$ = new NodeFunction($2, $4, new NodeType(_void), $6); 
     }
   ;
 
-variableDeclList:
+paramDeclList:
     %empty                             {
         NodeDeclList* temp = new NodeDeclList(NULL); 
         $$ = temp;
     } 
-  | variableDeclList ',' variableDecl  {
+  | paramDeclList ',' paramDecl  {
         addDeclToList($1, $3);
         $$ = $1;
 
   }
-  | variableDecl                       { 
+  | paramDecl                       { 
         NodeDeclList* temp = new NodeDeclList($1); 
         $$ = temp;
   }
   ;
 
-variableDecl:
-    tok_ID ':' tok_TYPE    { $$ = new NodeDecl($1, $3); }
+paramDecl:
+    tok_ID ':' tok_TYPE    { $$ = new NodeDecl($1, $3, NULL); }
   ;
+
+declStmt:
+    tok_LET tok_ID ':' tok_TYPE initOpt {
+        if(!$5) { $$ = new NodeDecl($2, $4, NULL); }
+        $$ = new NodeDecl($2, $4, $5);
+    }
+  ;
+
+initOpt: 
+  %empty                { $$ = NULL; }
+  | tok_ASSIGN expr     { $$ = $2;   }
+  ;
+
+expr:
+    expr '+' expr { $$ = new NodeBinaryOperator($1, $3, OP_PLUS); }
+  | expr '-' expr { $$ = new NodeBinaryOperator($1, $3, OP_SUB); }
+  | tok_NUM       { $$ = $1; }
+  | tok_ID        { $$ = $1; }
+  ;
+
 
 %% //---- USER CODE ----------------------------------------------
 
