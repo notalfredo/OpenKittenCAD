@@ -1,15 +1,16 @@
 #include "node.hxx"
+#include <vector>
 
 /*
           NULL 
            ^ 
            | 
            |       
-    ---------------       ----------------                 ----------------
-    |             |  sym  |              |                 |              |
+    ---------------       ----------------                 ----------------           
+    |             |  sym  |              |                 |              |           
     |    BLOCK    | ----> |    Symbol    | ----> ... ----> |    Symbol    | ----> NULL
-    |             |       |              |                 |              |
-    ---------------       ----------------                 ----------------
+    |             |       |              |                 |              |           
+    ---------------       ----------------                 ----------------           
            ^ 
            | 
            |                                 
@@ -19,50 +20,59 @@
            ^ 
            | 
            |                                 
-    ---------------
-    |             |
-    |    BLOCK    |
-    |             |
-    ---------------
+    ---------------       ----------------                 ----------------           
+    |             |  sym  |              |                 |              |           
+    |    BLOCK    | ----> |    Symbol    | ----> ... ----> |    Symbol    | ----> NULL
+    |             |       |              |                 |              |           
+    ---------------       ----------------                 ----------------           
            ^
            | next
            |
-    ---------------       ----------------------
-    |             |  head |                    |
-    |    BLOCK    | <---- |    Symbol Table    |
-    |             |       |                    |    
-    ---------------       ----------------------
+    ---------------       ----------------                 ----------------
+    |             |  sym  |              |                 |              |
+    |    BLOCK    | ----> |    Symbol    | ----> ... ----> |    Symbol    | ---> NULL
+    |    NULL     |       |              |                 |              |
+    |             |       ----------------                 ----------------    
+    --------------- 
 */
 
-//types of valid symbols
 typedef enum symType {
     variable,
     function, 
 } SYMBLE_TYPE;
 
 
+typedef struct functionArg {
+    char* name;
+    ID_TYPE argType; 
+    struct functionArg* next;
+} FUNCTION_ARG;
+
 
 typedef struct symbol {
     char* name;
     
     SYMBLE_TYPE symbolType; // If we have a variable or function
+                            //
     ID_TYPE returnType; // If we are a function what do we return 
-    //SOME SORT OF FUNCTION POINTER
-                        
+    FUNCTION_ARG* functionArgs;
                         
     ID_TYPE  idType; // If we are a variable are we a number, shape ... MAKE SURE NOT TO ASSIGN VOID IF VARIABLE
     double numVal; //If variable and a number assign here
-    //TODO shape shapeVal
-    
-
-
+    OCCT_SHAPE shapeType; //If we are a shape assign our shape type here
+                          
+    struct symbol* next;
 } Symbol ;
 
 
 typedef struct BasicBlock {
     struct BasicBlock* next; 
-    Symbol sym;
+    Symbol* sym;
+    int blockNumber;
 } SymbolTableHead;
 
+
+
 SymbolTableHead* newSymbolTable();
-void appendBasicBlock(SymbolTableHead* symTable);
+void appendBasicBlock(SymbolTableHead** symTable);
+int findSymbol(SymbolTableHead* symTable, const char* name);
