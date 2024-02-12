@@ -44,6 +44,12 @@ add_executable(
     ${FLEX_MyScanner_OUTPUTS}
 )
 
+add_executable(
+    symbol_table_test 
+    ./symbol_table_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/semantic.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+)
 
 # Set the language for lex.yy.c to C++ 
 # NOTE WE ARE NOT USING C++ Flex scanner
@@ -57,10 +63,12 @@ set_source_files_properties(
     PROPERTIES LANGUAGE CXX
 )
 
+
 target_include_directories(lexer_test
     PUBLIC
     ./
 )
+
 target_include_directories(lexer_test
     PUBLIC
     /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
@@ -78,7 +86,6 @@ target_include_directories(parser_test
     /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
 )
 
-
 target_link_libraries(
     parser_test
     PUBLIC
@@ -95,6 +102,24 @@ target_link_libraries(
     ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
 )
 
+target_include_directories(
+    symbol_table_test
+    PUBLIC
+    ./
+)
+target_include_directories(
+    symbol_table_test
+    PUBLIC
+    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
+)
+
+target_link_libraries(
+    symbol_table_test
+    PUBLIC
+    tau
+)
+
+
 add_test(
     lexer_test
     lexer_test
@@ -104,6 +129,11 @@ add_test(
 add_test(
     parser_test
     parser_test
+)
+
+add_test(
+    symbol_table_test
+    symbol_table_test
 )
 
 

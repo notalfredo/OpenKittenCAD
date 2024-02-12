@@ -74,5 +74,11 @@ typedef struct BasicBlock {
 
 
 SymbolTableHead* newSymbolTable();
-void appendBasicBlock(SymbolTableHead** symTable);
+void appendNewBasicBlock(SymbolTableHead** symTable);
 int findSymbol(SymbolTableHead* symTable, const char* name);
+int getCurrentSize(SymbolTableHead* symTable);
+void insertSymbolFromNode(SymbolTableHead* symTable, Node* node);
+void freeTopBlock(SymbolTableHead** symTable, int dump);
+void dumpSymbolLinkedList(Symbol* head);
+void dumpSymbolTable(SymbolTableHead* head);
+
