@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "string.h"
 
-static int blockNumber = 0;
+static int blockNumber = 1;
 
 
 
@@ -15,7 +15,7 @@ static int blockNumber = 0;
 void freeSymbolNode(Symbol** symbolNode)
 {
     free((*symbolNode)->name);
-    if(!(*symbolNode)->functionArgs){
+    if((*symbolNode)->functionArgs){
         //TODO FREE FUNCTION ARGS
     }
     free(*symbolNode);
@@ -42,7 +42,7 @@ void freeSymbolList(Symbol** symbolList)
 }
 
 
-void freeTopBlock(SymbolTableHead** symTable, int dump)
+void freeTopBlock(SymbolTableHead** symTable)
 {
     //We might be the last block
     if(!(*symTable)->next){
@@ -66,7 +66,7 @@ void freeTopBlock(SymbolTableHead** symTable, int dump)
 void freeSymbolTable(SymbolTableHead** symTableHead)
 {
     while(*symTableHead){
-        freeTopBlock(symTableHead, 0);
+        freeTopBlock(symTableHead);
     }
 }
 /* 
@@ -74,7 +74,6 @@ void freeSymbolTable(SymbolTableHead** symTableHead)
    =================================================== 
    =================================================== 
 */
-
 
 
 static struct functionArg* _argFromNodeDecl(NodeDecl* declNode)
@@ -108,26 +107,13 @@ static FUNCTION_ARG* _functionArgsFromDeclList(NodeDeclList* list)
 }
 
 
-int getCurrentSize(SymbolTableHead* symTable)
-{
-    int count = 1;
-    struct BasicBlock* curr = symTable;
-
-    while (curr->next) {
-        curr = curr->next;
-        count += 1; 
-    }
-
-    return count;
-}
-
 
 SymbolTableHead* newSymbolTable()
 {
     SymbolTableHead* symTable = (SymbolTableHead*)calloc(1, sizeof(SymbolTableHead));
     symTable->next = NULL;
     symTable->sym = NULL;
-    symTable->blockNumber = 0;
+    symTable->blockNumber = blockNumber;
     blockNumber += 1;
 
     return symTable;
@@ -148,18 +134,6 @@ void appendNewBasicBlock(SymbolTableHead** symTable)
     (*symTable) = newBlock;
 }
 
-
-int findSymbol(SymbolTableHead* symTable, const char* name)
-{
-    for(struct BasicBlock* currBlock = symTable; currBlock != NULL; currBlock = currBlock->next){
-        for(Symbol* currSym = currBlock->sym; currSym != NULL; currSym = currSym->next){
-            if(!strcmp(name, currSym->name)){
-                return 1; 
-            }
-       }
-    }
-    return 0;
-}
 
 /*
  * From a given NodeDecl* or a NodeFunction*
@@ -213,7 +187,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
 }
 
 
-//Insters symbol at the top most basic block
+//Insterts symbol at the top most basic block
 void insertSymbolFromNode(SymbolTableHead* symTable, Node* node)
 {
     Symbol* temp = symTable->sym;
@@ -280,4 +254,61 @@ void dumpSymbolTable(SymbolTableHead* head)
         fprintf(stderr, ")\n");
         temp = temp->next;
     }
+}
+
+
+int _searchSymbolListForName(Symbol* symList, const char* searchName)
+{
+    Symbol* curr = symList; 
+
+    while(curr){
+        if(!strcmp(curr->name, searchName)){
+            return 1; 
+        }
+        curr = curr->next;
+    }
+
+    return 0;
+}
+
+/*
+ * Returns block number if found symbol with matching name.
+ * Else returns 0
+*/
+int containsSymbolName(SymbolTableHead* symTable, const char* searchName)
+{
+    SymbolTableHead* curr = symTable;
+
+    while(curr){
+        if(_searchSymbolListForName(curr->sym, searchName)){
+            return curr->blockNumber;
+        }
+        curr = curr->next;
+    }
+
+    return 0;
+}
+
+int getCurrentSize(SymbolTableHead* symTable)
+{
+    if(!symTable){
+        return 0;
+    }
+
+    struct BasicBlock* curr = symTable;
+    int count = 1;
+
+    while (curr->next) {
+        curr = curr->next;
+        count += 1; 
+    }
+
+    return count;
+}
+
+
+// WARNING ONLY USE THIS DURING TESTING
+void resetBlockCounter()
+{
+    blockNumber = 1;
 }
