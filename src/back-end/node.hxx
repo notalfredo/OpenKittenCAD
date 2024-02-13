@@ -9,6 +9,13 @@ typedef enum nodeOp {
     OP_MOD
 } NODE_OP;
 
+typedef enum shape {
+    BOX,
+    CONE,
+    CYLINDER,
+    SPHERE
+} OCCT_SHAPE;
+
 
 typedef enum idType {
     num,
@@ -105,7 +112,7 @@ class NodeNumber: public NodeExpression {
 
 class NodeShape: public NodeExpression {
     public:
-        //TODO WHEN WE ADD OPEN CASCADE 
+        OCCT_SHAPE shape;
         NodeShape(){
             this->nodeType = SHAPE;
         }
