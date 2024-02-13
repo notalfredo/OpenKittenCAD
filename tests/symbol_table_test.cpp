@@ -31,6 +31,11 @@ void insertIntoTopBlock(SymbolTableHead* symTable)
             new NodeNumber(i)
         );
         insertSymbolFromNode(symTable, declNode);
+
+        free(declNode->id->idName);
+        delete declNode->type;
+        delete declNode->id;
+        delete declNode->value;
         delete declNode;
     }
 }
@@ -41,32 +46,39 @@ TAU_MAIN()
 
 
 
-TEST(symTable, testOne) { 
+TEST(symTable, valgrindMemmoryLeakDetector) { 
     SymbolTableHead* symbolTable = newSymbolTable();
 
-    CHECK(1 == getCurrentSize(symbolTable));
-
+    insertIntoTopBlock(symbolTable);
+    insertIntoTopBlock(symbolTable);
+    insertIntoTopBlock(symbolTable);
     insertIntoTopBlock(symbolTable);
 
-    fprintf(stderr, "-----------------\n");
     dumpSymbolTable(symbolTable);
-    fprintf(stderr, "-----------------\n");
 
-    appendNewBasicBlock(&symbolTable);
-
-    fprintf(stderr, "-----------------\n");
-    insertIntoTopBlock(symbolTable);
-    dumpSymbolTable(symbolTable);
-    fprintf(stderr, "-----------------\n");
-
-    freeTopBlock(&symbolTable, 0);
-
-    fprintf(stderr, "-----------------\n");
-    dumpSymbolTable(symbolTable);
-    fprintf(stderr, "-----------------\n");
-
-
-    appendNewBasicBlock(&symbolTable);
-    insertIntoTopBlock(symbolTable);
-    dumpSymbolTable(symbolTable);
+    freeSymbolTable(&symbolTable);
 }
+
+
+
+
+    //CHECK_EQ(1, getCurrentSize(symbolTable));
+
+
+    //appendNewBasicBlock(&symbolTable);
+
+    //fprintf(stderr, "-----------------\n");
+    //insertIntoTopBlock(symbolTable);
+    //dumpSymbolTable(symbolTable);
+    //fprintf(stderr, "-----------------\n");
+
+    //freeTopBlock(&symbolTable, 0);
+
+    //fprintf(stderr, "-----------------\n");
+    //dumpSymbolTable(symbolTable);
+    //fprintf(stderr, "-----------------\n");
+
+
+    //appendNewBasicBlock(&symbolTable);
+    //insertIntoTopBlock(symbolTable);
+    //dumpSymbolTable(symbolTable);

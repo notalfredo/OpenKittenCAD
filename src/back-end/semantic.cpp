@@ -6,6 +6,77 @@
 static int blockNumber = 0;
 
 
+
+/* 
+   =================================================== 
+   ================= FREEING MEMMORY ================= 
+   =================================================== 
+*/
+void freeSymbolNode(Symbol** symbolNode)
+{
+    free((*symbolNode)->name);
+    if(!(*symbolNode)->functionArgs){
+        //TODO FREE FUNCTION ARGS
+    }
+    free(*symbolNode);
+}
+
+
+void freeSymbolList(Symbol** symbolList)
+{
+    //If our symbol list is empty return
+    if(!(*symbolList)){
+        return;
+    }
+
+    Symbol* curr = *symbolList;
+    Symbol* temp = NULL;
+    
+    while (curr) {
+        temp = curr->next; 
+        freeSymbolNode(&curr); 
+        curr = temp;
+    }
+
+    *symbolList = NULL;
+}
+
+
+void freeTopBlock(SymbolTableHead** symTable, int dump)
+{
+    //We might be the last block
+    if(!(*symTable)->next){
+        fprintf(stderr, "FREEING TOP BLOCK\n");
+        freeSymbolList(&(*symTable)->sym);
+        free(*symTable);
+        (*symTable) = NULL;
+    }
+    else{
+        fprintf(stderr, "FREEING NON TOP BLOCK\n");
+        SymbolTableHead* currHead = (*symTable);
+        SymbolTableHead* newHead = (*symTable)->next;
+
+        freeSymbolList(&currHead->sym);
+        free(currHead);
+        *symTable = newHead;
+    }
+}
+
+
+void freeSymbolTable(SymbolTableHead** symTableHead)
+{
+    while(*symTableHead){
+        freeTopBlock(symTableHead, 0);
+    }
+}
+/* 
+   =================================================== 
+   =================================================== 
+   =================================================== 
+*/
+
+
+
 static struct functionArg* _argFromNodeDecl(NodeDecl* declNode)
 {
     FUNCTION_ARG * curr = (FUNCTION_ARG*)calloc(1, sizeof(FUNCTION_ARG));
@@ -103,6 +174,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
             newSym->name = strdup(declNode->id->idName);
             newSym->symbolType = variable;
             newSym->next = NULL;
+            newSym->functionArgs = NULL;
             
             switch (declNode->type->idType){
                 case num: {
@@ -155,45 +227,6 @@ void insertSymbolFromNode(SymbolTableHead* symTable, Node* node)
     symTable->sym = _symbolFromTreeNode(node);
 }
 
-void freeSymbolList(Symbol** symbolList)
-{
-    //If our symbol list is empty return
-    if(!(*symbolList)){
-        return;
-    }
-
-    Symbol* curr = *symbolList;
-    Symbol* temp = NULL;
-    
-    while (curr) {
-        temp = curr->next; 
-        free(curr); 
-        curr = temp;
-    }
-
-    *symbolList = NULL;
-}
-
-
-void freeTopBlock(SymbolTableHead** symTable, int dump)
-{
-    //We might be the last block
-    if(!(*symTable)->next){
-        fprintf(stderr, "FREEING TOP BLOCK\n");
-        freeSymbolList(&(*symTable)->sym);
-        free(*symTable);
-        (*symTable) = NULL;
-    }
-    else{
-        fprintf(stderr, "FREEING NON TOP BLOCK\n");
-        SymbolTableHead* currHead = (*symTable);
-        SymbolTableHead* newHead = (*symTable)->next;
-
-        freeSymbolList(&currHead->sym);
-        free(currHead);
-        *symTable = newHead;
-    }
-}
 
 
 void dumpSymbolLinkedList(Symbol* head)
@@ -248,7 +281,3 @@ void dumpSymbolTable(SymbolTableHead* head)
         temp = temp->next;
     }
 }
-
-
-
-
