@@ -43,12 +43,12 @@ void insertIntoTopBlock(SymbolTableHead* symTable, int suiteNum)
     int size = suiteNum == 1 ? FIRST_SUITE_SIZE : SECOND_SUITE_SIZE;
 
     for(int i = 0; i < size; i++){
-        NodeIdentifier* idNode = suiteNum == 1 ? new NodeIdentifier(strdup(firstNameSuite[i].name)) : new NodeIdentifier(strdup(secondNameSuite[i].name));
+        NodeIdentifier* idNode = suiteNum == 1 ? newIdentifierNode(strdup(firstNameSuite[i].name)) : newIdentifierNode(strdup(secondNameSuite[i].name));
 
-        NodeDecl* declNode = new NodeDecl(
+        NodeDecl* declNode = newDeclNode(
             idNode,
-            new NodeType(num),   
-            new NodeNumber(i)
+            newNodeType(num),   
+            newNumberNode(i)
         );
         insertSymbolFromNode(symTable, declNode);
 

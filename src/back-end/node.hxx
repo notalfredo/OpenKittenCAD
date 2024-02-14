@@ -347,7 +347,7 @@ NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
-
+void freeAllNodes();
 
 
 extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);

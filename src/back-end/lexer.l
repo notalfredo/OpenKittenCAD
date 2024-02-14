@@ -88,12 +88,12 @@ int isKeyWord(std::string id) {
  
 NodeType* nodeTypeFromChar(char* tokenText){
     if(!strcmp(tokenText, "number")){
-        return new NodeType(num);
+        return newNodeType(num);
     }
     else if(!strcmp(tokenText, "shape")){
-        return new NodeType(shape);
+        return newNodeType(shape);
     }
-    return new NodeType(_void);
+    return newNodeType(_void);
 }
 
 %}
@@ -167,7 +167,7 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 ({DIGIT}*(({DIGIT}\.)|(\.{DIGIT})){DIGIT}*){EXPONENT}? {
     flexString = yytext;
 
-    yylval->numberNode = new NodeNumber(strtod(yytext, NULL));    
+    yylval->numberNode = newNumberNode(strtod(yytext, NULL));    
 
     return tok_NUM; 
 }
@@ -185,7 +185,7 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
         return result;
     }
 
-    yylval->idNode = new NodeIdentifier(strdup(yytext));
+    yylval->idNode = newIdentifierNode(strdup(yytext));
     return tok_ID;
 }
 

@@ -102,13 +102,13 @@ void _freeNode(Node* node) {
         case ID: {
             NodeIdentifier* cast = static_cast<NodeIdentifier*>(node);
             free(cast->idName);
-            return;
+            break;
         }
         default: {
-            return;
+            break;
         }
     }
-    free(node);
+    delete node;
 }
 
 void freeAllNodes()
@@ -118,7 +118,9 @@ void freeAllNodes()
     Node* curr = _prevAlloc;      
     while (curr){
         Node* temp = curr->_allocatedLinkedList;
-        free(curr);
+        _freeNode(curr);
         curr = temp;
+        freedNodeCount += 1;
     }
+    fprintf(stderr, "--> Freed %d nodes\n", freedNodeCount);
 }

@@ -137,8 +137,8 @@ start:
     }
 
 block:
-    '{' stmtList ';' '}'    { $$ = new NodeBlock($2);   }
-  | '{'              '}'    { $$ = new NodeBlock(NULL); }
+    '{' stmtList ';' '}'    { $$ = newBlock($2);   }
+  | '{'              '}'    { $$ = newBlock(NULL); }
   ;
 
 stmt:
@@ -153,24 +153,24 @@ stmtList:
         $$ = $1; 
   }
   | stmt                {
-        NodeStmtList* myNewList = new NodeStmtList($1);
+        NodeStmtList* myNewList = newStmtList($1);
         $$ = myNewList;
   }
   ;
 
 functionStmt:
     tok_FN tok_ID '(' paramDeclList ')' tok_ARROW tok_TYPE block  { 
-        $$ = new NodeFunction($2, $4, $7, $8); 
+        $$ = newFunctionNode($2, $4, $7, $8); 
     }
     |
     tok_FN tok_ID '(' paramDeclList ')' block  { 
-        $$ = new NodeFunction($2, $4, new NodeType(_void), $6); 
+        $$ = newFunctionNode($2, $4, newNodeType(_void), $6); 
     }
   ;
 
 paramDeclList:
     %empty                             {
-        NodeDeclList* temp = new NodeDeclList(NULL); 
+        NodeDeclList* temp = newDeclList(NULL); 
         $$ = temp;
     } 
   | paramDeclList ',' paramDecl  {
@@ -179,19 +179,19 @@ paramDeclList:
 
   }
   | paramDecl                       { 
-        NodeDeclList* temp = new NodeDeclList($1); 
+        NodeDeclList* temp = newDeclList($1); 
         $$ = temp;
   }
   ;
 
 paramDecl:
-    tok_ID ':' tok_TYPE    { $$ = new NodeDecl($1, $3, NULL); }
+    tok_ID ':' tok_TYPE    { $$ = newDeclNode($1, $3, NULL); }
   ;
 
 declStmt:
     tok_LET tok_ID ':' tok_TYPE initOpt {
-        if(!$5) { $$ = new NodeDecl($2, $4, NULL); }
-        $$ = new NodeDecl($2, $4, $5);
+        if(!$5) { $$ = newDeclNode($2, $4, NULL); }
+        $$ = newDeclNode($2, $4, $5);
     }
   ;
 
@@ -201,8 +201,8 @@ initOpt:
   ;
 
 expr:
-    expr '+' expr { $$ = new NodeBinaryOperator($1, $3, OP_PLUS); }
-  | expr '-' expr { $$ = new NodeBinaryOperator($1, $3, OP_SUB); }
+    expr '+' expr { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
+  | expr '-' expr { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
   | tok_NUM       { $$ = $1; }
   | tok_ID        { $$ = $1; }
   ;
