@@ -88,11 +88,14 @@ int isKeyWord(std::string id) {
  
 NodeType* nodeTypeFromChar(char* tokenText){
     if(!strcmp(tokenText, "number")){
+        free(tokenText);
         return newNodeType(num);
     }
     else if(!strcmp(tokenText, "shape")){
+        free(tokenText);
         return newNodeType(shape);
     }
+    free(tokenText);
     return newNodeType(_void);
 }
 

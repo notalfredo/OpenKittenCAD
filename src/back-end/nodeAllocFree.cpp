@@ -120,7 +120,26 @@ void freeAllNodes()
         Node* temp = curr->_allocatedLinkedList;
         _freeNode(curr);
         curr = temp;
+        _prevAlloc = curr;
         freedNodeCount += 1;
     }
     fprintf(stderr, "--> Freed %d nodes\n", freedNodeCount);
 }
+
+/* For testing purposes */
+int countAllocatedNodes()
+{
+    Node* curr = _prevAlloc;
+    int count = 0;
+
+    while (curr){
+        count += 1; 
+        curr = curr->_allocatedLinkedList;
+    }
+    return count;
+}
+
+
+
+
+
