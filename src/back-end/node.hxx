@@ -58,6 +58,7 @@ typedef enum nodeType {
 #include <string>
 #include <vector>
 
+
 class Node {
     public:
         virtual ~Node() {}
@@ -68,7 +69,9 @@ class Node {
          do this since there is no "nice" way to do it in c++
         */
         NODE_TYPE nodeType; 
+        Node* _allocatedLinkedList;
 };
+
 
 class NodeStatement: public Node {
     public:
@@ -80,8 +83,10 @@ class NodeExpression: public Node {};
 class NodeType: public Node {
     public:
         ID_TYPE idType;
-        NodeType(ID_TYPE idType): idType(idType) {
+        NodeType(ID_TYPE idType, Node* _prevAlloc): idType(idType) {
             this->nodeType = TYPE;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -94,9 +99,12 @@ class NodeIdentifier: public NodeExpression {
     public:
         char* idName;
         NodeIdentifier(
-            char* idName
+            char* idName,
+            Node* _prevAlloc
         ): idName(idName) {
             this->nodeType = ID;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -104,8 +112,10 @@ class NodeIdentifier: public NodeExpression {
 class NodeNumber: public NodeExpression {
     public:
         double value; 
-        NodeNumber(double value): value(value) {
+        NodeNumber(double value, Node* _prevAlloc): value(value) {
             this->nodeType = DOUBLE;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }; 
 };
 
@@ -113,8 +123,10 @@ class NodeNumber: public NodeExpression {
 class NodeShape: public NodeExpression {
     public:
         OCCT_SHAPE shape;
-        NodeShape(){
+        NodeShape(Node* _prevAlloc){
             this->nodeType = SHAPE;
+            
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -124,11 +136,15 @@ class NodeBinaryOperator: public NodeExpression {
         NodeExpression* lhs;
         NodeExpression* rhs;
         NODE_OP binaryOperatorType;
-        NodeBinaryOperator(NodeExpression* lhs,
+        NodeBinaryOperator(
+               NodeExpression* lhs,
                NodeExpression* rhs,
-               NODE_OP binaryOperatorType
+               NODE_OP binaryOperatorType,
+               Node* _prevAlloc
         ): lhs(lhs), rhs(rhs), binaryOperatorType(binaryOperatorType) {
             this->nodeType =  BIN_OP;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -147,29 +163,36 @@ class NodeDecl: public NodeStatement {
         NodeDecl(
             NodeIdentifier* id,
             NodeType* type,
-            NodeExpression* value
+            NodeExpression* value,
+            Node* _prevAlloc
         ): id(id), type(type), value(value) {
             this->nextStmt = NULL;
             this->nextDecl = NULL;
             this->nodeType = DECL;
+
+            this->_allocatedLinkedList = _prevAlloc;
         };
 };
 
 class NodeStmtList: public Node {
     public:
         NodeStatement* nextStmt; 
-        NodeStmtList(NodeStatement* nextStmt)
+        NodeStmtList(NodeStatement* nextStmt, Node* _prevAlloc)
             : nextStmt(nextStmt) {
             this->nodeType = STMT_LIST;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
 class NodeDeclList: public Node {
     public:
         NodeDecl* nextDecl;
-        NodeDeclList(NodeDecl* nextDecl)
+        NodeDeclList(NodeDecl* nextDecl, Node* _prevAlloc)
             : nextDecl(nextDecl) {
             this->nodeType = DECL_LIST;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -177,10 +200,13 @@ class NodeBlock: public NodeStatement {
     public:
         NodeStmtList* stms;
         NodeBlock(
-            NodeStmtList* stms
+            NodeStmtList* stms,
+            Node* _prevAlloc
         ): stms(stms) {
             this->nextStmt = NULL;
             this->nodeType = BLOCK;
+
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -308,6 +334,22 @@ class NodeIf: public NodeStatement {
             this->nodeType = IF;
         };
 };
+
+
+// nodeAllocFree.cpp
+NodeType* newNodeType(ID_TYPE idType);
+NodeIdentifier* newIdentifierNode(char* idName);
+NodeNumber* newNumberNode(double value);
+NodeShape* newNodeShape();
+NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
+NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
+NodeStmtList* newStmtList(NodeStatement* nextStmt);
+NodeDeclList* newDeclList(NodeDecl* nextDecl);
+NodeBlock* newBlock(NodeStmtList* stmts);
+NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
+void freeAllNodes();
+int countAllocatedNodes();
+
 
 
 extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);

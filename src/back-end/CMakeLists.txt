@@ -27,6 +27,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}) # Add the current build directo
 add_executable(
     driver
     main.cpp
+    nodeAllocFree.cpp
     semantic.cpp
     nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}

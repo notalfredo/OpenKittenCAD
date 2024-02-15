@@ -284,9 +284,8 @@ const std::string tempStr = TEST_DIR + std::string("/tests/input_tests");
 const char* dirLoc = tempStr.c_str();
 
 
-
-    
 TEST(lexer, testOne) { 
+    CHECK_EQ(0, countAllocatedNodes());
     int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
         tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
@@ -344,11 +343,14 @@ TEST(lexer, testOne) {
     }
 
     yylex_destroy(scanner);
+    freeAllNodes();
     fclose(srcFP);
+    CHECK_EQ(0, countAllocatedNodes());
 }
 
 
 TEST(lexer, testTwo) { 
+    CHECK_EQ(0, countAllocatedNodes());
     int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', tok_LET, tok_ID, 
         tok_ASSIGN, tok_ID, '(', tok_ID, '=', tok_NUM, ')',
@@ -362,7 +364,6 @@ TEST(lexer, testTwo) {
         '%', tok_NUM, ',', tok_NUM, '/', tok_NUM, ')',
         ')', ')', '}',
     };
-
 
     FILE *srcFP       = fopen( 
     "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputTwo.kts",
@@ -410,12 +411,17 @@ TEST(lexer, testTwo) {
         );
         index += 1;
     }
+
+    countAllocatedNodes();
+    freeAllNodes();
     yylex_destroy(scanner);
     fclose(srcFP);
+    CHECK_EQ(0, countAllocatedNodes());
 }
 
 
 TEST(lexer, testThree) { 
+    CHECK_EQ(0, countAllocatedNodes());
     int testArr[] { 
         tok_FN, tok_ID, '(', tok_ID, ':', tok_TYPE, ',', 
         tok_ID, ':', tok_TYPE, ')', '{', tok_RETURN, tok_ID, 
@@ -471,23 +477,30 @@ TEST(lexer, testThree) {
         );
         index += 1;
     }
+
+    freeAllNodes();
     yylex_destroy(scanner);
     fclose(srcFP);
+    CHECK_EQ(0, countAllocatedNodes());
 }
 
 
+
+
 TEST(lexer, testFour) { 
+    CHECK_EQ(0, countAllocatedNodes());
     int testArr[] { 
         tok_FN, tok_ID, '(', ')', '{', '}', ';'
     };
 
 
-    FILE *srcFP       = fopen( 
+    FILE *srcFP  = fopen( 
     "/home/alfredo/repos/OpenKittenCad/tests/input_tests/inputFour.kts",
     "r"
     );
     if ( srcFP == NULL ) {
-        printf( "Unable to open file ");
+        fprintf(stderr, "Unable to open file\n");
+        return;
     }
 
     yyscan_t scanner;
@@ -528,6 +541,9 @@ TEST(lexer, testFour) {
         );
         index += 1;
     }
+
+    freeAllNodes();
     yylex_destroy(scanner);
     fclose(srcFP);
+    CHECK_EQ(0, countAllocatedNodes());
 }
