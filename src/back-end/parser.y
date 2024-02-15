@@ -137,8 +137,8 @@ start:
     }
 
 block:
-    '{' stmtList ';' '}'    { $$ = newBlock($2);   }
-  | '{'              '}'    { $$ = newBlock(NULL); }
+    '{' stmtList ';' '}'    { $$ = newNodeBlock($2);   }
+  | '{'              '}'    { $$ = newNodeBlock(NULL); }
   ;
 
 stmt:
