@@ -222,10 +222,12 @@ class NodeFunction: public NodeStatement {
             NodeIdentifier* id,
             NodeDeclList* arguments,
             NodeType*  returnType,
-            NodeBlock* block
+            NodeBlock* block,
+            Node* _prevAlloc
         ): id(id), arguments(arguments), returnType(returnType), block(block) {
             this->nextStmt = NULL;
             this->nodeType = FUNCTION;
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -345,7 +347,7 @@ NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* r
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
-NodeBlock* newBlock(NodeStmtList* stmts);
+NodeBlock* newNodeBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
 void freeAllNodes();
 int countAllocatedNodes();

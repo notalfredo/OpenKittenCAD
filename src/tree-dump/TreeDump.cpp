@@ -211,5 +211,6 @@ void programToJson(NodeStmtList* head, const char* fileLocation)
     printText(0, "}\n");
 
     std::cout << "ENDING DUMPING NODE" << std::endl;
+    fclose(_fptr);
 
 }

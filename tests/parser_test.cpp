@@ -50,7 +50,10 @@ TEST(parser, testOne) {
         programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
+    freeAllNodes();
     yylex_destroy(scanner);
+    fclose(srcFP);
+    CHECK_EQ(0, countAllocatedNodes());
 }
 
 TEST(parser, testTwo) { 
@@ -83,6 +86,8 @@ TEST(parser, testTwo) {
     }
 
     yylex_destroy(scanner);
+    freeAllNodes();
+    fclose(srcFP);
 }
 
 

@@ -19,6 +19,14 @@ NodeType* newNodeType(ID_TYPE idType)
 }
 
 
+NodeBlock* newNodeBlock(NodeStmtList* stmts)
+{
+    NodeBlock* me = new NodeBlock(stmts, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
 NodeIdentifier* newIdentifierNode(char* idName)
 {
     NodeIdentifier* me = new NodeIdentifier(idName, _prevAlloc);
@@ -80,17 +88,9 @@ NodeDeclList* newDeclList(NodeDecl* nextDecl)
 }
 
 
-NodeBlock* newBlock(NodeStmtList* stmts)
-{
-    NodeBlock* me = new NodeBlock(stmts, _prevAlloc);
-    _prevAlloc = me;
-    return me;
-}
-
-
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block)
 {
-    NodeFunction* me = new NodeFunction(id, arguments, returnType, block);
+    NodeFunction* me = new NodeFunction(id, arguments, returnType, block, _prevAlloc);
     _prevAlloc = me;
     return me;
 }
