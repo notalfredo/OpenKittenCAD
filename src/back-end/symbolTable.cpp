@@ -1,4 +1,4 @@
-#include "semantic.hxx"
+#include "symbolTable.hxx"
 #include "node.hxx"
 #include "stdio.h"
 #include "string.h"

@@ -28,7 +28,7 @@ add_executable(
     driver
     main.cpp
     nodeAllocFree.cpp
-    semantic.cpp
+    symbolTable.cpp
     nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}

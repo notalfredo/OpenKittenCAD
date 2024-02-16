@@ -50,7 +50,7 @@ add_executable(
     symbol_table_test 
     ./symbol_table_test.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/semantic.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
 )
 
