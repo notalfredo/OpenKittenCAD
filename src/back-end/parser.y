@@ -126,6 +126,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 
 %left '+' '-'
+%nonassoc tok_ASSIGN
 
 
 %% //---- RULES --------------------------------------------------
@@ -201,10 +202,12 @@ initOpt:
   ;
 
 expr:
-    expr '+' expr { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
-  | expr '-' expr { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
-  | tok_NUM       { $$ = $1; }
-  | tok_ID        { $$ = $1; }
+    expr '+' expr          { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
+  | expr '-' expr          { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
+  | expr tok_ASSIGN expr   { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
+  | tok_NUM                { $$ = $1; }
+  | tok_ID                 { $$ = $1; }
+  | tok_ID '(' ')'         { $$ = newFunctionCallNode($1); }
   ;
 
 

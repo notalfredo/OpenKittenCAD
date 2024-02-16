@@ -6,7 +6,8 @@ typedef enum nodeOp {
     OP_SUB,
     OP_MUL,
     OP_DIV,
-    OP_MOD
+    OP_MOD,
+    OP_ASSIGN
 } NODE_OP;
 
 typedef enum shape {
@@ -39,6 +40,7 @@ typedef enum nodeType {
     FUNCTION,
 
     ID,
+    FUNCTION_CALL,
     TYPE,
 
     BLOCK,
@@ -104,6 +106,19 @@ class NodeIdentifier: public NodeExpression {
         ): idName(idName) {
             this->nodeType = ID;
 
+            this->_allocatedLinkedList = _prevAlloc;
+        }
+};
+
+
+class NodeFunctionCall: public NodeExpression {
+    public:
+        NodeIdentifier* id;
+        NodeFunctionCall(
+            NodeIdentifier* id,
+            Node* _prevAlloc
+        ): id(id) {
+            this->nodeType = FUNCTION_CALL,
             this->_allocatedLinkedList = _prevAlloc;
         }
 };
@@ -349,6 +364,7 @@ NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newNodeBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
+NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id);
 void freeAllNodes();
 int countAllocatedNodes();
 
