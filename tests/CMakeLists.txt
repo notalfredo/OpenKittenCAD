@@ -1,5 +1,4 @@
 # Test program CMakeLists.txt
-
 enable_testing()
 
 find_package(BISON REQUIRED)
@@ -9,10 +8,10 @@ BISON_TARGET(
     MyParser
     /home/alfredo/repos/OpenKittenCad/src/back-end/parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
+    COMPILE_FLAGS "--report=itemset --graph --report=lookaheads"
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
 )
 
-    # Flex target
 FLEX_TARGET(
     MyScanner
     /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.l
@@ -20,32 +19,26 @@ FLEX_TARGET(
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.h"
 )
  
+include_directories("/home/alfredo/repos/OpenKittenCad/src/back-end/") 
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 
-include_directories(
-    /home/alfredo/repos/OpenKittenCad/src/back-end/
-) 
-
-add_executable(
-    lexer_test 
-    ./lexer_test.cpp
+add_library(CommonSources
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
 
-add_executable(
-    parser_test 
-    ./parser_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
-    ${BISON_MyParser_OUTPUTS}
-    ${FLEX_MyScanner_OUTPUTS}
+set(COMMON_INCLUDE_DIRECTORIES
+    ./
+    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
 )
 
+
+add_executable(lexer_test ./lexer_test.cpp)
+add_executable(parser_test ./parser_test.cpp)
 add_executable(
     symbol_table_test 
     ./symbol_table_test.cpp
@@ -54,89 +47,28 @@ add_executable(
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
 )
 
+target_link_libraries(parser_test
+    PUBLIC 
+    CommonSources
+    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
+    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
+    tau
+)
+target_link_libraries(lexer_test PUBLIC CommonSources tau)
+target_link_libraries(symbol_table_test PUBLIC tau)
+
 # Set the language for lex.yy.c to C++ 
 # NOTE WE ARE NOT USING C++ Flex scanner
-set_source_files_properties(
-    parser.tab.c
-    PROPERTIES LANGUAGE CXX
-)
-
-set_source_files_properties(
-    lexer.yy.c
-    PROPERTIES LANGUAGE CXX
-)
+set_source_files_properties(parser.tab.c PROPERTIES LANGUAGE CXX)
+set_source_files_properties(lexer.yy.c PROPERTIES LANGUAGE CXX)
 
 
-target_include_directories(lexer_test
-    PUBLIC
-    ./
-)
-
-target_include_directories(lexer_test
-    PUBLIC
-    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
-)
-target_link_libraries(lexer_test PRIVATE tau)
-target_link_libraries(lexer_test PRIVATE -ly -ll)
+target_include_directories(lexer_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
+target_include_directories(parser_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
+target_include_directories(symbol_table_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 
 
-target_include_directories(parser_test
-    PUBLIC
-    ./
-)
-target_include_directories(parser_test
-    PUBLIC
-    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
-)
 
-target_link_libraries(
-    parser_test
-    PUBLIC
-    tau
-)
-target_link_libraries(
-    parser_test
-    PUBLIC
-    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
-)
-target_link_libraries(
-    parser_test
-    PUBLIC
-    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
-)
-
-target_include_directories(
-    symbol_table_test
-    PUBLIC
-    ./
-)
-target_include_directories(
-    symbol_table_test
-    PUBLIC
-    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
-)
-
-target_link_libraries(
-    symbol_table_test
-    PUBLIC
-    tau
-)
-
-
-add_test(
-    lexer_test
-    lexer_test
-)
-
-
-add_test(
-    parser_test
-    parser_test
-)
-
-add_test(
-    symbol_table_test
-    symbol_table_test
-)
-
-
+add_test(lexer_test lexer_test)
+add_test(parser_test parser_test)
+add_test(symbol_table_test symbol_table_test)
