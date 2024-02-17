@@ -54,6 +54,7 @@ typedef enum nodeType {
 
     STMT_LIST,
     DECL_LIST,
+    EXPR_STMT,
 } NODE_TYPE;
 
 
@@ -169,6 +170,16 @@ class NodeBinaryOperator: public NodeExpression {
                      NODE STATEMENTS  
    =======================================================
 */  
+class NodeExprStmt: public NodeStatement {
+    public:
+        NodeExpression* expr;
+        NodeExprStmt(NodeExpression* expr, Node* _prevAlloc):expr(expr){
+            this->nodeType = EXPR_STMT;
+            this->_allocatedLinkedList = _prevAlloc;
+        }
+};
+
+
 class NodeDecl: public NodeStatement {
     public:
         NodeIdentifier* id;
@@ -365,6 +376,7 @@ NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newNodeBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id);
+NodeExprStmt* newExprStmtNode(NodeExpression* node);
 void freeAllNodes();
 int countAllocatedNodes();
 

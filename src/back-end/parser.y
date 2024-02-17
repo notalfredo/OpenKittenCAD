@@ -76,6 +76,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
   NodeExpression* exprNode;
 
+  NodeExprStmt*   exprStmtNode;
+
   char*           charPointer;
 }
 
@@ -123,7 +125,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type<exprNode>                      initOpt expr
 
-
+%type<exprStmtNode>                  exprStmt
 
 %left '+' '-'
 %nonassoc tok_ASSIGN
@@ -146,6 +148,7 @@ stmt:
     block           { $$ = $1; }
   | functionStmt    { $$ = $1; }
   | declStmt        { $$ = $1; }
+  | exprStmt        { $$ = $1; }
   ;
 
 stmtList:
@@ -199,6 +202,13 @@ declStmt:
 initOpt: 
   %empty                { $$ = NULL; }
   | tok_ASSIGN expr     { $$ = $2;   }
+  ;
+
+exprStmt:
+    expr {
+        NodeExprStmt* temp = newExprStmtNode($1);
+        $$ = temp;
+    }
   ;
 
 expr:
