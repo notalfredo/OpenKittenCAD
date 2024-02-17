@@ -2,6 +2,7 @@
 #include <iostream>
 
 
+
 void appendToStmtList(NodeStmtList* list, NodeStatement* newMember)
 {
     NodeStatement* curr = list->nextStmt;
