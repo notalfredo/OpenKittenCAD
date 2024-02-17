@@ -1,7 +1,14 @@
 #include "node.hxx"
 #include <iostream>
 
-
+void appendExprLinkedList(NodeExpression* head, NodeExpression* newMember)
+{
+    NodeExpression* temp = head;
+    while(temp->nextExpr){
+        temp = temp->nextExpr;
+    }
+    temp->nextExpr = newMember; 
+}
 
 void appendToStmtList(NodeStmtList* list, NodeStatement* newMember)
 {

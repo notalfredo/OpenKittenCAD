@@ -80,7 +80,10 @@ class NodeStatement: public Node {
     public:
         NodeStatement* nextStmt; 
 };
-class NodeExpression: public Node {};
+class NodeExpression: public Node {
+    public:
+        NodeExpression* nextExpr;
+};
 
 
 class NodeType: public Node {
@@ -106,8 +109,8 @@ class NodeIdentifier: public NodeExpression {
             Node* _prevAlloc
         ): idName(idName) {
             this->nodeType = ID;
-
             this->_allocatedLinkedList = _prevAlloc;
+            this->nextExpr = NULL;
         }
 };
 
@@ -117,10 +120,12 @@ class NodeFunctionCall: public NodeExpression {
         NodeIdentifier* id;
         NodeFunctionCall(
             NodeIdentifier* id,
+            NodeExpression* args,
             Node* _prevAlloc
         ): id(id) {
             this->nodeType = FUNCTION_CALL,
             this->_allocatedLinkedList = _prevAlloc;
+            this->nextExpr = NULL;
         }
 };
 
@@ -130,8 +135,8 @@ class NodeNumber: public NodeExpression {
         double value; 
         NodeNumber(double value, Node* _prevAlloc): value(value) {
             this->nodeType = DOUBLE;
-
             this->_allocatedLinkedList = _prevAlloc;
+            this->nextExpr = NULL;
         }; 
 };
 
@@ -141,8 +146,8 @@ class NodeShape: public NodeExpression {
         OCCT_SHAPE shape;
         NodeShape(Node* _prevAlloc){
             this->nodeType = SHAPE;
-            
             this->_allocatedLinkedList = _prevAlloc;
+            this->nextExpr = NULL;
         }
 };
 
@@ -159,8 +164,8 @@ class NodeBinaryOperator: public NodeExpression {
                Node* _prevAlloc
         ): lhs(lhs), rhs(rhs), binaryOperatorType(binaryOperatorType) {
             this->nodeType =  BIN_OP;
-
             this->_allocatedLinkedList = _prevAlloc;
+            this->nextExpr = NULL;
         }
 };
 
@@ -375,13 +380,14 @@ NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newNodeBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
-NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id);
+NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
 void freeAllNodes();
 int countAllocatedNodes();
 
 
 
+extern void appendExprLinkedList(NodeExpression* head, NodeExpression* newMember);
 extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
