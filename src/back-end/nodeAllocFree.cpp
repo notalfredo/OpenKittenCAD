@@ -10,6 +10,12 @@
 */
 static Node* _prevAlloc = NULL;
 
+NodeExprStmt* newExprStmtNode(NodeExpression* node)
+{
+    NodeExprStmt* me = new NodeExprStmt(node, _prevAlloc);
+    _prevAlloc = node;
+    return me;
+}
 
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id)
 {
