@@ -11,6 +11,14 @@
 static Node* _prevAlloc = NULL;
 
 
+NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id)
+{
+    NodeFunctionCall* me = new NodeFunctionCall(id, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
 NodeType* newNodeType(ID_TYPE idType)
 {
     NodeType* me = new NodeType(idType, _prevAlloc);  

@@ -5,7 +5,6 @@ BISON_TARGET(
     MyParser
     parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
-    COMPILE_FLAGS "--report=itemset --graph --report=lookaheads"
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
 )
 
@@ -28,7 +27,7 @@ add_executable(
     driver
     main.cpp
     nodeAllocFree.cpp
-    semantic.cpp
+    symbolTable.cpp
     nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}

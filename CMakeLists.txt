@@ -7,7 +7,16 @@ project(
 
 add_definitions(-DTEST_DIR="${PROJECT_SOURCE_DIR}")
 
-add_subdirectory("./src/back-end/")
-add_subdirectory("./src/tree-dump/")
-add_subdirectory("./tau/")
-add_subdirectory("./tests/")
+option(BUILD_TEST "Enable or disable testing" OFF)
+option(BUILD_MAIN "Enable or disable testing" OFF)
+
+
+if(BUILD_MAIN)
+    add_subdirectory("./src/back-end/")
+endif()
+
+if(BUILD_TEST)
+    add_subdirectory("./src/tree-dump/")
+    add_subdirectory("./tau/")
+    add_subdirectory("./tests/")
+endif()
