@@ -13,8 +13,7 @@ NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
 
 NodeExpression* evalExpr(NodeExpression* state)
-{
-    switch (state->nodeType) {
+{ switch (state->nodeType) {
         case BIN_OP: {
             fprintf(stderr, "Entering BIN_OP\n");
             NodeBinaryOperator* binOp = static_cast<NodeBinaryOperator*>(state);
@@ -105,6 +104,13 @@ NodeExpression* evalExpr(NodeExpression* state)
     exit(0);
 }
 
+
+void semFreeSymbolTable()
+{
+    freeSymbolTable(&symTableHead);
+}
+
+
 void semantic(Node* state)
 {
     switch (state->nodeType){
@@ -138,13 +144,13 @@ void semantic(Node* state)
             fprintf(stderr, "Entering DECL\n");
             NodeDecl* decl = static_cast<NodeDecl*>(state);
             fprintf(stderr, "==========\n");
-            if(!decl->value->expr){
+            if(!decl->value){
                 fprintf(stderr, "***\n");
             }
 
-            NodeExpression* newExprStmt = evalExpr(decl->value->expr);
+            NodeExpression* newExprStmt = evalExpr(decl->value);
             fprintf(stderr, "==========\n");
-            decl->value->expr = newExprStmt;
+            decl->value = newExprStmt;
 
             fprintf(stderr, "==========\n");
             insertSymbolFromNode(symTableHead, decl);

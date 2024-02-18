@@ -123,9 +123,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <blockNode>                    block
 
-%type<exprNode>                      expr argList
+%type<exprNode>                      expr argList initOpt
 
-%type<exprStmtNode>                  exprStmt initOpt
+%type<exprStmtNode>                  exprStmt
 
 %left '+' '-'
 %nonassoc tok_ASSIGN
@@ -200,8 +200,8 @@ declStmt:
   ;
 
 initOpt: 
-  %empty                    { $$ = NULL; }
-  | tok_ASSIGN exprStmt     { $$ = $2;   }
+  %empty                { $$ = NULL; }
+  | tok_ASSIGN expr     { $$ = $2;   }
   ;
 
 exprStmt:

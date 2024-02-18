@@ -152,13 +152,13 @@ static Symbol* _symbolFromTreeNode(Node* node)
             
             switch (declNode->type->idType){
                 case num: {
-                    NodeNumber* numNode = static_cast<NodeNumber*>(declNode->value->expr);
+                    NodeNumber* numNode = static_cast<NodeNumber*>(declNode->value);
                     newSym->idType = num;
                     newSym->numVal = numNode;
                     break;
                 }
                 case shape: {
-                    NodeShape* shapeNode = static_cast<NodeShape*>(declNode->value->expr);
+                    NodeShape* shapeNode = static_cast<NodeShape*>(declNode->value);
                     newSym->idType = shape;
                     newSym->shapeType = shapeNode->shape;
                     break;

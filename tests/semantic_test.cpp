@@ -5,14 +5,16 @@
 #include <cstdio>
 
 
+extern void semFreeSymbolTable();
 extern void semantic(Node* state);
+
 
 
 TAU_MAIN()
 
 
 TEST(semantic, testOne) {
-
+    
     FILE* filePtr = fopen("/home/alfredo/repos/OpenKittenCad/tests/input_tests/semanticInputOne.kts", "r");
     
     if(!filePtr){
@@ -40,7 +42,9 @@ TEST(semantic, testOne) {
 
 
 
-   yylex_destroy(scanner);
-   fclose(filePtr);
+    yylex_destroy(scanner);
+    freeAllNodes();
+    semFreeSymbolTable();
+    fclose(filePtr);
 }
 

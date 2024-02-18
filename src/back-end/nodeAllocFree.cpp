@@ -78,9 +78,9 @@ NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* r
 }
 
 
-NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExprStmt* value)
+NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value)
 {
-    NodeExprStmt* temp = value;
+    NodeExpression* temp = value;
     if(!temp){
         switch(type->idType){
             case num: {
