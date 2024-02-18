@@ -2,6 +2,7 @@
 #include "symbolTable.hxx"
 #include "enumToString.hxx"
 #include <cstdio>
+#include <cstdlib>
 
 
 /*when we initilziz symTableHead*/
@@ -13,70 +14,87 @@ NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
 NodeExpression* evalExpr(NodeExpression* state)
 {
-    switch(state->nodeType){
-        switch (state->nodeType) {
-            case BIN_OP: {
-                NodeBinaryOperator* binOp = static_cast<NodeBinaryOperator*>(state);
-                NodeExpression* lhs = evalExpr(binOp->lhs);
-                NodeExpression* rhs = evalExpr(binOp->rhs);
+    switch (state->nodeType) {
+        case BIN_OP: {
+            NodeBinaryOperator* binOp = static_cast<NodeBinaryOperator*>(state);
+            NodeExpression* lhs = evalExpr(binOp->lhs);
+            NodeExpression* rhs = evalExpr(binOp->rhs);
                 
-                if(lhs->nodeType != rhs->nodeType){
-                    fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
-                            nodeTypeToString(lhs->nodeType), nodeTypeToString(rhs->nodeType));
-                    exit(0);
-                }
-                else if((lhs->nodeType != DOUBLE) || (rhs->nodeType != DOUBLE)) {
-                    fprintf(stderr, "--UNDEFINED BINOP--: lhs: \"%s\" op: \"%s\" rhs: \"%s\".. exiting ...\n", 
-                            nodeTypeToString(lhs->nodeType),
-                            nodeOpToString(binOp->binaryOperatorType),
-                            nodeTypeToString(rhs->nodeType)
-                    );
-                    exit(0);
-                }
-
-                
-                switch(binOp->binaryOperatorType){
-                    case OP_PLUS: {
-                        NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs->nextExpr);
-                        NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs->nextExpr);
-                        return newNumberNode(lhsNum->value + rhsNum->value);
-                    }
-                    case OP_SUB: {
-                        NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs->nextExpr);
-                        NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs->nextExpr);
-                        return newNumberNode(lhsNum->value - rhsNum->value);
-                    }
-                    default: {
-                        fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
-                        exit(0);
-                    }
-                }
-        
-
-                break;
-            }
-            case DOUBLE: {
-                break;
-            }
-            case ID: {
-                //TODO
-                break;
-            }
-            case FUNCTION_CALL: {
-                //TODO
-                break;
-            }
-            default: {
-                fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
+            if(lhs->nodeType != rhs->nodeType){
+                fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
+                    nodeTypeToString(lhs->nodeType), nodeTypeToString(rhs->nodeType));
                 exit(0);
             }
+            else if((lhs->nodeType != DOUBLE) || (rhs->nodeType != DOUBLE)) {
+                fprintf(stderr, "--UNDEFINED BINOP--: lhs: \"%s\" op: \"%s\" rhs: \"%s\".. exiting ...\n", 
+                    nodeTypeToString(lhs->nodeType),
+                    nodeOpToString(binOp->binaryOperatorType),
+                    nodeTypeToString(rhs->nodeType)
+                );
+                exit(0);
+            }
+                
+            switch(binOp->binaryOperatorType){
+                case OP_PLUS: {
+                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs->nextExpr);
+                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs->nextExpr);
+                    return newNumberNode(lhsNum->value + rhsNum->value);
+                }
+                case OP_SUB: {
+                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs->nextExpr);
+                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs->nextExpr);
+                    return newNumberNode(lhsNum->value - rhsNum->value);
+                }
+                case OP_ASSIGN: {
+                    if(lhs->nodeType != ID){
+                        fprintf(stderr, "Trying to assign to a non ID node\n"); 
+                        exit(0);
+                    }
+                    //TODO UPDATE LHS IN SYMBOL TABLE
+                }
+                default: {
+                    fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
+                    exit(0);
+                }
+            }
+            break;
+        }
+        case ID: {
+            NodeIdentifier* idNode = static_cast<NodeIdentifier*>(state);
+
+            Symbol* sym = getSymbolNode(symTableHead, idNode->idName);
+            if(!sym){
+                fprintf(stderr, "Looked for |%s| in sym table was unable to find exiting...\n", idNode->idName);
+                exit(0);
+            }
+            
+            switch(sym->idType){
+                case num: {
+                    return sym->numVal;
+                }
+                case shape: {
+                    //TODO
+                }
+                case _void: {
+                    //TODO
+                }
+            }
+        }
+        case DOUBLE: {
+            return state;
+        }
+        case FUNCTION_CALL: {
+            //TODO
+            break;
+        }
+        default: {
+            fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
+            exit(0);
         }
     }
 
-
-    NodeBinaryOperator* bop = static_cast<NodeBinaryOperator*>(state);
-    
-
+    fprintf(stderr, "ERROR OUT OF SWITCH STATEMENT");
+    exit(0);
 }
 
 void semantic(Node* state)

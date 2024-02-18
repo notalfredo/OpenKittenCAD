@@ -83,6 +83,7 @@ void appendNewBasicBlock(SymbolTableHead** symTable);
 void insertSymbolFromNode(SymbolTableHead* symTable, Node* node);
 
 int containsSymbolName(SymbolTableHead* symTable, const char* searchName);
+Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName);
 int getCurrentSize(SymbolTableHead* symTable);
 void resetBlockCounter();
 

@@ -26,6 +26,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}) # Add the current build directo
 add_executable(
     driver
     main.cpp
+    enumToString.cpp
+    semantic.cpp
     nodeAllocFree.cpp
     symbolTable.cpp
     nodeImpl.cpp
