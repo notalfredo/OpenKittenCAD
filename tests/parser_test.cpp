@@ -46,6 +46,7 @@ TEST(parser, testOne) {
     
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
+        CHECK(0);
     }else {
         programToJson((NodeStmtList*)result, outputPath.c_str());
     }
@@ -81,6 +82,7 @@ TEST(parser, testTwo) {
     
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
+        CHECK(0);
     }else {
         programToJson((NodeStmtList*)result, outputPath.c_str());
     }
@@ -104,6 +106,7 @@ TEST(parser, testThree) {
         printf( "Unable to open file exiting...");
         return;
     }
+    fprintf(stderr, "================\n");
 
     yyscan_t scanner;
     yylex_init( &scanner );
@@ -117,6 +120,7 @@ TEST(parser, testThree) {
     
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
+        CHECK(0);
     }else {
         //programToJson((NodeStmtList*)result, outputPath.c_str());
     }

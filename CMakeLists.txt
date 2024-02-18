@@ -5,7 +5,7 @@ project(
     LANGUAGES CXX
 )
 
-add_definitions(-DTEST_DIR="${PROJECT_SOURCE_DIR}")
+add_definitions(-DPROJ_DIR="${PROJECT_SOURCE_DIR}")
 
 option(BUILD_TEST "Enable or disable testing" OFF)
 option(BUILD_MAIN "Enable or disable testing" OFF)

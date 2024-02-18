@@ -4,9 +4,9 @@
 
     {
         let result: number := far - bar; 
-        print(result)
+        print(result);
     };
 
     let result: number := far + bar; 
-    print(result)
+    print(result);
 };

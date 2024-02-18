@@ -215,7 +215,7 @@ void dumpSymbolLinkedList(Symbol* head)
         switch (temp->symbolType) {
             case variable: {
                 fprintf(stderr, "\tSYMBOL (");
-                fprintf(stderr, "\tname: %s", temp->name);
+                fprintf(stderr, "name: %s", temp->name);
                 fprintf(stderr, "\tidType: %d", temp->idType);
 
                 switch (temp->idType) {

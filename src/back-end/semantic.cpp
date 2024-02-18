@@ -16,10 +16,14 @@ NodeExpression* evalExpr(NodeExpression* state)
 {
     switch (state->nodeType) {
         case BIN_OP: {
+            fprintf(stderr, "Entering BIN_OP\n");
             NodeBinaryOperator* binOp = static_cast<NodeBinaryOperator*>(state);
             NodeExpression* lhs = evalExpr(binOp->lhs);
             NodeExpression* rhs = evalExpr(binOp->rhs);
                 
+
+
+            fprintf(stderr, "FIRST\n");
             if(lhs->nodeType != rhs->nodeType){
                 fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
                     nodeTypeToString(lhs->nodeType), nodeTypeToString(rhs->nodeType));
@@ -33,16 +37,17 @@ NodeExpression* evalExpr(NodeExpression* state)
                 );
                 exit(0);
             }
+            fprintf(stderr, "SECOND\n");
                 
             switch(binOp->binaryOperatorType){
                 case OP_PLUS: {
-                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs->nextExpr);
-                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs->nextExpr);
+                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
                     return newNumberNode(lhsNum->value + rhsNum->value);
                 }
                 case OP_SUB: {
-                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs->nextExpr);
-                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs->nextExpr);
+                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
                     return newNumberNode(lhsNum->value - rhsNum->value);
                 }
                 case OP_ASSIGN: {
@@ -57,12 +62,14 @@ NodeExpression* evalExpr(NodeExpression* state)
                     exit(0);
                 }
             }
+            fprintf(stderr, "Leaving BIN_OP\n");
             break;
         }
         case ID: {
             NodeIdentifier* idNode = static_cast<NodeIdentifier*>(state);
 
             Symbol* sym = getSymbolNode(symTableHead, idNode->idName);
+
             if(!sym){
                 fprintf(stderr, "Looked for |%s| in sym table was unable to find exiting...\n", idNode->idName);
                 exit(0);
@@ -81,6 +88,7 @@ NodeExpression* evalExpr(NodeExpression* state)
             }
         }
         case DOUBLE: {
+            fprintf(stderr, "Entering DOUBLE\n");
             return state;
         }
         case FUNCTION_CALL: {
@@ -101,6 +109,7 @@ void semantic(Node* state)
 {
     switch (state->nodeType){
         case STMT_LIST: {
+            fprintf(stderr, "Entering STMT_LIST\n");
             NodeStmtList* stmtList = static_cast<NodeStmtList*>(state);
             int size = getStmtListSize(stmtList);
 
@@ -113,28 +122,44 @@ void semantic(Node* state)
                     //TODO HANDLE THIS
                 }
             }
+            fprintf(stderr, "Leaving STMT_LIST\n");
             break;
         }
         case BLOCK: {
+            fprintf(stderr, "Entering BLOCK\n");
             NodeBlock* block = static_cast<NodeBlock*>(state);
             appendNewBasicBlock(&symTableHead);
             semantic(block->stms);
             freeTopBlock(&symTableHead);
+            fprintf(stderr, "Leaving BLOCK\n");
             break;
         }
         case DECL: {
+            fprintf(stderr, "Entering DECL\n");
             NodeDecl* decl = static_cast<NodeDecl*>(state);
+            fprintf(stderr, "==========\n");
+            if(!decl->value->expr){
+                fprintf(stderr, "***\n");
+            }
+
             NodeExpression* newExprStmt = evalExpr(decl->value->expr);
+            fprintf(stderr, "==========\n");
             decl->value->expr = newExprStmt;
 
+            fprintf(stderr, "==========\n");
             insertSymbolFromNode(symTableHead, decl);
 
+            dumpSymbolTable(symTableHead);
 
+            
+            fprintf(stderr, "Leaving DECL\n");
             break;
         }
         case EXPR_STMT: {
+            fprintf(stderr, "Entering EXPR_STMT\n");
             //NodeExprStmt* exprStmt = static_cast<NodeExprStmt*>(state);
             //evalExpr(exprStmt->expr);
+            fprintf(stderr, "Leaving EXPR_STMT\n");
             break;
         }
         default: {
