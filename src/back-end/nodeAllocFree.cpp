@@ -78,9 +78,24 @@ NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* r
 }
 
 
-NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value)
+NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExprStmt* value)
 {
-    NodeDecl* me = new NodeDecl(id, type, value, _prevAlloc);
+    NodeExprStmt* temp = value;
+    if(!temp){
+        switch(type->idType){
+            case num: {
+                //TODO
+            }
+            case shape: {
+                //TODO 
+            }
+            case _void: {
+                //TODO 
+            }
+        }
+    }
+
+    NodeDecl* me = new NodeDecl(id, type, temp, _prevAlloc);
     _prevAlloc = me;
 
     return me;

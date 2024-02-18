@@ -190,11 +190,11 @@ class NodeDecl: public NodeStatement {
         NodeIdentifier* id;
         NodeType* type;
         NodeDecl* nextDecl;
-        NodeExpression* value;
+        NodeExprStmt* value;
         NodeDecl(
             NodeIdentifier* id,
             NodeType* type,
-            NodeExpression* value,
+            NodeExprStmt* value,
             Node* _prevAlloc
         ): id(id), type(type), value(value) {
             this->nextStmt = NULL;
@@ -375,7 +375,7 @@ NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
 NodeShape* newNodeShape();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
-NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
+NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExprStmt* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newNodeBlock(NodeStmtList* stmts);

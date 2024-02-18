@@ -152,13 +152,13 @@ static Symbol* _symbolFromTreeNode(Node* node)
             
             switch (declNode->type->idType){
                 case num: {
-                    NodeNumber* numNode = static_cast<NodeNumber*>(declNode->value);
+                    NodeNumber* numNode = static_cast<NodeNumber*>(declNode->value->expr);
                     newSym->idType = num;
-                    newSym->numVal = numNode->value;
+                    newSym->numVal = numNode;
                     break;
                 }
                 case shape: {
-                    NodeShape* shapeNode = static_cast<NodeShape*>(declNode->value);
+                    NodeShape* shapeNode = static_cast<NodeShape*>(declNode->value->expr);
                     newSym->idType = shape;
                     newSym->shapeType = shapeNode->shape;
                     break;
@@ -220,7 +220,7 @@ void dumpSymbolLinkedList(Symbol* head)
 
                 switch (temp->idType) {
                     case num: {
-                        fprintf(stderr, "\tnumVal: %f", temp->numVal);
+                        fprintf(stderr, "\tnumVal: %f", temp->numVal->value);
                         break;
                     }
                     case shape: {

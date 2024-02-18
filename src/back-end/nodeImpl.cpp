@@ -39,6 +39,10 @@ NodeStatement* indexStmtList(NodeStmtList* list, int index)
     int count = 0;
     NodeStatement* curr = list->nextStmt;
 
+    if(!curr){
+        return NULL;
+    }
+
     while (curr) {
         if(index == count){
             return curr;
@@ -47,7 +51,7 @@ NodeStatement* indexStmtList(NodeStmtList* list, int index)
         curr = curr->nextStmt;
     }
 
-    return NULL;
+    return curr;
 }
 
 
