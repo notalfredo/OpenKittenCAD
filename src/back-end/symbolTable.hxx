@@ -1,3 +1,6 @@
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
+
 #include "node.hxx"
 #include <vector>
 
@@ -89,3 +92,5 @@ void resetBlockCounter();
 
 void dumpSymbolLinkedList(Symbol* head);
 void dumpSymbolTable(SymbolTableHead* head);
+
+#endif
