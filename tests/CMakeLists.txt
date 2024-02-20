@@ -53,6 +53,11 @@ add_executable(semantic_test
     /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/semantic.cpp
 )
+add_executable(functions_test
+    ./functions_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
+)
 
 
 target_link_libraries(parser_test
@@ -69,7 +74,7 @@ target_link_libraries(semantic_test
     CommonSources
     tau
 )
-
+target_link_libraries(functions_test PUBLIC tau)
 
 # Set the language for lex.yy.c to C++ 
 # NOTE WE ARE NOT USING C++ Flex scanner
@@ -81,9 +86,10 @@ target_include_directories(lexer_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(parser_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(symbol_table_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(semantic_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
-
+target_include_directories(functions_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 
 
 add_test(lexer_test lexer_test)
 add_test(parser_test parser_test)
 add_test(symbol_table_test symbol_table_test)
+add_test(functions_test functions_test)
