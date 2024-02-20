@@ -1,3 +1,4 @@
+#include "functions.hxx"
 #include "node.hxx"
 #include "symbolTable.hxx"
 #include "enumToString.hxx"
@@ -91,8 +92,25 @@ NodeExpression* evalExpr(NodeExpression* state)
             return state;
         }
         case FUNCTION_CALL: {
+            fprintf(stderr, "Entering FUNCTION CALL\n");
+            NodeFunctionCall* funcCallNode = static_cast<NodeFunctionCall*>(state);
+            functionPtr* funcPtr = lookUpFunc(funcCallNode->id->idName);
+            fprintf(stderr, "===================\n");
+            if(!funcPtr){
+                //TODO LOOK UP DECLARED FUNCTION FOR NOW JUST EXIT
+                fprintf(stderr, "UNABLE TO FIND FUNCTION EXITING...\n");
+                exit(0);
+            }
+            else{
+                fprintf(stderr, "===================\n");
+                //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
+                //      PARAM NEED TO HANDLE MULTIPLE
+                execFunc(funcPtr, evalExpr(funcCallNode->args));
+            }
+
+
             //TODO
-            break;
+            return NULL;
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
@@ -100,7 +118,7 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
     }
 
-    fprintf(stderr, "ERROR OUT OF SWITCH STATEMENT");
+    fprintf(stderr, "ERROR OUT OF SWITCH STATEMENT exiting...\n");
     exit(0);
 }
 
@@ -163,8 +181,8 @@ void semantic(Node* state)
         }
         case EXPR_STMT: {
             fprintf(stderr, "Entering EXPR_STMT\n");
-            //NodeExprStmt* exprStmt = static_cast<NodeExprStmt*>(state);
-            //evalExpr(exprStmt->expr);
+            NodeExprStmt* exprStmt = static_cast<NodeExprStmt*>(state);
+            evalExpr(exprStmt->expr);
             fprintf(stderr, "Leaving EXPR_STMT\n");
             break;
         }

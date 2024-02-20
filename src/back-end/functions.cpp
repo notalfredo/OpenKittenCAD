@@ -7,18 +7,19 @@
 
 void _print(double num)
 {
-    fprintf(stdout, "%f\n", num);
+    fprintf(stdout, "*********************%f\n", num);
 }
 
-function knownFunctions[] {
+functionPtr knownFunctions[] {
     {"print", printDouble, _print}
 };
-const int SIZE_OF_FUNS = sizeof(knownFunctions) / sizeof (function);
+const int SIZE_OF_FUNS = sizeof(knownFunctions) / sizeof (functionPtr);
 
-function* lookUpFunc(const char * funName)
+functionPtr* lookUpFunc(const char * funcName)
 {
+    fprintf(stderr, "Looking up %s\n", funcName);
     for(int index = 0; index < SIZE_OF_FUNS; index++){
-        if(!strcmp(knownFunctions[index].name, funName)){
+        if(!strcmp(knownFunctions[index].name, funcName)){
             return &knownFunctions[index];
         }
     }
@@ -26,10 +27,13 @@ function* lookUpFunc(const char * funName)
 }
 
 
-void execFunc(function* functionPtr, NodeExpression* paramInfo)
+//TODO: WHEN WE CALL A FUNCTION RIGHT BEFORE WE CALL IT WE NEED 
+//      TO VERIFY THAT THE CORRECT ARGUMENTS WHERE PASSED IN
+void execFunc(functionPtr* functionPtr, NodeExpression* paramInfo)
 {
     switch(functionPtr->functionType){
         case printDouble: {
+            fprintf(stderr, "printDouble\n");
             NodeNumber* numNode = static_cast<NodeNumber*>(paramInfo);
             functionPtr->func.println(numNode->value);
             break;

@@ -8,9 +8,13 @@ TAU_MAIN()
 
 
 TEST(functions, testOne){
-    function* func = lookUpFunc("print");
+    functionPtr* func = lookUpFunc("print");
     if(!func){
         CHECK(0);
     }
     execFunc(func, newNumberNode(10));
+
+
+
+    freeAllNodes();
 }

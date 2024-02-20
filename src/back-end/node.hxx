@@ -118,11 +118,12 @@ class NodeIdentifier: public NodeExpression {
 class NodeFunctionCall: public NodeExpression {
     public:
         NodeIdentifier* id;
+        NodeExpression* args;
         NodeFunctionCall(
             NodeIdentifier* id,
             NodeExpression* args,
             Node* _prevAlloc
-        ): id(id) {
+        ): id(id), args(args) {
             this->nodeType = FUNCTION_CALL,
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;

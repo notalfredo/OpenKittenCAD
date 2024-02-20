@@ -47,6 +47,7 @@ add_executable(
 )
 add_executable(semantic_test
     ./semantic_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp

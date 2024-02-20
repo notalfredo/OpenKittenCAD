@@ -2,24 +2,27 @@
 #define FUNCTIONS_H
 #include "node.hxx"
 
+
 enum functionEnum {
     printDouble,
 };
+
 
 union functionPointers {
     void (*println)(double); 
 };
 
 
-typedef struct function{
+typedef struct functionPtr{
     const char* name;
     functionEnum functionType;
     functionPointers func;
-}function;
+}functionPtr;
 
 
 void _print(double num);
-function* lookUpFunc(const char*);
-void execFunc(function* functionPtr, NodeExpression* paramInfo);
+functionPtr* lookUpFunc(const char*);
+void execFunc(functionPtr* functionPtr, NodeExpression* paramInfo);
+
 
 #endif
