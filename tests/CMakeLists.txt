@@ -5,8 +5,7 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 BISON_TARGET(
-    MyParser
-    /home/alfredo/repos/OpenKittenCad/src/back-end/parser.y
+    MyParser /home/alfredo/repos/OpenKittenCad/src/back-end/parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
     COMPILE_FLAGS "--report=itemset --graph --report=lookaheads"
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
@@ -46,6 +45,21 @@ add_executable(
     /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
 )
+add_executable(semantic_test
+    ./semantic_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/semantic.cpp
+)
+add_executable(functions_test
+    ./functions_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
+)
+
 
 target_link_libraries(parser_test
     PUBLIC 
@@ -56,6 +70,12 @@ target_link_libraries(parser_test
 )
 target_link_libraries(lexer_test PUBLIC CommonSources tau)
 target_link_libraries(symbol_table_test PUBLIC tau)
+target_link_libraries(semantic_test
+    PUBLIC
+    CommonSources
+    tau
+)
+target_link_libraries(functions_test PUBLIC tau)
 
 # Set the language for lex.yy.c to C++ 
 # NOTE WE ARE NOT USING C++ Flex scanner
@@ -66,9 +86,11 @@ set_source_files_properties(lexer.yy.c PROPERTIES LANGUAGE CXX)
 target_include_directories(lexer_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(parser_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(symbol_table_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
-
+target_include_directories(semantic_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
+target_include_directories(functions_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 
 
 add_test(lexer_test lexer_test)
 add_test(parser_test parser_test)
 add_test(symbol_table_test symbol_table_test)
+add_test(functions_test functions_test)

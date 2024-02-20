@@ -13,13 +13,13 @@ static Node* _prevAlloc = NULL;
 NodeExprStmt* newExprStmtNode(NodeExpression* node)
 {
     NodeExprStmt* me = new NodeExprStmt(node, _prevAlloc);
-    _prevAlloc = node;
+    _prevAlloc = me;
     return me;
 }
 
-NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id)
+NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args)
 {
-    NodeFunctionCall* me = new NodeFunctionCall(id, _prevAlloc);
+    NodeFunctionCall* me = new NodeFunctionCall(id, args, _prevAlloc);
     _prevAlloc = me;
     return me;
 }
@@ -80,7 +80,22 @@ NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* r
 
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value)
 {
-    NodeDecl* me = new NodeDecl(id, type, value, _prevAlloc);
+    NodeExpression* temp = value;
+    if(!temp){
+        switch(type->idType){
+            case num: {
+                //TODO
+            }
+            case shape: {
+                //TODO 
+            }
+            case _void: {
+                //TODO 
+            }
+        }
+    }
+
+    NodeDecl* me = new NodeDecl(id, type, temp, _prevAlloc);
     _prevAlloc = me;
 
     return me;
@@ -152,8 +167,3 @@ int countAllocatedNodes()
     }
     return count;
 }
-
-
-
-
-

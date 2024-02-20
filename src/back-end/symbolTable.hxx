@@ -1,3 +1,6 @@
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
+
 #include "node.hxx"
 #include <vector>
 
@@ -58,8 +61,10 @@ typedef struct symbol {
     FUNCTION_ARG* functionArgs;
                         
     ID_TYPE  idType; // If we are a variable are we a number, shape ... MAKE SURE NOT TO ASSIGN VOID IF VARIABLE
-    double numVal; //If variable and a number assign here
+    NodeNumber* numVal; //If variable and a number assign here
     OCCT_SHAPE shapeType; //If we are a shape assign our shape type here
+    //TODO OCCT_SHAPE shape; //If we are a shape assign here
+
                           
     struct symbol* next;
 } Symbol ;
@@ -81,8 +86,11 @@ void appendNewBasicBlock(SymbolTableHead** symTable);
 void insertSymbolFromNode(SymbolTableHead* symTable, Node* node);
 
 int containsSymbolName(SymbolTableHead* symTable, const char* searchName);
+Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName);
 int getCurrentSize(SymbolTableHead* symTable);
 void resetBlockCounter();
 
 void dumpSymbolLinkedList(Symbol* head);
 void dumpSymbolTable(SymbolTableHead* head);
+
+#endif

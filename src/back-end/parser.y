@@ -123,7 +123,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <blockNode>                    block
 
-%type<exprNode>                      initOpt expr
+%type<exprNode>                      expr argList initOpt
 
 %type<exprStmtNode>                  exprStmt
 
@@ -212,12 +212,21 @@ exprStmt:
   ;
 
 expr:
-    expr '+' expr          { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
-  | expr '-' expr          { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
-  | expr tok_ASSIGN expr   { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
-  | tok_NUM                { $$ = $1; }
-  | tok_ID                 { $$ = $1; }
-  | tok_ID '(' ')'         { $$ = newFunctionCallNode($1); }
+    expr '+' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
+  | expr '-' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
+  | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
+  | tok_NUM                        { $$ = $1; }
+  | tok_ID                         { $$ = $1; }
+  | tok_ID '(' argList ')'         { $$ = newFunctionCallNode($1, $3); }
+  ;
+
+argList:
+    %empty            { $$ = NULL; }
+  | expr ',' expr     { 
+    appendExprLinkedList($1, $3);
+    $$ = $1;
+  }
+  | expr             { $$ = $1;  }
   ;
 
 

@@ -154,7 +154,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
                 case num: {
                     NodeNumber* numNode = static_cast<NodeNumber*>(declNode->value);
                     newSym->idType = num;
-                    newSym->numVal = numNode->value;
+                    newSym->numVal = numNode;
                     break;
                 }
                 case shape: {
@@ -215,12 +215,12 @@ void dumpSymbolLinkedList(Symbol* head)
         switch (temp->symbolType) {
             case variable: {
                 fprintf(stderr, "\tSYMBOL (");
-                fprintf(stderr, "\tname: %s", temp->name);
+                fprintf(stderr, "name: %s", temp->name);
                 fprintf(stderr, "\tidType: %d", temp->idType);
 
                 switch (temp->idType) {
                     case num: {
-                        fprintf(stderr, "\tnumVal: %f", temp->numVal);
+                        fprintf(stderr, "\tnumVal: %f", temp->numVal->value);
                         break;
                     }
                     case shape: {
@@ -257,18 +257,18 @@ void dumpSymbolTable(SymbolTableHead* head)
 }
 
 
-int _searchSymbolListForName(Symbol* symList, const char* searchName)
+Symbol* _searchSymbolListForName(Symbol* symList, const char* searchName)
 {
     Symbol* curr = symList; 
 
     while(curr){
         if(!strcmp(curr->name, searchName)){
-            return 1; 
+            return curr; 
         }
         curr = curr->next;
     }
 
-    return 0;
+    return NULL;
 }
 
 /*
@@ -288,6 +288,22 @@ int containsSymbolName(SymbolTableHead* symTable, const char* searchName)
 
     return 0;
 }
+
+
+Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName)
+{
+    SymbolTableHead* head = symTable;
+
+    while(head){
+        Symbol* sym = _searchSymbolListForName(head->sym, searchName);
+        if(sym){
+            return sym; 
+        }
+        head = head->next;
+    }
+    return NULL; 
+}
+
 
 int getCurrentSize(SymbolTableHead* symTable)
 {

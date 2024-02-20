@@ -280,7 +280,7 @@ int tokEqToken(int tok, int expectedToken, int expectIllegal, const char* scanne
     return 0;
 }
 
-const std::string tempStr = TEST_DIR + std::string("/tests/input_tests");
+const std::string tempStr = PROJ_DIR + std::string("/tests/input_tests");
 const char* dirLoc = tempStr.c_str();
 
 
