@@ -5,8 +5,7 @@
 #include <cstdio>
 
 
-extern void semFreeSymbolTable();
-extern void semantic(Node* state);
+extern void semantic(NodeStmtList* state);
 
 
 
@@ -73,14 +72,13 @@ TEST(semantic, testTwo) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n");        
-        semantic((Node*)result);
+        semantic((NodeStmtList*)result);
     }
 
 
 
     yylex_destroy(scanner);
     freeAllNodes();
-    semFreeSymbolTable();
     fclose(filePtr);
 }
 

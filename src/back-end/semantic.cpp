@@ -2,19 +2,199 @@
 #include "node.hxx"
 #include "symbolTable.hxx"
 #include "enumToString.hxx"
+#include "string.h"
 #include <cstdio>
 #include <cstdlib>
+#include <string>
+
+#define DEBUG_MODE 1
+static int depth = 0;
+
+
+void printText(int tabCount, const char* text)
+{
+    for(int i = 0; i < tabCount; i++){
+        fprintf(stdout, "\t");
+    }
+    fprintf(stdout, "%s", text);
+}
+
+void debugCurrLoc(NODE_TYPE type, int enteringNode)
+{
+    
+    if(!enteringNode){
+        printText(depth, ")\n" );    
+        return;
+    }
+
+    if(DEBUG_MODE){
+        switch(type){
+            case STMT_LIST: {
+                printText(depth, "StmtListNode(\n");    
+                return;
+            }
+            case EXPR_STMT: {
+                printText(depth, "ExprNode(\n");
+                return;
+            }
+            case DECL: {
+                printText(depth, "DeclNode(\n");    
+                return;
+            }
+            case BLOCK: {
+                printText(depth, "BlockNode(\n");    
+                return;
+            }
+            default: {
+                
+            }
+        }
+    }
+}
+
+void quitMessage(const char* msg)
+{
+    fprintf(stderr, "=============================\n");
+    fprintf(stderr, "%s exiting...", msg);
+    fprintf(stderr, "=============================\n");
+}
 
 
 /*when we initilziz symTableHead*/
-static SymbolTableHead* symTableHead = newSymbolTable();
+static SymbolTableHead* symTableHead = NULL;
 
 extern int getStmtListSize(NodeStmtList* list);
-NodeStatement* indexStmtList(NodeStmtList* list, int index);
+extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
+
+
+/* Forward function declarations */
+static NodeExpression* evalExpr(NodeExpression* state);
+
+static void _processStmtListNode(NodeStmtList* node);
+static void _processStmtNode(Node* node);
+static void _processExprStmt(NodeExprStmt* node);
+static void _pocessBlockNode(NodeBlock* node);
+static void _processDeclNode(NodeDecl* node);
+
+void semantic(NodeStmtList* head)
+{
+    symTableHead = newSymbolTable();
+    
+    if(head->nodeType != STMT_LIST || !head){
+        quitMessage("Head does not have type STMT_LIST or possible NULL\n");
+        exit(1);
+    }
+
+    _processStmtListNode(head);
+
+    freeSymbolTable(&symTableHead);
+}
+
+
+void _processStmtListNode(NodeStmtList* stmtList)
+{
+    debugCurrLoc(stmtList->nodeType, 1);
+
+    int size = getStmtListSize(stmtList);
+    for(int index = 0; index < size; index++){
+        NodeStatement* curr = indexStmtList(stmtList, index);
+        if(curr){
+            _processStmtNode(curr);
+        }
+        else{
+            //TODO HANDLE THIS
+        }
+    }
+
+    debugCurrLoc(stmtList->nodeType, 0);
+}
+
+
+void _processExprStmt(NodeExprStmt* node)
+{
+    debugCurrLoc(node->nodeType, 1);
+
+    evalExpr(node->expr);
+
+    debugCurrLoc(node->nodeType, 0);
+}
+
+
+void _processDeclNode(NodeDecl* node)
+{
+    debugCurrLoc(node->nodeType, 1);
+
+    if(!node->value){
+        quitMessage("_processDeclNode: TODO!\n");
+    }
+
+    NodeExpression* newExprStmt = evalExpr(node->value);
+    node->value = newExprStmt;
+    insertSymbolFromNode(symTableHead, node);
+
+    dumpSymbolTable(symTableHead);
+
+    debugCurrLoc(node->nodeType, 0);
+}
+
+void _pocessBlockNode(NodeBlock* node)
+{
+    debugCurrLoc(node->nodeType, 1);
+
+    appendNewBasicBlock(&symTableHead);
+
+    if(node->stms){
+        depth++;
+        _processStmtListNode(node->stms);
+        depth--;
+    }
+
+    freeTopBlock(&symTableHead);
+
+    debugCurrLoc(node->nodeType, 0);
+}
+
+
+void _processStmtNode(Node* node)
+{
+    switch (node->nodeType) {
+        case STMT_LIST: {
+            depth++;
+            _processStmtListNode(static_cast<NodeStmtList*>(node));
+            depth--;
+            return;
+        }
+        case EXPR_STMT: {
+            depth++;
+            _processExprStmt(static_cast<NodeExprStmt*>(node));
+            depth--;
+            return;
+        }
+        case DECL: {
+            depth++;
+            _processDeclNode(static_cast<NodeDecl*>(node));
+            depth--;
+            return;
+        }
+        case BLOCK: {
+            depth++;
+            _pocessBlockNode(static_cast<NodeBlock*>(node));
+            depth--;
+            return;
+        }
+        default: {
+            std::string msg = "Hit non stmt node in _processStmtNode: " + std::string(nodeTypeToString(node->nodeType));
+            quitMessage(msg.c_str());
+        }
+    }
+}
+
+
 
 
 NodeExpression* evalExpr(NodeExpression* state)
-{ switch (state->nodeType) {
+{ 
+    switch (state->nodeType) {
         case BIN_OP: {
             fprintf(stderr, "Entering BIN_OP\n");
             NodeBinaryOperator* binOp = static_cast<NodeBinaryOperator*>(state);
@@ -120,76 +300,4 @@ NodeExpression* evalExpr(NodeExpression* state)
 
     fprintf(stderr, "ERROR OUT OF SWITCH STATEMENT exiting...\n");
     exit(0);
-}
-
-
-void semFreeSymbolTable()
-{
-    freeSymbolTable(&symTableHead);
-}
-
-
-void semantic(Node* state)
-{
-    switch (state->nodeType){
-        case STMT_LIST: {
-            fprintf(stderr, "Entering STMT_LIST\n");
-            NodeStmtList* stmtList = static_cast<NodeStmtList*>(state);
-            int size = getStmtListSize(stmtList);
-
-            for(int index = 0; index < size; index++){
-                NodeStatement* curr = indexStmtList(stmtList, index);
-                if(curr){
-                    semantic(curr);
-                }
-                else{
-                    //TODO HANDLE THIS
-                }
-            }
-            fprintf(stderr, "Leaving STMT_LIST\n");
-            break;
-        }
-        case BLOCK: {
-            fprintf(stderr, "Entering BLOCK\n");
-            NodeBlock* block = static_cast<NodeBlock*>(state);
-            appendNewBasicBlock(&symTableHead);
-            semantic(block->stms);
-            freeTopBlock(&symTableHead);
-            fprintf(stderr, "Leaving BLOCK\n");
-            break;
-        }
-        case DECL: {
-            fprintf(stderr, "Entering DECL\n");
-            NodeDecl* decl = static_cast<NodeDecl*>(state);
-            fprintf(stderr, "==========\n");
-            if(!decl->value){
-                fprintf(stderr, "***\n");
-            }
-
-            NodeExpression* newExprStmt = evalExpr(decl->value);
-            fprintf(stderr, "==========\n");
-            decl->value = newExprStmt;
-
-            fprintf(stderr, "==========\n");
-            insertSymbolFromNode(symTableHead, decl);
-
-            dumpSymbolTable(symTableHead);
-
-            
-            fprintf(stderr, "Leaving DECL\n");
-            break;
-        }
-        case EXPR_STMT: {
-            fprintf(stderr, "Entering EXPR_STMT\n");
-            NodeExprStmt* exprStmt = static_cast<NodeExprStmt*>(state);
-            evalExpr(exprStmt->expr);
-            fprintf(stderr, "Leaving EXPR_STMT\n");
-            break;
-        }
-        default: {
-            fprintf(stderr, "Hit default case semantic.cpp\
-                            semantic %d\n", state->nodeType);
-            break;
-        }
-    }
 }
