@@ -19,7 +19,7 @@ void printText(int tabCount, const char* text)
     fprintf(stdout, "%s", text);
 }
 
-void debugExprNode(NODE_TYPE type, int enteringNode)
+void debugStmtNode(NODE_TYPE type, int enteringNode)
 {
     
     if(DEBUG_MODE){
@@ -51,6 +51,40 @@ void debugExprNode(NODE_TYPE type, int enteringNode)
         }
     }
 }
+
+void debugExprNode(NodeExpression* exprNode, int enteringNode)
+{
+    
+    if(DEBUG_MODE){
+        if(!enteringNode){
+            printText(depth, ")\n" );    
+            return;
+        }
+
+        switch(exprNode->nodeType){
+            case BIN_OP: {
+                printText(depth, "BinOpNode(\n");    
+                return;
+            }
+            case ID: {
+                printText(depth, "IdentifierNode(\n");
+                return;
+            }
+            case DOUBLE: {
+                printText(depth, "DoubleNode(\n");    
+                return;
+            }
+            case FUNCTION_CALL: {
+                printText(depth, "FunctionCallNode(\n");    
+                return;
+            }
+            default: {
+                
+            }
+        }
+    }
+}
+
 
 void quitMessage(const char* msg)
 {
@@ -145,43 +179,43 @@ void _processStmtNode(Node* node)
 {
     switch (node->nodeType) {
         case STMT_LIST: {
-            debugExprNode(node->nodeType, 1);
+            debugStmtNode(node->nodeType, 1);
             depth++;
 
             _processStmtListNode(static_cast<NodeStmtList*>(node));
 
             depth--;
-            debugExprNode(node->nodeType, 0);
+            debugStmtNode(node->nodeType, 0);
             return;
         }
         case EXPR_STMT: {
-            debugExprNode(node->nodeType, 1);
+            debugStmtNode(node->nodeType, 1);
             depth++;
 
             _processExprStmt(static_cast<NodeExprStmt*>(node));
 
             depth--;
-            debugExprNode(node->nodeType, 0);
+            debugStmtNode(node->nodeType, 0);
             return;
         }
         case DECL: {
-            debugExprNode(node->nodeType, 1);
+            debugStmtNode(node->nodeType, 1);
             depth++;
 
             _processDeclNode(static_cast<NodeDecl*>(node));
 
             depth--;
-            debugExprNode(node->nodeType, 0);
+            debugStmtNode(node->nodeType, 0);
             return;
         }
         case BLOCK: {
-            debugExprNode(node->nodeType, 1);
+            debugStmtNode(node->nodeType, 1);
             depth++;
 
             _pocessBlockNode(static_cast<NodeBlock*>(node));
 
             depth--;
-            debugExprNode(node->nodeType, 0);
+            debugStmtNode(node->nodeType, 0);
             return;
         }
         default: {
@@ -291,24 +325,42 @@ NodeExpression* evalExpr(NodeExpression* state)
 { 
     switch (state->nodeType) {
         case BIN_OP: {
-            //depth++;
-            return _processBinOp(static_cast<NodeBinaryOperator*>(state));
-            //depth--;
+            debugExprNode(state, 1);
+            depth++;
+
+            NodeExpression* result = _processBinOp(static_cast<NodeBinaryOperator*>(state));
+            depth--;
+            debugExprNode(state, 0);
+            return result;
         }
         case ID: {
-            //depth++;
-            return _processId(static_cast<NodeIdentifier*>(state));
-            //depth--;
+            debugExprNode(state, 1);
+            depth++;
+            
+            NodeExpression* result = _processId(static_cast<NodeIdentifier*>(state));
+
+            depth--;
+            debugExprNode(state, 0);
+            return result;
         }
         case DOUBLE: {
-            //depth++;
-            return _processNumber(static_cast<NodeNumber*>(state));
-            //depth--;
+            debugExprNode(state, 1);
+            depth++;
+            
+            NodeExpression* result = _processNumber(static_cast<NodeNumber*>(state));
+
+            depth--;
+            debugExprNode(state, 0);
+            return result;
         }
         case FUNCTION_CALL: {
-            //depth++;
-            return _processFunctionCall(static_cast<NodeFunctionCall*>(state));
-            //depth--;
+            debugExprNode(state, 1);
+            depth++;
+
+            NodeExpression* result = _processFunctionCall(static_cast<NodeFunctionCall*>(state));
+            depth--;
+            debugExprNode(state, 0);
+            return result;
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
