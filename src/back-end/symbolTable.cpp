@@ -46,13 +46,11 @@ void freeTopBlock(SymbolTableHead** symTable)
 {
     //We might be the last block
     if(!(*symTable)->next){
-        fprintf(stderr, "FREEING TOP BLOCK\n");
         freeSymbolList(&(*symTable)->sym);
         free(*symTable);
         (*symTable) = NULL;
     }
     else{
-        fprintf(stderr, "FREEING NON TOP BLOCK\n");
         SymbolTableHead* currHead = (*symTable);
         SymbolTableHead* newHead = (*symTable)->next;
 
