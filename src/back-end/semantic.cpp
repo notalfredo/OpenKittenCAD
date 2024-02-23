@@ -108,6 +108,11 @@ void _processBlockNode(NodeBlock* node)
     freeTopBlock(&symTableHead);
 }
 
+void _processFunctionNode(NodeFunction* node)
+{
+    insertSymbolFromNode(symTableHead, node);
+}
+
 
 void _processStmtNode(Node* node)
 {
@@ -129,7 +134,8 @@ void _processStmtNode(Node* node)
             return;
         }
         case FUNCTION: {
-
+            _processFunctionNode(static_cast<NodeFunction*>(node));
+            return;
         }
         default: {
             std::string msg = "Hit non stmt node in _processStmtNode: " + std::string(nodeTypeToString(node->nodeType));
@@ -219,9 +225,28 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
 {
     functionPtr* funcPtr = lookUpFunc(funcCallNode->id->idName);
     if(!funcPtr){
-        //TODO LOOK UP DECLARED FUNCTION FOR NOW JUST EXIT
-        fprintf(stderr, "UNABLE TO FIND FUNCTION EXITING...\n");
-        exit(0);
+        Symbol* sym = getSymbolNode(symTableHead, funcCallNode->id->idName);
+        if(!sym){
+            quitMessage( "UNABLE TO FIND FUNCTION EXITING...\n");
+        }
+
+        int exprLength = getExpressionLength(funcCallNode->args);
+        int declLength = getDeclListSize(sym->function->arguments);
+        if(exprLength != declLength) { 
+            quitMessage(("Calling function with incorrect number of arguments...\n"));
+        }
+
+        NodeExpression* evaluatedExprs = NULL;     
+
+        
+        //for(int index = 0; index < exprLength; index++){
+            //NodeExpression* resultExpr = indexExprList(evaluatedExprs, index);
+            //NodeExpression* evaluated = evalExpr(resultExpr);
+
+
+        //}
+    
+
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE

@@ -180,6 +180,7 @@ class NodeExprStmt: public NodeStatement {
     public:
         NodeExpression* expr;
         NodeExprStmt(NodeExpression* expr, Node* _prevAlloc):expr(expr){
+            this->nextStmt = NULL;
             this->nodeType = EXPR_STMT;
             this->_allocatedLinkedList = _prevAlloc;
         }
@@ -388,14 +389,16 @@ int countAllocatedNodes();
 
 
 
-extern void appendExprLinkedList(NodeExpression* head, NodeExpression* newMember);
+extern void appendExprLinkedList(NodeExpression** head, NodeExpression* newMember);
 extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
+extern int getExpressionLength(NodeExpression* expr);
 extern void addDeclToList(NodeDeclList* list, NodeDecl* newDecl);
 extern int getDeclListSize(NodeDeclList* list);
 extern NodeDecl* indexDeclList(NodeDeclList* list, int index);
+extern NodeExpression* indexExprList(NodeExpression* node, int index);
 
 //=============== FOR DEBUGGER ===============
 extern void programToJson(std::vector<NodeStatement*>* head);

@@ -7,6 +7,7 @@
 
 extern void semantic(NodeStmtList* state);
 
+extern int yydebug;
 
 
 TAU_MAIN()
@@ -58,6 +59,7 @@ TEST(semantic, testTwo) {
     }
 
      
+    //yydebug = 1;
     yyscan_t scanner;
     yylex_init(&scanner);
     yyrestart(filePtr, scanner);

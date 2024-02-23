@@ -15,9 +15,6 @@ static int blockNumber = 1;
 void freeSymbolNode(Symbol** symbolNode)
 {
     free((*symbolNode)->name);
-    if((*symbolNode)->functionArgs){
-        //TODO FREE FUNCTION ARGS
-    }
     free(*symbolNode);
 }
 
@@ -146,7 +143,6 @@ static Symbol* _symbolFromTreeNode(Node* node)
             newSym->name = strdup(declNode->id->idName);
             newSym->symbolType = variable;
             newSym->next = NULL;
-            newSym->functionArgs = NULL;
             
             switch (declNode->type->idType){
                 case num: {
@@ -173,8 +169,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
             Symbol* newSym = (Symbol*)calloc(1, sizeof(Symbol));
             newSym->name = strdup(functionNode->id->idName);
             newSym->symbolType = function;
-            newSym->returnType = functionNode->returnType->idType;
-            newSym->functionArgs = _functionArgsFromDeclList(functionNode->arguments);
+            newSym->function = functionNode;
             return newSym;
         }
         default: {

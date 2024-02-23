@@ -24,7 +24,7 @@ const char* nodeTypeToString(NODE_TYPE type)
         case SHAPE:          { return "SHAPE\n";    }
         case STMT_LIST:      { return "BIN_OP\n";   }
         case DECL_LIST:      { return "DOUBLE\n";   }
-        case EXPR_STMT:      { return "SHAPE\n";    }
+        case EXPR_STMT:      { return "EXPR_STMT\n";    }
         default: {
             fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
             exit(0);

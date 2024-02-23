@@ -114,7 +114,7 @@ TEST(parser, testThree) {
     yyset_lineno( 1, scanner );
 
 
-    //yydebug = 1;
+    yydebug = 1;
     void *result = NULL;
     int parseState = yyparse( scanner, &result );
     
