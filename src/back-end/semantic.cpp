@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <string>
 
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 static int depth = 0;
 
 
@@ -17,72 +17,6 @@ void printText(int tabCount, const char* text)
         fprintf(stdout, "\t");
     }
     fprintf(stdout, "%s", text);
-}
-
-void debugStmtNode(NODE_TYPE type, int enteringNode)
-{
-    
-    if(DEBUG_MODE){
-        if(!enteringNode){
-            printText(depth, ")\n" );    
-            return;
-        }
-
-        switch(type){
-            case STMT_LIST: {
-                printText(depth, "StmtListNode(\n");    
-                return;
-            }
-            case EXPR_STMT: {
-                printText(depth, "ExprNode(\n");
-                return;
-            }
-            case DECL: {
-                printText(depth, "DeclNode(\n");    
-                return;
-            }
-            case BLOCK: {
-                printText(depth, "BlockNode(\n");    
-                return;
-            }
-            default: {
-                
-            }
-        }
-    }
-}
-
-void debugExprNode(NodeExpression* exprNode, int enteringNode)
-{
-    
-    if(DEBUG_MODE){
-        if(!enteringNode){
-            printText(depth, ")\n" );    
-            return;
-        }
-
-        switch(exprNode->nodeType){
-            case BIN_OP: {
-                printText(depth, "BinOpNode(\n");    
-                return;
-            }
-            case ID: {
-                printText(depth, "IdentifierNode(\n");
-                return;
-            }
-            case DOUBLE: {
-                printText(depth, "DoubleNode(\n");    
-                return;
-            }
-            case FUNCTION_CALL: {
-                printText(depth, "FunctionCallNode(\n");    
-                return;
-            }
-            default: {
-                
-            }
-        }
-    }
 }
 
 
@@ -107,7 +41,7 @@ static NodeExpression* evalExpr(NodeExpression* state);
 static void _processStmtListNode(NodeStmtList* node);
 static void _processStmtNode(Node* node);
 static void _processExprStmt(NodeExprStmt* node);
-static void _pocessBlockNode(NodeBlock* node);
+static void _processBlockNode(NodeBlock* node);
 static void _processDeclNode(NodeDecl* node);
 
 
@@ -163,13 +97,11 @@ void _processDeclNode(NodeDecl* node)
     //dumpSymbolTable(symTableHead);
 }
 
-void _pocessBlockNode(NodeBlock* node)
+void _processBlockNode(NodeBlock* node)
 {
     appendNewBasicBlock(&symTableHead);
 
-    if(node->stms){
-        _processStmtListNode(node->stms);
-    }
+    _processStmtListNode(node->stms);
 
     freeTopBlock(&symTableHead);
 }
@@ -179,43 +111,19 @@ void _processStmtNode(Node* node)
 {
     switch (node->nodeType) {
         case STMT_LIST: {
-            debugStmtNode(node->nodeType, 1);
-            depth++;
-
             _processStmtListNode(static_cast<NodeStmtList*>(node));
-
-            depth--;
-            debugStmtNode(node->nodeType, 0);
             return;
         }
         case EXPR_STMT: {
-            debugStmtNode(node->nodeType, 1);
-            depth++;
-
             _processExprStmt(static_cast<NodeExprStmt*>(node));
-
-            depth--;
-            debugStmtNode(node->nodeType, 0);
             return;
         }
         case DECL: {
-            debugStmtNode(node->nodeType, 1);
-            depth++;
-
             _processDeclNode(static_cast<NodeDecl*>(node));
-
-            depth--;
-            debugStmtNode(node->nodeType, 0);
             return;
         }
         case BLOCK: {
-            debugStmtNode(node->nodeType, 1);
-            depth++;
-
-            _pocessBlockNode(static_cast<NodeBlock*>(node));
-
-            depth--;
-            debugStmtNode(node->nodeType, 0);
+            _processBlockNode(static_cast<NodeBlock*>(node));
             return;
         }
         default: {
@@ -325,42 +233,16 @@ NodeExpression* evalExpr(NodeExpression* state)
 { 
     switch (state->nodeType) {
         case BIN_OP: {
-            debugExprNode(state, 1);
-            depth++;
-
-            NodeExpression* result = _processBinOp(static_cast<NodeBinaryOperator*>(state));
-            depth--;
-            debugExprNode(state, 0);
-            return result;
+            return _processBinOp(static_cast<NodeBinaryOperator*>(state));
         }
         case ID: {
-            debugExprNode(state, 1);
-            depth++;
-            
-            NodeExpression* result = _processId(static_cast<NodeIdentifier*>(state));
-
-            depth--;
-            debugExprNode(state, 0);
-            return result;
+            return _processId(static_cast<NodeIdentifier*>(state));
         }
         case DOUBLE: {
-            debugExprNode(state, 1);
-            depth++;
-            
-            NodeExpression* result = _processNumber(static_cast<NodeNumber*>(state));
-
-            depth--;
-            debugExprNode(state, 0);
-            return result;
+            return _processNumber(static_cast<NodeNumber*>(state));
         }
         case FUNCTION_CALL: {
-            debugExprNode(state, 1);
-            depth++;
-
-            NodeExpression* result = _processFunctionCall(static_cast<NodeFunctionCall*>(state));
-            depth--;
-            debugExprNode(state, 0);
-            return result;
+            return _processFunctionCall(static_cast<NodeFunctionCall*>(state));
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
