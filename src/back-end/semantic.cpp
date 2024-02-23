@@ -101,7 +101,9 @@ void _processBlockNode(NodeBlock* node)
 {
     appendNewBasicBlock(&symTableHead);
 
-    _processStmtListNode(node->stms);
+    if(node->stms){
+        _processStmtListNode(node->stms);
+    }
 
     freeTopBlock(&symTableHead);
 }
@@ -125,6 +127,9 @@ void _processStmtNode(Node* node)
         case BLOCK: {
             _processBlockNode(static_cast<NodeBlock*>(node));
             return;
+        }
+        case FUNCTION: {
+
         }
         default: {
             std::string msg = "Hit non stmt node in _processStmtNode: " + std::string(nodeTypeToString(node->nodeType));

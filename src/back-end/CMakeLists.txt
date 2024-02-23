@@ -51,4 +51,3 @@ set_source_files_properties(
 
 # Link against the Flex library
 target_include_directories(driver PUBLIC ./)
-target_link_libraries(driver PRIVATE -ly -ll)

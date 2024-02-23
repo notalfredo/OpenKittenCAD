@@ -83,6 +83,9 @@ set_source_files_properties(parser.tab.c PROPERTIES LANGUAGE CXX)
 set_source_files_properties(lexer.yy.c PROPERTIES LANGUAGE CXX)
 
 
+target_compile_options(semantic_test PRIVATE -g)
+
+
 target_include_directories(lexer_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(parser_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
 target_include_directories(symbol_table_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
