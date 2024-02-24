@@ -397,12 +397,16 @@ extern void appendToStmtList(NodeStmtList* list, NodeStatement* newMember);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
+
+/*nodeImpl.cpp*/
 extern int getExpressionLength(NodeExpression* expr);
 extern void addDeclToList(NodeDeclList* list, NodeDecl* newDecl);
 extern int getDeclListSize(NodeDeclList* list);
 extern NodeDecl* indexDeclList(NodeDeclList* list, int index);
 extern NodeExpression* indexExprList(NodeExpression* node, int index);
-ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType);
+extern ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType);
+extern int getStmtListSize(NodeStmtList* list);
+extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
 
 //=============== FOR DEBUGGER ===============
 extern void programToJson(std::vector<NodeStatement*>* head);

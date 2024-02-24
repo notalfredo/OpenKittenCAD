@@ -4,10 +4,15 @@
 
 void appendExprLinkedList(NodeExpression** head, NodeExpression* newMember)
 {
+    if(!newMember){
+        fprintf(stderr, "Trying to append NULL to expr linked list exiting ... \n");
+        exit(1);
+    }
+
     NodeExpression* temp = *head;
     
     if(!temp){
-        temp = newMember;
+        *head = newMember;
         return;
     }
 
@@ -135,7 +140,7 @@ NodeDecl* indexDeclList(NodeDeclList* list, int index)
 }
 
 
-ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType)
+ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType)
 {
     switch(nodeType){
         case DOUBLE:{

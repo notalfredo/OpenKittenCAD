@@ -32,12 +32,6 @@ void quitMessage(const char* msg)
 static SymbolTableHead* symTableHead = NULL;
 
 
-/* nodeImpl.cpp */
-extern int getStmtListSize(NodeStmtList* list);
-extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
-ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType);
-
-
 
 /* Forward function declarations */
 static NodeExpression* evalExpr(NodeExpression* state);
@@ -261,10 +255,10 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
 
             NodeDecl* resultDecl = indexDeclList(sym->function->arguments, index);
 
-            if(exprNodeTypeToIdType(evaluated->nodeType) != resultDecl->type->idType){
+            if(idTypeFromNodeType(evaluated->nodeType) != resultDecl->type->idType){
                 fprintf(stderr, "function call %s passed %s in %d%s arugment ... expected %s ... exiting ..\n",
                         funcCallNode->id->idName, 
-                        idTypeTostring(exprNodeTypeToIdType(evaluated->nodeType)),
+                        idTypeTostring(idTypeFromNodeType(evaluated->nodeType)),
                         index,
                         numToStrPlace(index),
                         idTypeTostring(resultDecl->type->idType)
@@ -274,6 +268,17 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
 
             appendExprLinkedList(&evaluatedExprs, evaluated);
         }
+        
+        int evalExprLength = getExpressionLength(evaluatedExprs);
+        if(evalExprLength != exprLength){
+            fprintf(stderr, "function call with %d arguments called with %d arguments but was only able to evaluate %d arguments exiting ...\n",
+                declLength,
+                exprLength,
+                evalExprLength
+            );
+            exit(1);
+        }
+
         
         //Make sure evaluated exprs are in symbol table
               
@@ -288,6 +293,21 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
 
         SymbolTableHead* temp = symTableHead; 
         symTableHead = functionCallNewSymbolTable(temp, sym);
+
+
+        
+        //NodeExpression* evaluatedExprs = NULL;     
+        for(int index = 0; index < exprLength; index++){
+            NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
+            NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);
+
+            declIndexed->value = epxressionIndexed;
+
+            insertSymbolFromNode(symTableHead, declIndexed);
+        }
+
+        _processStmtNode(sym->function->block);
+        
         
         freeFunctionCallSymbolTable(&symTableHead, sym);
         symTableHead = temp; 
