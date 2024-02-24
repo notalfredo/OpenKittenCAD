@@ -201,7 +201,7 @@ NodeExpression* _processId(NodeIdentifier* id)
             
     switch(sym->idType){
         case num: {
-            return sym->numVal;
+            return newNumberNode(sym->numVal->value);
         }
         case shape: {
             //TODO
@@ -300,14 +300,17 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
         for(int index = 0; index < exprLength; index++){
             NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
             NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);
-
             declIndexed->value = epxressionIndexed;
-
             insertSymbolFromNode(symTableHead, declIndexed);
         }
 
         _processStmtNode(sym->function->block);
         
+
+        for(int index = 0; index < exprLength; index++){
+            NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);
+            declIndexed->value = NULL;
+        }
         
         freeFunctionCallSymbolTable(&symTableHead, sym);
         symTableHead = temp; 
