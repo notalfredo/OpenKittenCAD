@@ -9,6 +9,7 @@
 
 #define DEBUG_MODE 0
 static int depth = 0;
+static int insideFunction = 0;
 
 
 void printText(int tabCount, const char* text)
@@ -41,6 +42,7 @@ static void _processStmtNode(Node* node);
 static void _processExprStmt(NodeExprStmt* node);
 static void _processBlockNode(NodeBlock* node);
 static void _processDeclNode(NodeDecl* node);
+static NodeExpression* _processReturnStmt(NodeReturnStmt node);
 
 
 static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
@@ -66,12 +68,13 @@ void _processStmtListNode(NodeStmtList* stmtList)
     int size = getStmtListSize(stmtList);
     for(int index = 0; index < size; index++){
         NodeStatement* curr = indexStmtList(stmtList, index);
-        if(curr){
-            _processStmtNode(curr);
+
+        if(!curr){
+            fprintf(stderr, "Inside processStmtListNode was unable to index stmt list node ... exiting ...\n");
+            exit(1);
         }
-        else{
-            //TODO HANDLE THIS
-        }
+
+        _processStmtNode(curr);
     }
 }
 
@@ -112,12 +115,20 @@ void _processFunctionNode(NodeFunction* node)
     insertSymbolFromNode(symTableHead, node);
 }
 
+NodeExpression* _processReturnStmt(NodeReturnStmt* node)
+{
+    return evalExpr(node->returnExpr);
+}
 
 void _processStmtNode(Node* node)
 {
     switch (node->nodeType) {
         case STMT_LIST: {
             _processStmtListNode(static_cast<NodeStmtList*>(node));
+            return;
+        }
+        case RETURN_STMT: {
+            _processReturnStmt(static_cast<NodeReturnStmt*>(node));
             return;
         }
         case EXPR_STMT: {
@@ -279,24 +290,10 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
             exit(1);
         }
 
-        
-        //Make sure evaluated exprs are in symbol table
-              
-        
-        /*
-         * Create new sybol table:
-         *   this new symbol table should have only variables
-         *   present above the function definition. 
-         *
-         *   Any new variables found int his
-        */
-
         SymbolTableHead* temp = symTableHead; 
         symTableHead = functionCallNewSymbolTable(temp, sym);
 
 
-        
-        //NodeExpression* evaluatedExprs = NULL;     
         for(int index = 0; index < exprLength; index++){
             NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
             NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);

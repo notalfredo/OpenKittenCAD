@@ -78,6 +78,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
   NodeExprStmt*   exprStmtNode;
 
+  NodeReturnStmt* returnStmtNode;
+
   char*           charPointer;
 }
 
@@ -123,9 +125,11 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <blockNode>                    block
 
-%type<exprNode>                      expr argList initOpt
+%type<exprNode>                      expr argList initOpt return
 
 %type<exprStmtNode>                  exprStmt
+
+%type<returnStmtNode>                returnStmt
 
 %left '+' '-'
 %nonassoc tok_ASSIGN
@@ -149,6 +153,7 @@ stmt:
   | functionStmt    { $$ = $1; }
   | declStmt        { $$ = $1; }
   | exprStmt        { $$ = $1; }
+  | returnStmt      { $$ = $1; }
   ;
 
 stmtList:
@@ -186,6 +191,10 @@ paramDeclList:
         NodeDeclList* temp = newDeclList($1); 
         $$ = temp;
   }
+  ;
+
+returnStmt:
+    tok_RETURN expr     { $$ = newReturnNode($2); }
   ;
 
 paramDecl:

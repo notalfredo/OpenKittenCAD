@@ -55,6 +55,7 @@ typedef enum nodeType {
     STMT_LIST,
     DECL_LIST,
     EXPR_STMT,
+    RETURN_STMT,
 } NODE_TYPE;
 
 
@@ -119,12 +120,14 @@ class NodeFunctionCall: public NodeExpression {
     public:
         NodeIdentifier* id;
         NodeExpression* args;
+        NodeExpression* returnedValue;
         NodeFunctionCall(
             NodeIdentifier* id,
             NodeExpression* args,
             Node* _prevAlloc
         ): id(id), args(args) {
             this->nodeType = FUNCTION_CALL,
+            this->returnedValue = NULL;
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;
         }
@@ -176,6 +179,16 @@ class NodeBinaryOperator: public NodeExpression {
                      NODE STATEMENTS  
    =======================================================
 */  
+class NodeReturnStmt: public NodeStatement {
+    public:
+        NodeExpression* returnExpr;
+        NodeReturnStmt(NodeExpression* returnExpr, Node* _prevAlloc): returnExpr(returnExpr) {
+        this->nodeType = RETURN_STMT;
+        this->_allocatedLinkedList = _prevAlloc;
+    }
+};
+
+
 class NodeExprStmt: public NodeStatement {
     public:
         NodeExpression* expr;
@@ -262,7 +275,6 @@ class NodeFunction: public NodeStatement {
             this->nextStmt = NULL;
             this->nodeType = FUNCTION;
             this->_allocatedLinkedList = _prevAlloc;
-
             this->blockNumber = 0;
         }
 };
@@ -387,6 +399,7 @@ NodeBlock* newNodeBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
+NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
 void freeAllNodes();
 int countAllocatedNodes();
 

@@ -125,6 +125,13 @@ NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeT
 }
 
 
+NodeReturnStmt* newReturnNode(NodeExpression* returnNode)
+{
+    NodeReturnStmt* me = new NodeReturnStmt(returnNode, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
 
 void _freeNode(Node* node) {
     switch (node->nodeType) {
