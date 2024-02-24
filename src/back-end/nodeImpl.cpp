@@ -6,7 +6,7 @@ void appendExprLinkedList(NodeExpression** head, NodeExpression* newMember)
 {
     NodeExpression* temp = *head;
     
-    if(temp){
+    if(!temp){
         temp = newMember;
         return;
     }

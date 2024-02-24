@@ -240,20 +240,26 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
             exit(1);
         }
 
-        int exprLength = getExpressionLength(funcCallNode->args);
         int declLength = getDeclListSize(sym->function->arguments);
+        int exprLength = getExpressionLength(funcCallNode->args);
         if(exprLength != declLength) { 
-            quitMessage(("Calling function with incorrect number of arguments...\n"));
+            fprintf(stderr, "Calling function '%s' with incorrect number of arguments function declared with %d arguments called with %d\n",
+                    sym->name,
+                    declLength,
+                    exprLength
+            );
+
+
+            exit(1);
         }
 
         NodeExpression* evaluatedExprs = NULL;     
-
         
         for(int index = 0; index < exprLength; index++){
-            NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
+            NodeExpression* epxressionIndexed = indexExprList(funcCallNode->args, index);
+            NodeExpression* evaluated = evalExpr(epxressionIndexed);
 
             NodeDecl* resultDecl = indexDeclList(sym->function->arguments, index);
-            NodeExpression* evaluated = evalExpr(epxressionIndexed);
 
             if(exprNodeTypeToIdType(evaluated->nodeType) != resultDecl->type->idType){
                 fprintf(stderr, "function call %s passed %s in %d%s arugment ... expected %s ... exiting ..\n",
@@ -280,11 +286,11 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
          *   Any new variables found int his
         */
 
-        SymbolTableHead* temp = symTableHead; 
-        symTableHead = functionCallNewSymbolTable(temp, sym);
+        //SymbolTableHead* temp = symTableHead; 
+        //symTableHead = functionCallNewSymbolTable(temp, sym);
         
 
-        symTableHead = temp; 
+        //symTableHead = temp; 
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
