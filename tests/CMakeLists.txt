@@ -37,10 +37,15 @@ set(COMMON_INCLUDE_DIRECTORIES
 
 
 add_executable(lexer_test ./lexer_test.cpp)
-add_executable(parser_test ./parser_test.cpp)
+add_executable(parser_test
+    ./parser_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+)
 add_executable(
     symbol_table_test 
     ./symbol_table_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
@@ -64,8 +69,8 @@ add_executable(functions_test
 target_link_libraries(parser_test
     PUBLIC 
     CommonSources
-    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
-    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
+    #${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
+    #${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
     tau
 )
 target_link_libraries(lexer_test PUBLIC CommonSources tau)
@@ -81,6 +86,13 @@ target_link_libraries(functions_test PUBLIC tau)
 # NOTE WE ARE NOT USING C++ Flex scanner
 set_source_files_properties(parser.tab.c PROPERTIES LANGUAGE CXX)
 set_source_files_properties(lexer.yy.c PROPERTIES LANGUAGE CXX)
+
+
+target_compile_options(lexer_test PRIVATE -g)
+target_compile_options(parser_test PRIVATE -g)
+target_compile_options(symbol_table_test PRIVATE -g)
+target_compile_options(semantic_test PRIVATE -g)
+target_compile_options(functions_test PRIVATE -g)
 
 
 target_include_directories(lexer_test PUBLIC ${COMMON_INCLUDE_DIRECTORIES})

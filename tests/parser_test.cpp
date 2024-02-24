@@ -15,7 +15,6 @@
 
 extern int yydebug;
 
-extern void programToJson(NodeStmtList* head, const char* fileLocation);
 
 
 TAU_MAIN()
@@ -48,7 +47,7 @@ TEST(parser, testOne) {
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
     }else {
-        programToJson((NodeStmtList*)result, outputPath.c_str());
+        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     freeAllNodes();
@@ -84,7 +83,7 @@ TEST(parser, testTwo) {
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
     }else {
-        programToJson((NodeStmtList*)result, outputPath.c_str());
+        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);

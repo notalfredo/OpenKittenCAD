@@ -6,6 +6,11 @@
 static int blockNumber = 1;
 
 
+void freeSymbolNode(Symbol** symbolNode);
+void freeSymbolList(Symbol** symbolList);
+void freeTopBlock(SymbolTableHead** symTable);
+
+
 
 /* 
    =================================================== 
@@ -15,9 +20,6 @@ static int blockNumber = 1;
 void freeSymbolNode(Symbol** symbolNode)
 {
     free((*symbolNode)->name);
-    if((*symbolNode)->functionArgs){
-        //TODO FREE FUNCTION ARGS
-    }
     free(*symbolNode);
 }
 
@@ -46,13 +48,11 @@ void freeTopBlock(SymbolTableHead** symTable)
 {
     //We might be the last block
     if(!(*symTable)->next){
-        fprintf(stderr, "FREEING TOP BLOCK\n");
         freeSymbolList(&(*symTable)->sym);
         free(*symTable);
         (*symTable) = NULL;
     }
     else{
-        fprintf(stderr, "FREEING NON TOP BLOCK\n");
         SymbolTableHead* currHead = (*symTable);
         SymbolTableHead* newHead = (*symTable)->next;
 
@@ -148,7 +148,6 @@ static Symbol* _symbolFromTreeNode(Node* node)
             newSym->name = strdup(declNode->id->idName);
             newSym->symbolType = variable;
             newSym->next = NULL;
-            newSym->functionArgs = NULL;
             
             switch (declNode->type->idType){
                 case num: {
@@ -175,8 +174,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
             Symbol* newSym = (Symbol*)calloc(1, sizeof(Symbol));
             newSym->name = strdup(functionNode->id->idName);
             newSym->symbolType = function;
-            newSym->returnType = functionNode->returnType->idType;
-            newSym->functionArgs = _functionArgsFromDeclList(functionNode->arguments);
+            newSym->function = functionNode;
             return newSym;
         }
         default: {
@@ -290,6 +288,7 @@ int containsSymbolName(SymbolTableHead* symTable, const char* searchName)
 }
 
 
+
 Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName)
 {
     SymbolTableHead* head = symTable;
@@ -327,5 +326,71 @@ int getCurrentSize(SymbolTableHead* symTable)
 void resetBlockCounter()
 {
     blockNumber = 1;
+}
+
+
+
+BasicBlock* _getBlockOnNumber(SymbolTableHead* head, int blockNumber)
+{
+    if(!head){
+        fprintf(stderr, "When looking for block number symbol table was NULL ... exiting ...\n");
+        exit(1);
+    }
+
+    BasicBlock* currHead = head;
+    int num = blockNumber;
+    
+    while(currHead && (currHead->blockNumber != num)){
+        currHead = currHead->next;
+    }
+
+    return currHead;
+}
+
+
+/* 
+ * When we do a function call only the variables before the function was declared 
+ * should be available in our symbol table.
+*/
+SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym)
+{
+    NodeFunction* func = sym->function; 
+    BasicBlock* block = _getBlockOnNumber(currentSymbolTable, func->blockNumber);
+
+    if(!block){
+        fprintf(stderr, "Was looking for block with number %d, could not find ... exiting ...\n", func->blockNumber);
+        exit(1);
+    }
+
+
+    SymbolTableHead* newTable = newSymbolTable();
+    newTable->next = block->next;
+    newTable->blockNumber = block->blockNumber;
+    newTable->sym = sym;
+    appendNewBasicBlock(&newTable);
+
+    return newTable;
+}
+
+/* 
+ * We want free everything but the variables declared
+ * before this function. (So we dont double free later on)
+*/
+void freeFunctionCallSymbolTable(SymbolTableHead** currentSymbolTable, Symbol* sym)
+{
+    NodeFunction* func = sym->function;  
+    BasicBlock* curr = *currentSymbolTable;
+    
+    while(curr){
+        if(func->blockNumber == curr->blockNumber){
+            curr->next = NULL; 
+            curr->sym = NULL;
+            free(curr);
+            return;
+        }
+        BasicBlock* temp = curr->next;
+        freeTopBlock(&curr);
+        curr = temp;
+    }
 }
 

@@ -2,8 +2,7 @@
 
 
 const char* nodeTypeToString(NODE_TYPE type)
-{
-    switch(type) {
+{ switch(type) {
         case IF:             { return "IF\n";       }
         case ELIF:           { return "ELIF\n";     }
         case ELSE:           { return "ELSE\n";     }
@@ -24,7 +23,7 @@ const char* nodeTypeToString(NODE_TYPE type)
         case SHAPE:          { return "SHAPE\n";    }
         case STMT_LIST:      { return "BIN_OP\n";   }
         case DECL_LIST:      { return "DOUBLE\n";   }
-        case EXPR_STMT:      { return "SHAPE\n";    }
+        case EXPR_STMT:      { return "EXPR_STMT\n";    }
         default: {
             fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
             exit(0);
@@ -47,5 +46,34 @@ const char* nodeOpToString(NODE_OP nodeOp)
         }
     }
 }
+
+const char* idTypeTostring(ID_TYPE type){
+    switch(type){
+        case num: {
+            return "number";
+        }
+        case shape: {
+            return "shape";
+        }
+        case _void: {
+            return "void";
+        }
+    }
+}
+
+
+const char* numToStrPlace(int num){
+    if(num == 1){
+        return "st";
+    }
+    else if(num == 2){
+        return "nd";
+    }
+    else if(num == 3){
+        return "rd";
+    }
+    return "th";
+}
+
 
 

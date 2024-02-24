@@ -57,8 +57,7 @@ typedef struct symbol {
     
     SYMBLE_TYPE symbolType; // If we have a variable or function
                             //
-    ID_TYPE returnType; // If we are a function what do we return 
-    FUNCTION_ARG* functionArgs;
+    NodeFunction* function;
                         
     ID_TYPE  idType; // If we are a variable are we a number, shape ... MAKE SURE NOT TO ASSIGN VOID IF VARIABLE
     NodeNumber* numVal; //If variable and a number assign here
@@ -90,7 +89,13 @@ Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName);
 int getCurrentSize(SymbolTableHead* symTable);
 void resetBlockCounter();
 
+
+SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym);
+void freeFunctionCallSymbolTable(SymbolTableHead** currentSymbolTable, Symbol* sym);
+
+
 void dumpSymbolLinkedList(Symbol* head);
 void dumpSymbolTable(SymbolTableHead* head);
+
 
 #endif

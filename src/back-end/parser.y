@@ -223,7 +223,7 @@ expr:
 argList:
     %empty            { $$ = NULL; }
   | expr ',' expr     { 
-    appendExprLinkedList($1, $3);
+    appendExprLinkedList(&$1, $3);
     $$ = $1;
   }
   | expr             { $$ = $1;  }

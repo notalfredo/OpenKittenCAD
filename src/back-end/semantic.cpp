@@ -2,115 +2,344 @@
 #include "node.hxx"
 #include "symbolTable.hxx"
 #include "enumToString.hxx"
+#include "string.h"
 #include <cstdio>
 #include <cstdlib>
+#include <string>
+
+#define DEBUG_MODE 0
+static int depth = 0;
+
+
+void printText(int tabCount, const char* text)
+{
+    for(int i = 0; i < tabCount; i++){
+        fprintf(stdout, "\t");
+    }
+    fprintf(stdout, "%s", text);
+}
+
+
+void quitMessage(const char* msg)
+{
+    fprintf(stderr, "=============================\n");
+    fprintf(stderr, "%s exiting...", msg);
+    fprintf(stderr, "=============================\n");
+}
 
 
 /*when we initilziz symTableHead*/
-static SymbolTableHead* symTableHead = newSymbolTable();
+static SymbolTableHead* symTableHead = NULL;
 
-extern int getStmtListSize(NodeStmtList* list);
-NodeStatement* indexStmtList(NodeStmtList* list, int index);
+
+
+/* Forward function declarations */
+static NodeExpression* evalExpr(NodeExpression* state);
+
+static void _processStmtListNode(NodeStmtList* node);
+static void _processStmtNode(Node* node);
+static void _processExprStmt(NodeExprStmt* node);
+static void _processBlockNode(NodeBlock* node);
+static void _processDeclNode(NodeDecl* node);
+
+
+static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
+
+
+void semantic(NodeStmtList* head)
+{
+    symTableHead = newSymbolTable();
+    
+    if(head->nodeType != STMT_LIST || !head){
+        quitMessage("Head does not have type STMT_LIST or possible NULL\n");
+        exit(1);
+    }
+
+    _processStmtListNode(head);
+
+    freeSymbolTable(&symTableHead);
+}
+
+
+void _processStmtListNode(NodeStmtList* stmtList)
+{
+    int size = getStmtListSize(stmtList);
+    for(int index = 0; index < size; index++){
+        NodeStatement* curr = indexStmtList(stmtList, index);
+        if(curr){
+            _processStmtNode(curr);
+        }
+        else{
+            //TODO HANDLE THIS
+        }
+    }
+}
+
+
+void _processExprStmt(NodeExprStmt* node)
+{
+    evalExpr(node->expr);
+}
+
+
+void _processDeclNode(NodeDecl* node)
+{
+    if(!node->value){
+        quitMessage("_processDeclNode: TODO!\n");
+    }
+
+    NodeExpression* newExprStmt = evalExpr(node->value);
+    node->value = newExprStmt;
+    insertSymbolFromNode(symTableHead, node);
+
+    //dumpSymbolTable(symTableHead);
+}
+
+void _processBlockNode(NodeBlock* node)
+{
+    appendNewBasicBlock(&symTableHead);
+
+    if(node->stms){
+        _processStmtListNode(node->stms);
+    }
+
+    freeTopBlock(&symTableHead);
+}
+
+void _processFunctionNode(NodeFunction* node)
+{
+    node->blockNumber = symTableHead->blockNumber;
+    insertSymbolFromNode(symTableHead, node);
+}
+
+
+void _processStmtNode(Node* node)
+{
+    switch (node->nodeType) {
+        case STMT_LIST: {
+            _processStmtListNode(static_cast<NodeStmtList*>(node));
+            return;
+        }
+        case EXPR_STMT: {
+            _processExprStmt(static_cast<NodeExprStmt*>(node));
+            return;
+        }
+        case DECL: {
+            _processDeclNode(static_cast<NodeDecl*>(node));
+            return;
+        }
+        case BLOCK: {
+            _processBlockNode(static_cast<NodeBlock*>(node));
+            return;
+        }
+        case FUNCTION: {
+            _processFunctionNode(static_cast<NodeFunction*>(node));
+            return;
+        }
+        default: {
+            std::string msg = "Hit non stmt node in _processStmtNode: " + std::string(nodeTypeToString(node->nodeType));
+            quitMessage(msg.c_str());
+        }
+    }
+}
+
+
+NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
+{
+    NodeExpression* lhs = evalExpr(binOp->lhs);
+    NodeExpression* rhs = evalExpr(binOp->rhs);
+                
+
+    if(lhs->nodeType != rhs->nodeType){
+        fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
+        nodeTypeToString(lhs->nodeType), nodeTypeToString(rhs->nodeType));
+        exit(0);
+    }
+    else if((lhs->nodeType != DOUBLE) || (rhs->nodeType != DOUBLE)) {
+        fprintf(stderr, "--UNDEFINED BINOP--: lhs: \"%s\" op: \"%s\" rhs: \"%s\".. exiting ...\n", 
+            nodeTypeToString(lhs->nodeType),
+            nodeOpToString(binOp->binaryOperatorType),
+            nodeTypeToString(rhs->nodeType)
+        );
+        exit(0);
+    }
+                
+    switch(binOp->binaryOperatorType){
+        case OP_PLUS: {
+            NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+            NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
+            return newNumberNode(lhsNum->value + rhsNum->value);
+        }
+        case OP_SUB: {
+            NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+            NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
+            return newNumberNode(lhsNum->value - rhsNum->value);
+        }
+        case OP_ASSIGN: {
+            if(lhs->nodeType != ID){
+                fprintf(stderr, "Trying to assign to a non ID node\n"); 
+                exit(0);
+            }
+            //TODO UPDATE LHS IN SYMBOL TABLE
+        }
+        default: {
+            fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
+                exit(0);
+            }
+        }
+}
+
+
+NodeExpression* _processId(NodeIdentifier* id)
+{
+    Symbol* sym = getSymbolNode(symTableHead, id->idName);
+
+    if(!sym){
+        fprintf(stderr, "Looked for |%s| in sym table was unable to find exiting...\n", id->idName);
+        exit(0);
+    }
+            
+    switch(sym->idType){
+        case num: {
+            return newNumberNode(sym->numVal->value);
+        }
+        case shape: {
+            //TODO
+        }
+        case _void: {
+            //TODO
+        }
+    }
+    return NULL;
+}
+
+
+NodeExpression* _processNumber(NodeNumber* numberNode)
+{
+    return numberNode;
+}
+
+
+NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
+{
+    functionPtr* funcPtr = lookUpFunc(funcCallNode->id->idName);
+    if(!funcPtr){
+        Symbol* sym = getSymbolNode(symTableHead, funcCallNode->id->idName);
+        if(!sym){
+            fprintf(stderr, "Unable to find function with name %s ... exiting ... \n", sym->name);
+            exit(1);
+        }
+        else if(sym->symbolType != function){
+            fprintf(stderr, "Found symbol %s but was not function ... exiting ... \n", sym->name);
+            exit(1);
+        }
+
+        int declLength = getDeclListSize(sym->function->arguments);
+        int exprLength = getExpressionLength(funcCallNode->args);
+        if(exprLength != declLength) { 
+            fprintf(stderr, "Calling function '%s' with incorrect number of arguments function declared with %d arguments called with %d\n",
+                    sym->name,
+                    declLength,
+                    exprLength
+            );
+
+
+            exit(1);
+        }
+
+        NodeExpression* evaluatedExprs = NULL;     
+        
+        for(int index = 0; index < exprLength; index++){
+            NodeExpression* epxressionIndexed = indexExprList(funcCallNode->args, index);
+            NodeExpression* evaluated = evalExpr(epxressionIndexed);
+
+            NodeDecl* resultDecl = indexDeclList(sym->function->arguments, index);
+
+            if(idTypeFromNodeType(evaluated->nodeType) != resultDecl->type->idType){
+                fprintf(stderr, "function call %s passed %s in %d%s arugment ... expected %s ... exiting ..\n",
+                        funcCallNode->id->idName, 
+                        idTypeTostring(idTypeFromNodeType(evaluated->nodeType)),
+                        index,
+                        numToStrPlace(index),
+                        idTypeTostring(resultDecl->type->idType)
+                );
+                exit(1);
+            }
+
+            appendExprLinkedList(&evaluatedExprs, evaluated);
+        }
+        
+        int evalExprLength = getExpressionLength(evaluatedExprs);
+        if(evalExprLength != exprLength){
+            fprintf(stderr, "function call with %d arguments called with %d arguments but was only able to evaluate %d arguments exiting ...\n",
+                declLength,
+                exprLength,
+                evalExprLength
+            );
+            exit(1);
+        }
+
+        
+        //Make sure evaluated exprs are in symbol table
+              
+        
+        /*
+         * Create new sybol table:
+         *   this new symbol table should have only variables
+         *   present above the function definition. 
+         *
+         *   Any new variables found int his
+        */
+
+        SymbolTableHead* temp = symTableHead; 
+        symTableHead = functionCallNewSymbolTable(temp, sym);
+
+
+        
+        //NodeExpression* evaluatedExprs = NULL;     
+        for(int index = 0; index < exprLength; index++){
+            NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
+            NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);
+            declIndexed->value = epxressionIndexed;
+            insertSymbolFromNode(symTableHead, declIndexed);
+        }
+
+        _processStmtNode(sym->function->block);
+        
+
+        for(int index = 0; index < exprLength; index++){
+            NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);
+            declIndexed->value = NULL;
+        }
+        
+        freeFunctionCallSymbolTable(&symTableHead, sym);
+        symTableHead = temp; 
+    }
+    else{
+        //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
+        //      PARAM NEED TO HANDLE MULTIPLE
+        execFunc(funcPtr, evalExpr(funcCallNode->args));
+    }
+
+    //TODO
+    return NULL;
+}
 
 
 NodeExpression* evalExpr(NodeExpression* state)
-{ switch (state->nodeType) {
+{ 
+    switch (state->nodeType) {
         case BIN_OP: {
-            fprintf(stderr, "Entering BIN_OP\n");
-            NodeBinaryOperator* binOp = static_cast<NodeBinaryOperator*>(state);
-            NodeExpression* lhs = evalExpr(binOp->lhs);
-            NodeExpression* rhs = evalExpr(binOp->rhs);
-                
-
-
-            fprintf(stderr, "FIRST\n");
-            if(lhs->nodeType != rhs->nodeType){
-                fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
-                    nodeTypeToString(lhs->nodeType), nodeTypeToString(rhs->nodeType));
-                exit(0);
-            }
-            else if((lhs->nodeType != DOUBLE) || (rhs->nodeType != DOUBLE)) {
-                fprintf(stderr, "--UNDEFINED BINOP--: lhs: \"%s\" op: \"%s\" rhs: \"%s\".. exiting ...\n", 
-                    nodeTypeToString(lhs->nodeType),
-                    nodeOpToString(binOp->binaryOperatorType),
-                    nodeTypeToString(rhs->nodeType)
-                );
-                exit(0);
-            }
-            fprintf(stderr, "SECOND\n");
-                
-            switch(binOp->binaryOperatorType){
-                case OP_PLUS: {
-                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
-                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
-                    return newNumberNode(lhsNum->value + rhsNum->value);
-                }
-                case OP_SUB: {
-                    NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
-                    NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
-                    return newNumberNode(lhsNum->value - rhsNum->value);
-                }
-                case OP_ASSIGN: {
-                    if(lhs->nodeType != ID){
-                        fprintf(stderr, "Trying to assign to a non ID node\n"); 
-                        exit(0);
-                    }
-                    //TODO UPDATE LHS IN SYMBOL TABLE
-                }
-                default: {
-                    fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
-                    exit(0);
-                }
-            }
-            fprintf(stderr, "Leaving BIN_OP\n");
-            break;
+            return _processBinOp(static_cast<NodeBinaryOperator*>(state));
         }
         case ID: {
-            NodeIdentifier* idNode = static_cast<NodeIdentifier*>(state);
-
-            Symbol* sym = getSymbolNode(symTableHead, idNode->idName);
-
-            if(!sym){
-                fprintf(stderr, "Looked for |%s| in sym table was unable to find exiting...\n", idNode->idName);
-                exit(0);
-            }
-            
-            switch(sym->idType){
-                case num: {
-                    return sym->numVal;
-                }
-                case shape: {
-                    //TODO
-                }
-                case _void: {
-                    //TODO
-                }
-            }
+            return _processId(static_cast<NodeIdentifier*>(state));
         }
         case DOUBLE: {
-            fprintf(stderr, "Entering DOUBLE\n");
-            return state;
+            return _processNumber(static_cast<NodeNumber*>(state));
         }
         case FUNCTION_CALL: {
-            fprintf(stderr, "Entering FUNCTION CALL\n");
-            NodeFunctionCall* funcCallNode = static_cast<NodeFunctionCall*>(state);
-            functionPtr* funcPtr = lookUpFunc(funcCallNode->id->idName);
-            fprintf(stderr, "===================\n");
-            if(!funcPtr){
-                //TODO LOOK UP DECLARED FUNCTION FOR NOW JUST EXIT
-                fprintf(stderr, "UNABLE TO FIND FUNCTION EXITING...\n");
-                exit(0);
-            }
-            else{
-                fprintf(stderr, "===================\n");
-                //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
-                //      PARAM NEED TO HANDLE MULTIPLE
-                execFunc(funcPtr, evalExpr(funcCallNode->args));
-            }
-
-
-            //TODO
-            return NULL;
+            return _processFunctionCall(static_cast<NodeFunctionCall*>(state));
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
@@ -120,76 +349,4 @@ NodeExpression* evalExpr(NodeExpression* state)
 
     fprintf(stderr, "ERROR OUT OF SWITCH STATEMENT exiting...\n");
     exit(0);
-}
-
-
-void semFreeSymbolTable()
-{
-    freeSymbolTable(&symTableHead);
-}
-
-
-void semantic(Node* state)
-{
-    switch (state->nodeType){
-        case STMT_LIST: {
-            fprintf(stderr, "Entering STMT_LIST\n");
-            NodeStmtList* stmtList = static_cast<NodeStmtList*>(state);
-            int size = getStmtListSize(stmtList);
-
-            for(int index = 0; index < size; index++){
-                NodeStatement* curr = indexStmtList(stmtList, index);
-                if(curr){
-                    semantic(curr);
-                }
-                else{
-                    //TODO HANDLE THIS
-                }
-            }
-            fprintf(stderr, "Leaving STMT_LIST\n");
-            break;
-        }
-        case BLOCK: {
-            fprintf(stderr, "Entering BLOCK\n");
-            NodeBlock* block = static_cast<NodeBlock*>(state);
-            appendNewBasicBlock(&symTableHead);
-            semantic(block->stms);
-            freeTopBlock(&symTableHead);
-            fprintf(stderr, "Leaving BLOCK\n");
-            break;
-        }
-        case DECL: {
-            fprintf(stderr, "Entering DECL\n");
-            NodeDecl* decl = static_cast<NodeDecl*>(state);
-            fprintf(stderr, "==========\n");
-            if(!decl->value){
-                fprintf(stderr, "***\n");
-            }
-
-            NodeExpression* newExprStmt = evalExpr(decl->value);
-            fprintf(stderr, "==========\n");
-            decl->value = newExprStmt;
-
-            fprintf(stderr, "==========\n");
-            insertSymbolFromNode(symTableHead, decl);
-
-            dumpSymbolTable(symTableHead);
-
-            
-            fprintf(stderr, "Leaving DECL\n");
-            break;
-        }
-        case EXPR_STMT: {
-            fprintf(stderr, "Entering EXPR_STMT\n");
-            NodeExprStmt* exprStmt = static_cast<NodeExprStmt*>(state);
-            evalExpr(exprStmt->expr);
-            fprintf(stderr, "Leaving EXPR_STMT\n");
-            break;
-        }
-        default: {
-            fprintf(stderr, "Hit default case semantic.cpp\
-                            semantic %d\n", state->nodeType);
-            break;
-        }
-    }
 }

@@ -5,9 +5,9 @@
 #include <cstdio>
 
 
-extern void semFreeSymbolTable();
-extern void semantic(Node* state);
+extern void semantic(NodeStmtList* state);
 
+extern int yydebug;
 
 
 TAU_MAIN()
@@ -59,6 +59,7 @@ TEST(semantic, testTwo) {
     }
 
      
+    //yydebug = 1;
     yyscan_t scanner;
     yylex_init(&scanner);
     yyrestart(filePtr, scanner);
@@ -73,14 +74,13 @@ TEST(semantic, testTwo) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n");        
-        semantic((Node*)result);
+        semantic((NodeStmtList*)result);
     }
 
 
 
     yylex_destroy(scanner);
     freeAllNodes();
-    semFreeSymbolTable();
     fclose(filePtr);
 }
 

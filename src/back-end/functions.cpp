@@ -7,7 +7,7 @@
 
 void _print(double num)
 {
-    fprintf(stdout, "*********************%f\n", num);
+    fprintf(stdout, "%f\n", num);
 }
 
 functionPtr knownFunctions[] {
@@ -17,7 +17,6 @@ const int SIZE_OF_FUNS = sizeof(knownFunctions) / sizeof (functionPtr);
 
 functionPtr* lookUpFunc(const char * funcName)
 {
-    fprintf(stderr, "Looking up %s\n", funcName);
     for(int index = 0; index < SIZE_OF_FUNS; index++){
         if(!strcmp(knownFunctions[index].name, funcName)){
             return &knownFunctions[index];
@@ -33,7 +32,6 @@ void execFunc(functionPtr* functionPtr, NodeExpression* paramInfo)
 {
     switch(functionPtr->functionType){
         case printDouble: {
-            fprintf(stderr, "printDouble\n");
             NodeNumber* numNode = static_cast<NodeNumber*>(paramInfo);
             functionPtr->func.println(numNode->value);
             break;
