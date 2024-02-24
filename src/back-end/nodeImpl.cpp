@@ -1,3 +1,4 @@
+#include "enumToString.hxx"
 #include "node.hxx"
 #include <iostream>
 
@@ -134,5 +135,20 @@ NodeDecl* indexDeclList(NodeDeclList* list, int index)
 }
 
 
+ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType)
+{
+    switch(nodeType){
+        case DOUBLE:{
+            return num;
+        }
+        case SHAPE: {
+            return shape;
+        }
+        default: {
+            fprintf(stderr, "Can only pass numbers and shapes to functions you tried to pass %s, exiting...\n", nodeTypeToString(nodeType));
+            exit(1);
+        }
+    }
+}
 
 

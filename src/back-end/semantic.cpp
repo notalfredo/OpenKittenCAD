@@ -110,6 +110,7 @@ void _processBlockNode(NodeBlock* node)
 
 void _processFunctionNode(NodeFunction* node)
 {
+    node->blockNumber = symTableHead->blockNumber;
     insertSymbolFromNode(symTableHead, node);
 }
 
@@ -227,7 +228,12 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
     if(!funcPtr){
         Symbol* sym = getSymbolNode(symTableHead, funcCallNode->id->idName);
         if(!sym){
-            quitMessage( "UNABLE TO FIND FUNCTION EXITING...\n");
+            fprintf(stderr, "Unable to find function with name %s ... exiting ... \n", sym->name);
+            exit(1);
+        }
+        else if(sym->symbolType != function){
+            fprintf(stderr, "Found symbol %s but was not function ... exiting ... \n", sym->name);
+            exit(1);
         }
 
         int exprLength = getExpressionLength(funcCallNode->args);
@@ -239,14 +245,43 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
         NodeExpression* evaluatedExprs = NULL;     
 
         
-        //for(int index = 0; index < exprLength; index++){
-            //NodeExpression* resultExpr = indexExprList(evaluatedExprs, index);
-            //NodeExpression* evaluated = evalExpr(resultExpr);
+        for(int index = 0; index < exprLength; index++){
+            NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
 
+            NodeDecl* resultDecl = indexDeclList(sym->function->arguments, index);
+            NodeExpression* evaluated = evalExpr(epxressionIndexed);
 
-        //}
-    
+            if(exprNodeTypeToIdType(evaluated->nodeType) != resultDecl->type->idType){
+                fprintf(stderr, "function call %s passed %s in %d%s arugment ... expected %s ... exiting ..\n",
+                        funcCallNode->id->idName, 
+                        idTypeTostring(exprNodeTypeToIdType(evaluated->nodeType)),
+                        index,
+                        numToStrPlace(index),
+                        idTypeTostring(resultDecl->type->idType)
+                );
+                exit(1);
+            }
 
+            appendExprLinkedList(&evaluatedExprs, evaluated);
+        }
+        
+        //Make sure evaluated exprs are in symbol table
+              
+        
+        /*
+         * Create new sybol table:
+         *   this new symbol table should have only variables
+         *   present above the function definition. 
+         *
+         *   Any new variables found int his
+        */
+
+        SymbolTableHead* temp = symTableHead; 
+        //symTableHead = functionCallNewSymbolTable();
+        
+
+        
+       //symTableHead = temp; 
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE

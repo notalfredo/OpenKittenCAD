@@ -247,6 +247,7 @@ class NodeBlock: public NodeStatement {
 class NodeFunction: public NodeStatement {
     public: 
 
+        int blockNumber;
         NodeIdentifier* id;
         NodeDeclList* arguments;
         NodeType*  returnType;
@@ -261,6 +262,8 @@ class NodeFunction: public NodeStatement {
             this->nextStmt = NULL;
             this->nodeType = FUNCTION;
             this->_allocatedLinkedList = _prevAlloc;
+
+            this->blockNumber = 0;
         }
 };
 
@@ -399,6 +402,7 @@ extern void addDeclToList(NodeDeclList* list, NodeDecl* newDecl);
 extern int getDeclListSize(NodeDeclList* list);
 extern NodeDecl* indexDeclList(NodeDeclList* list, int index);
 extern NodeExpression* indexExprList(NodeExpression* node, int index);
+ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType);
 
 //=============== FOR DEBUGGER ===============
 extern void programToJson(std::vector<NodeStatement*>* head);

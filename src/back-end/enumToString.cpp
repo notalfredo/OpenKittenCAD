@@ -48,4 +48,33 @@ const char* nodeOpToString(NODE_OP nodeOp)
     }
 }
 
+const char* idTypeTostring(ID_TYPE type){
+    switch(type){
+        case num: {
+            return "number";
+        }
+        case shape: {
+            return "shape";
+        }
+        case _void: {
+            return "void";
+        }
+    }
+}
+
+
+const char* numToStrPlace(int num){
+    if(num == 1){
+        return "st";
+    }
+    else if(num == 2){
+        return "nd";
+    }
+    else if(num == 3){
+        return "rd";
+    }
+    return "th";
+}
+
+
 

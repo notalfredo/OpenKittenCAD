@@ -6,6 +6,11 @@
 static int blockNumber = 1;
 
 
+void freeSymbolNode(Symbol** symbolNode);
+void freeSymbolList(Symbol** symbolList);
+void freeTopBlock(SymbolTableHead** symTable);
+
+
 
 /* 
    =================================================== 
@@ -280,6 +285,38 @@ int containsSymbolName(SymbolTableHead* symTable, const char* searchName)
     }
 
     return 0;
+}
+
+
+BasicBlock* _getBlockOnNumber(SymbolTableHead* head, int blockNumber)
+{
+    if(!head){
+        return NULL;
+    }
+
+    SymbolTableHead* currHead = head;
+    int num = blockNumber;
+    
+    while( (currHead->blockNumber != num)
+            &&
+            currHead
+    ){
+        currHead = currHead->next;
+        num--;
+    }
+
+
+    return currHead;
+}
+
+
+Symbol* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym)
+{
+    
+
+
+
+    return NULL;
 }
 
 
