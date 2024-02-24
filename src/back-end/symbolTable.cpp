@@ -291,7 +291,8 @@ int containsSymbolName(SymbolTableHead* symTable, const char* searchName)
 BasicBlock* _getBlockOnNumber(SymbolTableHead* head, int blockNumber)
 {
     if(!head){
-        return NULL;
+        fprintf(stderr, "When looking for block number symbol table was NULL ... exiting ...\n");
+        exit(1);
     }
 
     SymbolTableHead* currHead = head;
@@ -305,18 +306,21 @@ BasicBlock* _getBlockOnNumber(SymbolTableHead* head, int blockNumber)
         num--;
     }
 
-
     return currHead;
 }
 
 
-Symbol* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym)
+SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym)
 {
-    
+    NodeFunction* func = sym->function; 
+    BasicBlock* block = _getBlockOnNumber(currentSymbolTable, func->blockNumber);
 
 
+    SymbolTableHead* newTable = newSymbolTable();
+    newTable->next = block->next;
+    newTable->sym = sym;
 
-    return NULL;
+    return newTable;
 }
 
 

@@ -89,7 +89,11 @@ Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName);
 int getCurrentSize(SymbolTableHead* symTable);
 void resetBlockCounter();
 
+
+SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym);
+
 void dumpSymbolLinkedList(Symbol* head);
 void dumpSymbolTable(SymbolTableHead* head);
+
 
 #endif

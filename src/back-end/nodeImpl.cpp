@@ -149,6 +149,7 @@ ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType)
             exit(1);
         }
     }
+    return num; //Make compiler happy
 }
 
 

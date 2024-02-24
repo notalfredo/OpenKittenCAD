@@ -31,8 +31,12 @@ void quitMessage(const char* msg)
 /*when we initilziz symTableHead*/
 static SymbolTableHead* symTableHead = NULL;
 
+
+/* nodeImpl.cpp */
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
+ID_TYPE exprNodeTypeToIdType(NODE_TYPE nodeType);
+
 
 
 /* Forward function declarations */
@@ -277,11 +281,10 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
         */
 
         SymbolTableHead* temp = symTableHead; 
-        //symTableHead = functionCallNewSymbolTable();
+        symTableHead = functionCallNewSymbolTable(temp, sym);
         
 
-        
-       //symTableHead = temp; 
+        symTableHead = temp; 
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE

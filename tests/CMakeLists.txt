@@ -37,10 +37,15 @@ set(COMMON_INCLUDE_DIRECTORIES
 
 
 add_executable(lexer_test ./lexer_test.cpp)
-add_executable(parser_test ./parser_test.cpp)
+add_executable(parser_test
+    ./parser_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+)
 add_executable(
     symbol_table_test 
     ./symbol_table_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
@@ -64,8 +69,8 @@ add_executable(functions_test
 target_link_libraries(parser_test
     PUBLIC 
     CommonSources
-    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
-    ${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
+    #${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
+    #${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
     tau
 )
 target_link_libraries(lexer_test PUBLIC CommonSources tau)

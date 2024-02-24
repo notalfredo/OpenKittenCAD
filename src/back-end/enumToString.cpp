@@ -2,8 +2,7 @@
 
 
 const char* nodeTypeToString(NODE_TYPE type)
-{
-    switch(type) {
+{ switch(type) {
         case IF:             { return "IF\n";       }
         case ELIF:           { return "ELIF\n";     }
         case ELSE:           { return "ELSE\n";     }
