@@ -288,41 +288,6 @@ int containsSymbolName(SymbolTableHead* symTable, const char* searchName)
 }
 
 
-BasicBlock* _getBlockOnNumber(SymbolTableHead* head, int blockNumber)
-{
-    if(!head){
-        fprintf(stderr, "When looking for block number symbol table was NULL ... exiting ...\n");
-        exit(1);
-    }
-
-    SymbolTableHead* currHead = head;
-    int num = blockNumber;
-    
-    while( (currHead->blockNumber != num)
-            &&
-            currHead
-    ){
-        currHead = currHead->next;
-        num--;
-    }
-
-    return currHead;
-}
-
-
-SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym)
-{
-    NodeFunction* func = sym->function; 
-    BasicBlock* block = _getBlockOnNumber(currentSymbolTable, func->blockNumber);
-
-
-    SymbolTableHead* newTable = newSymbolTable();
-    newTable->next = block->next;
-    newTable->sym = sym;
-
-    return newTable;
-}
-
 
 Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName)
 {
@@ -361,5 +326,71 @@ int getCurrentSize(SymbolTableHead* symTable)
 void resetBlockCounter()
 {
     blockNumber = 1;
+}
+
+
+
+BasicBlock* _getBlockOnNumber(SymbolTableHead* head, int blockNumber)
+{
+    if(!head){
+        fprintf(stderr, "When looking for block number symbol table was NULL ... exiting ...\n");
+        exit(1);
+    }
+
+    BasicBlock* currHead = head;
+    int num = blockNumber;
+    
+    while(currHead && (currHead->blockNumber != num)){
+        currHead = currHead->next;
+    }
+
+    return currHead;
+}
+
+
+/* 
+ * When we do a function call only the variables before the function was declared 
+ * should be available in our symbol table.
+*/
+SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym)
+{
+    NodeFunction* func = sym->function; 
+    BasicBlock* block = _getBlockOnNumber(currentSymbolTable, func->blockNumber);
+
+    if(!block){
+        fprintf(stderr, "Was looking for block with number %d, could not find ... exiting ...\n", func->blockNumber);
+        exit(1);
+    }
+
+
+    SymbolTableHead* newTable = newSymbolTable();
+    newTable->next = block->next;
+    newTable->blockNumber = block->blockNumber;
+    newTable->sym = sym;
+    appendNewBasicBlock(&newTable);
+
+    return newTable;
+}
+
+/* 
+ * We want free everything but the variables declared
+ * before this function. (So we dont double free later on)
+*/
+void freeFunctionCallSymbolTable(SymbolTableHead** currentSymbolTable, Symbol* sym)
+{
+    NodeFunction* func = sym->function;  
+    BasicBlock* curr = *currentSymbolTable;
+    
+    while(curr){
+        if(func->blockNumber == curr->blockNumber){
+            curr->next = NULL; 
+            curr->sym = NULL;
+            free(curr);
+            return;
+        }
+        BasicBlock* temp = curr->next;
+        freeTopBlock(&curr);
+        curr = temp;
+    }
 }
 

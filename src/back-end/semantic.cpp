@@ -286,11 +286,11 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
          *   Any new variables found int his
         */
 
-        //SymbolTableHead* temp = symTableHead; 
-        //symTableHead = functionCallNewSymbolTable(temp, sym);
+        SymbolTableHead* temp = symTableHead; 
+        symTableHead = functionCallNewSymbolTable(temp, sym);
         
-
-        //symTableHead = temp; 
+        freeFunctionCallSymbolTable(&symTableHead, sym);
+        symTableHead = temp; 
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE

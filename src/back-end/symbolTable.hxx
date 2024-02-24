@@ -91,6 +91,8 @@ void resetBlockCounter();
 
 
 SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym);
+void freeFunctionCallSymbolTable(SymbolTableHead** currentSymbolTable, Symbol* sym);
+
 
 void dumpSymbolLinkedList(Symbol* head);
 void dumpSymbolTable(SymbolTableHead* head);
