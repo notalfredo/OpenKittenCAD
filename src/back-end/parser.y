@@ -132,6 +132,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type<returnStmtNode>                returnStmt
 
 %left '+' '-'
+%left '*' '/'
 %nonassoc tok_ASSIGN
 %left tok_PIPE
 
@@ -224,6 +225,8 @@ exprStmt:
 expr:
     expr '+' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
   | expr '-' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
+  | expr '*' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_MUL); }
+  | expr '/' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_DIV); }
   | expr tok_PIPE expr             { $$ = newBinaryOperatorNode($1, $3, OP_PIPE); }
   | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
   | tok_NUM                        { $$ = $1; }

@@ -16,7 +16,6 @@ if(BUILD_MAIN)
 endif()
 
 if(BUILD_TEST)
-    add_subdirectory("./src/tree-dump/")
     add_subdirectory("./tau/")
     add_subdirectory("./tests/")
 endif()

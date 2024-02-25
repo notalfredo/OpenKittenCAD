@@ -177,7 +177,7 @@ void freeAllNodes()
         _prevAlloc = curr;
         freedNodeCount += 1;
     }
-    fprintf(stderr, "--> Freed %d nodes\n", freedNodeCount);
+    fprintf(stderr, "\n--> Freed %d nodes\n", freedNodeCount);
 }
 
 /* For testing purposes */

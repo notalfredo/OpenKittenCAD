@@ -1,20 +1,24 @@
-fn add(x: number, y: number) -> void {
+fn doSomething(x: number, y: number, z: number) -> void {
     let temp: number := 69;
-    print(x + y); 
-    print(temp);
+    print(x * y);
+    print(x * y - z);
+    print(x * y - z + temp);
 };
 
 {
-    let foo: number := 10 + 22;
-    let bar: number := 100 - 22;
+
+    let first: number := 12 / 4;
+    let second: number := 2 * 5;
+
+    print(first);
+    print(second);
 
     {
-        let sum: number := foo + bar;
-        print(sum);
+        let third: number := 0 * 10 / 10;
+        print(third);
+        doSomething(first, second, third);
     };
 
-    let sum: number := foo - bar;
-
-    add(bar, foo);
-    add(sum, foo);
+    let third: number := 1;
+    doSomething(first, second, third);
 };
