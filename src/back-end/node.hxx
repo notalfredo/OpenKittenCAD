@@ -184,6 +184,7 @@ class NodeReturnEvaluated: public NodeExpression {
         NodeReturnEvaluated(NodeExpression* result, Node* _prevAlloc): result(result){
             this->_allocatedLinkedList = _prevAlloc;
             this->nodeType = RETURN_EVAL;
+            this->nextExpr = NULL;
         }
 };
 
@@ -193,6 +194,7 @@ class NodePlaceHolder: public NodeExpression {
         NodePlaceHolder(Node* _prevAlloc){
             this->_allocatedLinkedList = _prevAlloc;
             this->nodeType = PLACEHOLDER;
+            this->nextExpr = NULL;
         }
 };
 
@@ -208,6 +210,7 @@ class NodeReturnStmt: public NodeStatement {
         NodeReturnStmt(NodeExpression* returnExpr, Node* _prevAlloc): returnExpr(returnExpr) {
         this->nodeType = RETURN_STMT;
         this->_allocatedLinkedList = _prevAlloc;
+        this->nextStmt = NULL;
     }
 };
 
