@@ -362,8 +362,28 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
         freeFunctionCallSymbolTable(&symTableHead, sym);
         symTableHead = temp; 
 
-        //Possibly NULL be carefull
-        return returnNode;
+
+        if(!returnNode){
+            return returnNode;
+        }
+        else {
+            if(sym->function->returnType->idType == _void){
+                fprintf(stderr, "Function %s is of type void but got a return value of %s ... exiting ... \n",
+                    sym->function->id->idName,
+                    idTypeTostring(idTypeFromNodeType(returnNode->nodeType))
+                );
+                exit(1);
+            }
+            else if(idTypeFromNodeType(returnNode->nodeType) != sym->function->returnType->idType){
+                fprintf(stderr, "Function %s returned %s, but its return type is %s ... exiting ... \n",
+                    sym->function->id->idName,
+                    idTypeTostring(idTypeFromNodeType(returnNode->nodeType)),
+                    idTypeTostring(sym->function->returnType->idType)
+                );
+                exit(1);
+            }
+            return returnNode;
+        }
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
