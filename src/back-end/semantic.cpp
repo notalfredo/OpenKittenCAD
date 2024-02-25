@@ -179,8 +179,32 @@ NodeExpression* _processStmtNode(Node* node)
 NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
 {
     NodeExpression* lhs = evalExpr(binOp->lhs);
+
+
+    if(binOp->binaryOperatorType == OP_PIPE){
+        if(binOp->rhs->nodeType != FUNCTION_CALL){
+            fprintf(stderr, "RHS of pipe operator is not a function call\n");
+                exit(1);
+        }
+        NodeFunctionCall* funcCall = static_cast<NodeFunctionCall*>(binOp->rhs);
+
+        int checkPipe = checkForPipeInput(funcCall->args);
+        if(checkPipe == -1){
+            fprintf(stderr, "You tried to pipe input to a function call that expects not to be piped ... exiting ...\n"); 
+            exit(1);
+        }
+        else if(checkPipe == -2){
+            fprintf(stderr, "function call expects more than on epipe ... exiting ... \n");
+            exit(1);
+        }
+
+        replacePipeInput(&funcCall->args, lhs, checkPipe);
+        return evalExpr(funcCall);
+    }
+
+
+
     NodeExpression* rhs = evalExpr(binOp->rhs);
-                
 
     if(lhs->nodeType != rhs->nodeType){
         fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
@@ -213,28 +237,6 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
                 exit(0);
             }
             //TODO UPDATE LHS IN SYMBOL TABLE
-        }
-        case OP_PIPE: {
-            if(rhs->nodeType != FUNCTION_CALL){
-                fprintf(stderr, "RHS of pipe is not a function call\n");
-                exit(1);
-            }
-            NodeFunctionCall* funcCall = static_cast<NodeFunctionCall*>(rhs);
-
-            int checkPipe = checkForPipeInput(funcCall->args);
-            if(checkPipe == -1){
-                fprintf(stderr, "You tried to pipe input to a function call that expects not to be piped ... exiting ...\n"); 
-                exit(1);
-            }
-            else if(checkPipe == -2){
-                fprintf(stderr, "function call expects more than on epipe ... exiting ... \n");
-                exit(1);
-            }
-
-            replacePipeInput(&funcCall->args, lhs, checkPipe);
-
-
-            exit(1);
         }
         default: {
             fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");

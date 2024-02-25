@@ -182,10 +182,9 @@ int checkForPipeInput(NodeExpression* args)
                 return -2;
             }
             numberOfPipesFound++;
-            count++; 
             location = count;
+            count++; 
         }
-        
         list = list->nextExpr;
     }
 
@@ -201,10 +200,16 @@ void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int locatio
     int count = 0; 
     NodeExpression* curr = *args;
 
+    if(!curr){
+        fprintf(stderr, "Tried to pipe into function that takes no arguments ... exiting ...\n");
+        exit(1);
+    }
+
     if(location == 0){
         newArg->nextExpr = (*args)->nextExpr;
         (*args)->nextExpr = NULL;
         *args = newArg;
+        return;
     }
     count++;
     
@@ -219,11 +224,9 @@ void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int locatio
     }
 
     NodeExpression* pipeNode = curr->nextExpr;
-
     curr->nextExpr = newArg;
     newArg->nextExpr = pipeNode->nextExpr;
     pipeNode->nextExpr = NULL;
-
 }
 
 
