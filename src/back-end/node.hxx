@@ -7,7 +7,8 @@ typedef enum nodeOp {
     OP_MUL,
     OP_DIV,
     OP_MOD,
-    OP_ASSIGN
+    OP_ASSIGN,
+    OP_PIPE,
 } NODE_OP;
 
 typedef enum shape {
@@ -52,9 +53,13 @@ typedef enum nodeType {
     DOUBLE,
     SHAPE,
 
+    RETURN_EVAL,
+    PLACEHOLDER,
+
     STMT_LIST,
     DECL_LIST,
     EXPR_STMT,
+    RETURN_STMT,
 } NODE_TYPE;
 
 
@@ -119,12 +124,14 @@ class NodeFunctionCall: public NodeExpression {
     public:
         NodeIdentifier* id;
         NodeExpression* args;
+        NodeExpression* returnedValue;
         NodeFunctionCall(
             NodeIdentifier* id,
             NodeExpression* args,
             Node* _prevAlloc
         ): id(id), args(args) {
             this->nodeType = FUNCTION_CALL,
+            this->returnedValue = NULL;
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;
         }
@@ -171,11 +178,43 @@ class NodeBinaryOperator: public NodeExpression {
 };
 
 
+class NodeReturnEvaluated: public NodeExpression {
+    public:
+        NodeExpression* result;
+        NodeReturnEvaluated(NodeExpression* result, Node* _prevAlloc): result(result){
+            this->_allocatedLinkedList = _prevAlloc;
+            this->nodeType = RETURN_EVAL;
+            this->nextExpr = NULL;
+        }
+};
+
+
+class NodePlaceHolder: public NodeExpression {
+    public:     
+        NodePlaceHolder(Node* _prevAlloc){
+            this->_allocatedLinkedList = _prevAlloc;
+            this->nodeType = PLACEHOLDER;
+            this->nextExpr = NULL;
+        }
+};
+
+
 /* 
    =======================================================
                      NODE STATEMENTS  
    =======================================================
 */  
+class NodeReturnStmt: public NodeStatement {
+    public:
+        NodeExpression* returnExpr;
+        NodeReturnStmt(NodeExpression* returnExpr, Node* _prevAlloc): returnExpr(returnExpr) {
+        this->nodeType = RETURN_STMT;
+        this->_allocatedLinkedList = _prevAlloc;
+        this->nextStmt = NULL;
+    }
+};
+
+
 class NodeExprStmt: public NodeStatement {
     public:
         NodeExpression* expr;
@@ -262,7 +301,6 @@ class NodeFunction: public NodeStatement {
             this->nextStmt = NULL;
             this->nodeType = FUNCTION;
             this->_allocatedLinkedList = _prevAlloc;
-
             this->blockNumber = 0;
         }
 };
@@ -387,6 +425,10 @@ NodeBlock* newNodeBlock(NodeStmtList* stmts);
 NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeType*  returnType, NodeBlock* block);
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
+NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
+NodePlaceHolder* newPlaceHolderNode();
+void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location);
+NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
 void freeAllNodes();
 int countAllocatedNodes();
 
@@ -407,6 +449,7 @@ extern NodeExpression* indexExprList(NodeExpression* node, int index);
 extern ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
+extern int checkForPipeInput(NodeExpression* args);
 
 //=============== FOR DEBUGGER ===============
 extern void programToJson(std::vector<NodeStatement*>* head);

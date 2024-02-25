@@ -9,6 +9,7 @@
 
 #define DEBUG_MODE 0
 static int depth = 0;
+static int insideFunction = 0;
 
 
 void printText(int tabCount, const char* text)
@@ -34,15 +35,17 @@ static SymbolTableHead* symTableHead = NULL;
 
 
 /* Forward function declarations */
+
+static NodeExpression* _processStmtListNode(NodeStmtList* node);
+static NodeExpression* _processStmtNode(Node* node);
+static NodeExpression* _processExprStmt(NodeExprStmt* node);
+static NodeExpression* _processBlockNode(NodeBlock* node);
+static NodeExpression* _processDeclNode(NodeDecl* node);
+static NodeExpression* _processReturnStmt(NodeReturnStmt node);
+static NodeExpression* _processFunctionNode(NodeFunction* node);
+
+
 static NodeExpression* evalExpr(NodeExpression* state);
-
-static void _processStmtListNode(NodeStmtList* node);
-static void _processStmtNode(Node* node);
-static void _processExprStmt(NodeExprStmt* node);
-static void _processBlockNode(NodeBlock* node);
-static void _processDeclNode(NodeDecl* node);
-
-
 static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
 
 
@@ -61,94 +64,147 @@ void semantic(NodeStmtList* head)
 }
 
 
-void _processStmtListNode(NodeStmtList* stmtList)
+NodeExpression* _processStmtListNode(NodeStmtList* stmtList)
 {
     int size = getStmtListSize(stmtList);
     for(int index = 0; index < size; index++){
         NodeStatement* curr = indexStmtList(stmtList, index);
-        if(curr){
-            _processStmtNode(curr);
+
+        if(!curr){
+            fprintf(stderr, "Inside processStmtListNode was unable to index stmt list node ... exiting ...\n");
+            exit(1);
         }
-        else{
-            //TODO HANDLE THIS
+
+        NodeExpression* result = _processStmtNode(curr);
+        if(result && (result->nodeType == RETURN_EVAL)){
+            NodeReturnEvaluated* eval = static_cast<NodeReturnEvaluated*>(result);
+            return eval->result;
         }
     }
+    return NULL;
 }
 
 
-void _processExprStmt(NodeExprStmt* node)
+NodeExpression* _processExprStmt(NodeExprStmt* node)
 {
-    evalExpr(node->expr);
+    return evalExpr(node->expr);
 }
 
 
-void _processDeclNode(NodeDecl* node)
+NodeExpression* _processDeclNode(NodeDecl* node)
 {
     if(!node->value){
         quitMessage("_processDeclNode: TODO!\n");
     }
 
     NodeExpression* newExprStmt = evalExpr(node->value);
-    node->value = newExprStmt;
+
+    if(!newExprStmt){
+        fprintf(stderr, "The value of node \"%s\" which is a decl was NULL ... exiting ...\n", node->id->idName);
+        exit(1);
+    }
+    //If we are a function call assign it to whatever the the return value was
+    else if(newExprStmt->nodeType == RETURN_EVAL){
+        NodeReturnEvaluated* funcCall = static_cast<NodeReturnEvaluated*>(newExprStmt);
+
+        node->value = funcCall->result;
+    }
+    else{
+        node->value = newExprStmt;
+    }
+
+
     insertSymbolFromNode(symTableHead, node);
 
-    //dumpSymbolTable(symTableHead);
+    return NULL;
 }
 
-void _processBlockNode(NodeBlock* node)
+NodeExpression* _processBlockNode(NodeBlock* node)
 {
     appendNewBasicBlock(&symTableHead);
 
     if(node->stms){
-        _processStmtListNode(node->stms);
+        return _processStmtListNode(node->stms);
     }
 
     freeTopBlock(&symTableHead);
+
+    return NULL;
 }
 
-void _processFunctionNode(NodeFunction* node)
+NodeExpression* _processFunctionNode(NodeFunction* node)
 {
     node->blockNumber = symTableHead->blockNumber;
     insertSymbolFromNode(symTableHead, node);
+    return NULL;
 }
 
+NodeExpression* _processReturnStmt(NodeReturnStmt* node)
+{
+    return newReturnEvaluated(evalExpr(node->returnExpr));
+}
 
-void _processStmtNode(Node* node)
+NodeExpression* _processStmtNode(Node* node)
 {
     switch (node->nodeType) {
         case STMT_LIST: {
-            _processStmtListNode(static_cast<NodeStmtList*>(node));
-            return;
+            return _processStmtListNode(static_cast<NodeStmtList*>(node));
+        }
+        case RETURN_STMT: {
+            return _processReturnStmt(static_cast<NodeReturnStmt*>(node));
         }
         case EXPR_STMT: {
-            _processExprStmt(static_cast<NodeExprStmt*>(node));
-            return;
+            return _processExprStmt(static_cast<NodeExprStmt*>(node));
         }
         case DECL: {
-            _processDeclNode(static_cast<NodeDecl*>(node));
-            return;
+            return _processDeclNode(static_cast<NodeDecl*>(node));
         }
         case BLOCK: {
-            _processBlockNode(static_cast<NodeBlock*>(node));
-            return;
+            return _processBlockNode(static_cast<NodeBlock*>(node));
         }
         case FUNCTION: {
-            _processFunctionNode(static_cast<NodeFunction*>(node));
-            return;
+            return _processFunctionNode(static_cast<NodeFunction*>(node));
         }
         default: {
             std::string msg = "Hit non stmt node in _processStmtNode: " + std::string(nodeTypeToString(node->nodeType));
             quitMessage(msg.c_str());
         }
     }
+
+    //Make compiler happy
+    return NULL;
 }
 
 
 NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
 {
     NodeExpression* lhs = evalExpr(binOp->lhs);
+
+
+    if(binOp->binaryOperatorType == OP_PIPE){
+        if(binOp->rhs->nodeType != FUNCTION_CALL){
+            fprintf(stderr, "RHS of pipe operator is not a function call\n");
+                exit(1);
+        }
+        NodeFunctionCall* funcCall = static_cast<NodeFunctionCall*>(binOp->rhs);
+
+        int checkPipe = checkForPipeInput(funcCall->args);
+        if(checkPipe == -1){
+            fprintf(stderr, "You tried to pipe input to a function call that expects not to be piped ... exiting ...\n"); 
+            exit(1);
+        }
+        else if(checkPipe == -2){
+            fprintf(stderr, "function call expects more than on epipe ... exiting ... \n");
+            exit(1);
+        }
+
+        replacePipeInput(&funcCall->args, lhs, checkPipe);
+        return evalExpr(funcCall);
+    }
+
+
+
     NodeExpression* rhs = evalExpr(binOp->rhs);
-                
 
     if(lhs->nodeType != rhs->nodeType){
         fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
@@ -216,7 +272,7 @@ NodeExpression* _processId(NodeIdentifier* id)
 
 NodeExpression* _processNumber(NodeNumber* numberNode)
 {
-    return numberNode;
+    return newNumberNode(numberNode->value);
 }
 
 
@@ -270,6 +326,7 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
         }
         
         int evalExprLength = getExpressionLength(evaluatedExprs);
+
         if(evalExprLength != exprLength){
             fprintf(stderr, "function call with %d arguments called with %d arguments but was only able to evaluate %d arguments exiting ...\n",
                 declLength,
@@ -279,24 +336,10 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
             exit(1);
         }
 
-        
-        //Make sure evaluated exprs are in symbol table
-              
-        
-        /*
-         * Create new sybol table:
-         *   this new symbol table should have only variables
-         *   present above the function definition. 
-         *
-         *   Any new variables found int his
-        */
-
         SymbolTableHead* temp = symTableHead; 
         symTableHead = functionCallNewSymbolTable(temp, sym);
 
 
-        
-        //NodeExpression* evaluatedExprs = NULL;     
         for(int index = 0; index < exprLength; index++){
             NodeExpression* epxressionIndexed = indexExprList(evaluatedExprs, index);
             NodeDecl* declIndexed = indexDeclList(sym->function->arguments, index);
@@ -304,7 +347,7 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
             insertSymbolFromNode(symTableHead, declIndexed);
         }
 
-        _processStmtNode(sym->function->block);
+        NodeExpression* returnNode = _processStmtNode(sym->function->block);
         
 
         for(int index = 0; index < exprLength; index++){
@@ -314,6 +357,9 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
         
         freeFunctionCallSymbolTable(&symTableHead, sym);
         symTableHead = temp; 
+
+        //Possibly NULL be carefull
+        return returnNode;
     }
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE

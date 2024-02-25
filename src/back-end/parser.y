@@ -78,6 +78,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
   NodeExprStmt*   exprStmtNode;
 
+  NodeReturnStmt* returnStmtNode;
+
   char*           charPointer;
 }
 
@@ -123,12 +125,15 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type <blockNode>                    block
 
-%type<exprNode>                      expr argList initOpt
+%type<exprNode>                      expr argList initOpt return
 
 %type<exprStmtNode>                  exprStmt
 
+%type<returnStmtNode>                returnStmt
+
 %left '+' '-'
 %nonassoc tok_ASSIGN
+%left tok_PIPE
 
 
 %% //---- RULES --------------------------------------------------
@@ -149,6 +154,7 @@ stmt:
   | functionStmt    { $$ = $1; }
   | declStmt        { $$ = $1; }
   | exprStmt        { $$ = $1; }
+  | returnStmt      { $$ = $1; }
   ;
 
 stmtList:
@@ -188,6 +194,10 @@ paramDeclList:
   }
   ;
 
+returnStmt:
+    tok_RETURN expr     { $$ = newReturnNode($2); }
+  ;
+
 paramDecl:
     tok_ID ':' tok_TYPE    { $$ = newDeclNode($1, $3, NULL); }
   ;
@@ -214,6 +224,7 @@ exprStmt:
 expr:
     expr '+' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
   | expr '-' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
+  | expr tok_PIPE expr             { $$ = newBinaryOperatorNode($1, $3, OP_PIPE); }
   | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
   | tok_NUM                        { $$ = $1; }
   | tok_ID                         { $$ = $1; }
@@ -222,11 +233,16 @@ expr:
 
 argList:
     %empty            { $$ = NULL; }
-  | expr ',' expr     { 
+  | argList ',' '%'   { 
+    appendExprLinkedList(&$1, newPlaceHolderNode());
+    $$ = $1;
+  }
+  | argList ',' expr  { 
     appendExprLinkedList(&$1, $3);
     $$ = $1;
   }
-  | expr             { $$ = $1;  }
+  | expr              { $$ = $1; }
+  | '%'               { $$ = newPlaceHolderNode(); }
   ;
 
 

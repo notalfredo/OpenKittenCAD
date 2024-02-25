@@ -10,12 +10,22 @@
 */
 static Node* _prevAlloc = NULL;
 
+
 NodeExprStmt* newExprStmtNode(NodeExpression* node)
 {
     NodeExprStmt* me = new NodeExprStmt(node, _prevAlloc);
     _prevAlloc = me;
     return me;
 }
+
+
+NodePlaceHolder* newPlaceHolderNode()
+{
+    NodePlaceHolder* me = new NodePlaceHolder(_prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
 
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args)
 {
@@ -124,6 +134,21 @@ NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeT
     return me;
 }
 
+
+NodeReturnStmt* newReturnNode(NodeExpression* returnNode)
+{
+    NodeReturnStmt* me = new NodeReturnStmt(returnNode, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
+NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode)
+{
+    NodeReturnEvaluated* me = new NodeReturnEvaluated(returnNode, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
 
 
 void _freeNode(Node* node) {

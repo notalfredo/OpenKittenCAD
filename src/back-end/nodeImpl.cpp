@@ -159,4 +159,77 @@ ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType)
 
 
 
+/*
+ * When we are pipeing check if func to be piped
+ * can take pipe input. 
+ *
+ * Returns the index if and only if there exist 
+ * one pipe input. 
+ *
+ * Return -1 if no pipe input can be taken 
+ * return -2 if more than one pipe input can be taken
+*/
+int checkForPipeInput(NodeExpression* args)
+{
+    NodeExpression* list = args; 
+    int count = 0;
+    int location = 0;
+    int numberOfPipesFound = 0;
+
+    while(list){
+        if(list->nodeType == PLACEHOLDER){
+            if(numberOfPipesFound >= 1){
+                return -2;
+            }
+            numberOfPipesFound++;
+            location = count;
+            count++; 
+        }
+        list = list->nextExpr;
+    }
+
+    if(numberOfPipesFound == 1){
+        return location;
+    }
+
+    return -1;
+}
+
+void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location)
+{
+    int count = 0; 
+    NodeExpression* curr = *args;
+
+    if(!curr){
+        fprintf(stderr, "Tried to pipe into function that takes no arguments ... exiting ...\n");
+        exit(1);
+    }
+
+    if(location == 0){
+        newArg->nextExpr = (*args)->nextExpr;
+        (*args)->nextExpr = NULL;
+        *args = newArg;
+        return;
+    }
+    count++;
+    
+    while(curr && ((count + 1) != location)){
+        curr = curr->nextExpr;
+        count++;
+    }
+
+    if(curr->nextExpr->nodeType != PLACEHOLDER){
+        fprintf(stderr, "Expected next node to be a placehodler\n"); 
+        exit(1);
+    }
+
+    NodeExpression* pipeNode = curr->nextExpr;
+    curr->nextExpr = newArg;
+    newArg->nextExpr = pipeNode->nextExpr;
+    pipeNode->nextExpr = NULL;
+}
+
+
+
+
 
