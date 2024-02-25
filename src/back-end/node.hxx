@@ -52,6 +52,8 @@ typedef enum nodeType {
     DOUBLE,
     SHAPE,
 
+    RETURN_EVAL,
+
     STMT_LIST,
     DECL_LIST,
     EXPR_STMT,
@@ -173,6 +175,15 @@ class NodeBinaryOperator: public NodeExpression {
         }
 };
 
+
+class NodeReturnEvaluated: public NodeExpression {
+    public:
+        NodeExpression* result;
+        NodeReturnEvaluated(NodeExpression* result, Node* _prevAlloc): result(result){
+            this->_allocatedLinkedList = _prevAlloc;
+            this->nodeType = RETURN_EVAL;
+        }
+};
 
 /* 
    =======================================================
@@ -400,6 +411,7 @@ NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeT
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
 NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
+NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
 void freeAllNodes();
 int countAllocatedNodes();
 

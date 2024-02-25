@@ -133,6 +133,14 @@ NodeReturnStmt* newReturnNode(NodeExpression* returnNode)
 }
 
 
+NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode)
+{
+    NodeReturnEvaluated* me = new NodeReturnEvaluated(returnNode, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
 void _freeNode(Node* node) {
     switch (node->nodeType) {
         case ID: {
