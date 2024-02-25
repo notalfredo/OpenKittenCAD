@@ -159,4 +159,24 @@ ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType)
 
 
 
+/*
+ * When we are pipeing check if func to be piped
+ * can take pipe input. 
+ *
+ * Returns the index if and only if there exist 
+ * one pipe input. 
+ *
+ * Return -1 if no pipe input can be taken 
+ * return -2 if more than one pipe input can be taken
+*/
+int checkForPipeInput(NodeExpression* args)
+{
+
+    return -1;
+}
+
+
+
+
+
 

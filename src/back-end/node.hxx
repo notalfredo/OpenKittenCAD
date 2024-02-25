@@ -7,7 +7,8 @@ typedef enum nodeOp {
     OP_MUL,
     OP_DIV,
     OP_MOD,
-    OP_ASSIGN
+    OP_ASSIGN,
+    OP_PIPE,
 } NODE_OP;
 
 typedef enum shape {
@@ -53,6 +54,7 @@ typedef enum nodeType {
     SHAPE,
 
     RETURN_EVAL,
+    PLACEHOLDER,
 
     STMT_LIST,
     DECL_LIST,
@@ -184,6 +186,16 @@ class NodeReturnEvaluated: public NodeExpression {
             this->nodeType = RETURN_EVAL;
         }
 };
+
+
+class NodePlaceHolder: public NodeExpression {
+    public:     
+        NodePlaceHolder(Node* _prevAlloc){
+            this->_allocatedLinkedList = _prevAlloc;
+            this->nodeType = PLACEHOLDER;
+        }
+};
+
 
 /* 
    =======================================================
@@ -411,6 +423,7 @@ NodeFunction* newFunctionNode(NodeIdentifier* id, NodeDeclList* arguments, NodeT
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
 NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
+NodePlaceHolder* newPlaceHolderNode();
 NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
 void freeAllNodes();
 int countAllocatedNodes();
@@ -432,6 +445,7 @@ extern NodeExpression* indexExprList(NodeExpression* node, int index);
 extern ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);
+extern int checkForPipeInput(NodeExpression* args);
 
 //=============== FOR DEBUGGER ===============
 extern void programToJson(std::vector<NodeStatement*>* head);

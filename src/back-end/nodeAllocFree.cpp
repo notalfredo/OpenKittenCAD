@@ -10,12 +10,22 @@
 */
 static Node* _prevAlloc = NULL;
 
+
 NodeExprStmt* newExprStmtNode(NodeExpression* node)
 {
     NodeExprStmt* me = new NodeExprStmt(node, _prevAlloc);
     _prevAlloc = me;
     return me;
 }
+
+
+NodePlaceHolder* newPlaceHolderNode()
+{
+    NodePlaceHolder* me = new NodePlaceHolder(_prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
 
 NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args)
 {

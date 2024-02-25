@@ -7,6 +7,6 @@ fn temp(first: number, second: number) -> number {
 };
 
 {
-    print(temp(10, 10));
+    print(temp(10, 10) + testing());
 
 };

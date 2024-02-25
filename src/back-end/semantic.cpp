@@ -170,6 +170,9 @@ NodeExpression* _processStmtNode(Node* node)
             quitMessage(msg.c_str());
         }
     }
+
+    //Make compiler happy
+    return NULL;
 }
 
 
@@ -210,6 +213,15 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
                 exit(0);
             }
             //TODO UPDATE LHS IN SYMBOL TABLE
+        }
+        case OP_PIPE: {
+            if(rhs->nodeType != FUNCTION_CALL){
+                fprintf(stderr, "RHS of pipe is not a function call\n");
+                exit(1);
+            }
+            NodeFunctionCall* funcCall = static_cast<NodeFunctionCall*>(rhs);
+
+            exit(1);
         }
         default: {
             fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
