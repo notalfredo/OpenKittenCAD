@@ -171,10 +171,60 @@ ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType)
 */
 int checkForPipeInput(NodeExpression* args)
 {
+    NodeExpression* list = args; 
+    int count = 0;
+    int location = 0;
+    int numberOfPipesFound = 0;
+
+    while(list){
+        if(list->nodeType == PLACEHOLDER){
+            if(numberOfPipesFound >= 1){
+                return -2;
+            }
+            numberOfPipesFound++;
+            count++; 
+            location = count;
+        }
+        
+        list = list->nextExpr;
+    }
+
+    if(numberOfPipesFound == 1){
+        return location;
+    }
 
     return -1;
 }
 
+void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location)
+{
+    int count = 0; 
+    NodeExpression* curr = *args;
+
+    if(location == 0){
+        newArg->nextExpr = (*args)->nextExpr;
+        (*args)->nextExpr = NULL;
+        *args = newArg;
+    }
+    count++;
+    
+    while(curr && ((count + 1) != location)){
+        curr = curr->nextExpr;
+        count++;
+    }
+
+    if(curr->nextExpr->nodeType != PLACEHOLDER){
+        fprintf(stderr, "Expected next node to be a placehodler\n"); 
+        exit(1);
+    }
+
+    NodeExpression* pipeNode = curr->nextExpr;
+
+    curr->nextExpr = newArg;
+    newArg->nextExpr = pipeNode->nextExpr;
+    pipeNode->nextExpr = NULL;
+
+}
 
 
 

@@ -221,6 +221,19 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
             }
             NodeFunctionCall* funcCall = static_cast<NodeFunctionCall*>(rhs);
 
+            int checkPipe = checkForPipeInput(funcCall->args);
+            if(checkPipe == -1){
+                fprintf(stderr, "You tried to pipe input to a function call that expects not to be piped ... exiting ...\n"); 
+                exit(1);
+            }
+            else if(checkPipe == -2){
+                fprintf(stderr, "function call expects more than on epipe ... exiting ... \n");
+                exit(1);
+            }
+
+            replacePipeInput(&funcCall->args, lhs, checkPipe);
+
+
             exit(1);
         }
         default: {

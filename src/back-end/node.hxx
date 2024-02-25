@@ -424,6 +424,7 @@ NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
 NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
 NodePlaceHolder* newPlaceHolderNode();
+void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location);
 NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
 void freeAllNodes();
 int countAllocatedNodes();
