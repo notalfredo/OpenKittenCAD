@@ -1,15 +1,9 @@
 #include <cstdlib>
 #include <iostream>
 #include "tau.h"
-
 #include <node.hxx>
-
-
 #include "parser.tab.h"
 #include "lexer.yy.h"
-
-
-
 #include <unistd.h>
 
 
@@ -21,9 +15,6 @@ TAU_MAIN()
 
 
 TEST(parser, testOne) { 
-    std::string outputPath =  "/home/alfredo/repos/OpenKittenCad/tests/json/parserOutputOne.json";
-
-
     FILE *srcFP  = fopen( 
     "/home/alfredo/repos/OpenKittenCad/tests/input_tests/parserInputOne.kts",
     "r"
@@ -46,8 +37,6 @@ TEST(parser, testOne) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
-    }else {
-        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     freeAllNodes();
@@ -57,9 +46,6 @@ TEST(parser, testOne) {
 }
 
 TEST(parser, testTwo) { 
-    std::string outputPath =  "/home/alfredo/repos/OpenKittenCad/tests/json/parserOutputTwo.json";
-
-
     FILE *srcFP  = fopen( 
     "/home/alfredo/repos/OpenKittenCad/tests/input_tests/parserInputTwo.kts",
     "r"
@@ -82,8 +68,6 @@ TEST(parser, testTwo) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
-    }else {
-        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);
@@ -94,14 +78,9 @@ TEST(parser, testTwo) {
 
 
 TEST(parser, testThree) { 
-    //std::string outputPath =  "/home/alfredo/repos/OpenKittenCad/tests/json/parserOutputTwo.json";
-
-
     FILE *srcFP  = fopen( 
     "/home/alfredo/repos/OpenKittenCad/tests/input_tests/parserInputThree.kts",
-    "r"
-    );
-    if ( srcFP == NULL ) {
+    "r"); if ( srcFP == NULL ) {
         printf( "Unable to open file exiting...");
         return;
     }
@@ -120,8 +99,6 @@ TEST(parser, testThree) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
-    }else {
-        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);
@@ -154,8 +131,6 @@ TEST(parser, testFour) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
-    }else {
-        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);
@@ -188,8 +163,6 @@ TEST(parser, testFive) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
-    }else {
-        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);
@@ -222,8 +195,6 @@ TEST(parser, testSix) {
     if(parseState != 0){
         std::cout << "PARSING FAILED" << std::endl; 
         CHECK(0);
-    }else {
-        //programToJson((NodeStmtList*)result, outputPath.c_str());
     }
 
     yylex_destroy(scanner);

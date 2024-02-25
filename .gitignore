@@ -4,3 +4,4 @@ src/back-end/parser.tab.*
 tests/parser.tab.h
 tests/lexer.yy.h
 tests/json/*
+CMakeLists.txt
