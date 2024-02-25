@@ -21,14 +21,6 @@ void printText(int tabCount, const char* text)
 }
 
 
-void quitMessage(const char* msg)
-{
-    fprintf(stderr, "=============================\n");
-    fprintf(stderr, "%s exiting...", msg);
-    fprintf(stderr, "=============================\n");
-}
-
-
 /*when we initilziz symTableHead*/
 static SymbolTableHead* symTableHead = NULL;
 
@@ -54,11 +46,12 @@ void semantic(NodeStmtList* head)
     symTableHead = newSymbolTable();
     
     if(head->nodeType != STMT_LIST || !head){
-        quitMessage("Head does not have type STMT_LIST or possible NULL\n");
+        fprintf(stderr, "Head does not have type STMT_LIST or possible NULL\n"); 
         exit(1);
     }
 
     _processStmtListNode(head);
+
 
     freeSymbolTable(&symTableHead);
 }
@@ -94,7 +87,8 @@ NodeExpression* _processExprStmt(NodeExprStmt* node)
 NodeExpression* _processDeclNode(NodeDecl* node)
 {
     if(!node->value){
-        quitMessage("_processDeclNode: TODO!\n");
+        fprintf(stderr, "_processDeclNode: TODO!\n");
+        exit(1);
     }
 
     NodeExpression* newExprStmt = evalExpr(node->value);
@@ -166,8 +160,8 @@ NodeExpression* _processStmtNode(Node* node)
             return _processFunctionNode(static_cast<NodeFunction*>(node));
         }
         default: {
-            std::string msg = "Hit non stmt node in _processStmtNode: " + std::string(nodeTypeToString(node->nodeType));
-            quitMessage(msg.c_str());
+            fprintf(stderr, "Hit non stmt node in _processStmtNode: %s", nodeTypeToString(node->nodeType)); 
+            exit(1);
         }
     }
 
@@ -230,6 +224,16 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
             NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
             NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
             return newNumberNode(lhsNum->value - rhsNum->value);
+        }
+        case OP_DIV: {
+            NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+            NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
+            return newNumberNode(lhsNum->value / rhsNum->value);
+        }
+        case OP_MUL: {
+            NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+            NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
+            return newNumberNode(lhsNum->value * rhsNum->value);
         }
         case OP_ASSIGN: {
             if(lhs->nodeType != ID){
@@ -396,3 +400,6 @@ NodeExpression* evalExpr(NodeExpression* state)
     fprintf(stderr, "ERROR OUT OF SWITCH STATEMENT exiting...\n");
     exit(0);
 }
+
+
+

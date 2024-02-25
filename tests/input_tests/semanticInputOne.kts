@@ -4,7 +4,9 @@
 
     {
         let sum: number := foo + bar;
+        print(sum);
     };
 
     let sum: number := foo - bar;
+    print(sum);
 };

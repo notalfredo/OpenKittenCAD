@@ -2,7 +2,8 @@
 
 
 const char* nodeTypeToString(NODE_TYPE type)
-{ switch(type) {
+{  
+    switch(type) {
         case IF:             { return "IF\n";       }
         case ELIF:           { return "ELIF\n";     }
         case ELSE:           { return "ELSE\n";     }
@@ -29,6 +30,8 @@ const char* nodeTypeToString(NODE_TYPE type)
             exit(0);
         }
     }
+    //Make the compiler happy
+    return NULL;
 }
 
 const char* nodeOpToString(NODE_OP nodeOp)
@@ -45,6 +48,8 @@ const char* nodeOpToString(NODE_OP nodeOp)
             exit(0);
         }
     }
+    //Make the compiler happy
+    return NULL;
 }
 
 const char* idTypeTostring(ID_TYPE type){
@@ -59,6 +64,8 @@ const char* idTypeTostring(ID_TYPE type){
             return "void";
         }
     }
+    //Make the compiler happy
+    return NULL;
 }
 
 
