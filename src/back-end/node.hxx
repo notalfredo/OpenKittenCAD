@@ -1,5 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
+#include "BRepBuilderAPI_MakeShape.hxx"
+#include <TopoDS_Shape.hxx>
 
 typedef enum nodeOp {
     OP_PLUS, 
@@ -61,6 +63,7 @@ typedef enum nodeType {
     EXPR_STMT,
     RETURN_STMT,
 } NODE_TYPE;
+
 
 
 #include <string>
@@ -151,11 +154,16 @@ class NodeNumber: public NodeExpression {
 
 class NodeShape: public NodeExpression {
     public:
-        OCCT_SHAPE shape;
-        NodeShape(Node* _prevAlloc){
+        OCCT_SHAPE shapeType;
+        BRepBuilderAPI_MakeShape* brepShape; 
+        const TopoDS_Shape* shape;
+        NodeShape(OCCT_SHAPE shapeType, Node* _prevAlloc): shapeType(shapeType){
             this->nodeType = SHAPE;
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;
+
+            this->shape = NULL;
+            this->brepShape = NULL;
         }
 };
 
@@ -416,7 +424,7 @@ class NodeIf: public NodeStatement {
 NodeType* newNodeType(ID_TYPE idType);
 NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
-NodeShape* newNodeShape();
+NodeShape* newNodeShape(OCCT_SHAPE shape);
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);

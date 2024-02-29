@@ -1,5 +1,15 @@
+set(VTK_DIR "/usr/local/occt_tcl_tk/vtk/lib/cmake/vtk-9.3")
+set(OpenCASCADE_DIR "/usr/local/occt_install_vtk/lib/cmake/opencascade")
+
+
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+find_package(VTK)
+find_package(OpenCASCADE)
+
+
+include_directories ( SYSTEM ${OpenCASCADE_INCLUDE_DIR} )
+
 
 BISON_TARGET(
     MyParser
@@ -50,6 +60,15 @@ set_source_files_properties(
 )
 
 
-
 # Link against the Flex library
 target_include_directories(driver PUBLIC ./)
+
+
+foreach (LIB ${VTK_LIBRARIES})
+    target_link_libraries(driver "${LIB}")
+endforeach()
+foreach (LIB ${OpenCASCADE_LIBRARIES})
+  target_link_libraries(driver "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+  target_link_libraries(driver "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+endforeach()
+

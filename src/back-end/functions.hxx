@@ -2,13 +2,20 @@
 #define FUNCTIONS_H
 #include "node.hxx"
 
+#include <BRepPrimAPI_MakeBox.hxx>
+#include <BRepPrimAPI_MakeCone.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+
+
 
 enum functionEnum {
     printDouble,
+    makeSphere    
 };
 
 
 union functionPointers {
+    NodeShape* (*makeSphere) (double);
     void (*println)(double); 
 };
 
@@ -22,7 +29,7 @@ typedef struct functionPtr{
 
 void _print(double num);
 functionPtr* lookUpFunc(const char*);
-void execFunc(functionPtr* functionPtr, NodeExpression* paramInfo);
+Node* execFunc(functionPtr* functionPtr, NodeExpression* paramInfo);
 
 
 #endif

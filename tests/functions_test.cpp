@@ -18,3 +18,15 @@ TEST(functions, testOne){
 
     freeAllNodes();
 }
+
+TEST(functions, testTwo){
+    functionPtr* func = lookUpFunc("sphere");
+    if(!func){
+        CHECK(0);
+    }
+    execFunc(func, newNumberNode(10));
+
+
+
+    freeAllNodes();
+}
