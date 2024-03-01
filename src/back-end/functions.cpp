@@ -97,9 +97,9 @@ void _print(double num)
 }
 
 
-NodeShape* _makeSphere(Standard_Real r)
+NodeShape* _makeSphere(Standard_Real radius)
 {
-    BRepPrimAPI_MakeSphere* sphere = new BRepPrimAPI_MakeSphere(2);
+    BRepPrimAPI_MakeSphere* sphere = new BRepPrimAPI_MakeSphere(radius);
     const TopoDS_Shape* shape = &sphere->Shape();
 
     NodeShape* me = newNodeShape(SPHERE);
@@ -113,7 +113,7 @@ NodeShape* _makeSphere(Standard_Real r)
 functionPtr knownFunctions[] {
     {"print",  printDouble, {.println =  _print}},
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
-    {"addShape", addSphere,  {.addShapeToVTK = _addShape}}
+    {"addShape", addShape,  {.addShapeToVTK = _addShape}}
 };
 
 
@@ -146,15 +146,13 @@ NodeExpression* execFunc(functionPtr* functionPtr, NodeExpression* paramInfo)
              * For now only handaling this function call need to handle other ways to make a sphere in OCCT
              *      BRepPrimAPI_MakeSphere::BRepPrimAPI_MakeSphere( const Standard_Real R ) 	 
             */
+
             NodeNumber* numNode = static_cast<NodeNumber*>(paramInfo);
             return functionPtr->func.makeSphere(numNode->value);
         }
-        case addSphere: {
+        case addShape: {
             NodeShape* sphere = static_cast<NodeShape*>(paramInfo);
-        
-
             _addShape(*sphere->shape);
-        
             return NULL;
         }
     }

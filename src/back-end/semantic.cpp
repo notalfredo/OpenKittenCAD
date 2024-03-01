@@ -112,6 +112,7 @@ NodeExpression* _processDeclNode(NodeDecl* node)
 
     insertSymbolFromNode(symTableHead, node);
 
+
     return NULL;
 }
 
@@ -266,7 +267,7 @@ NodeExpression* _processId(NodeIdentifier* id)
             return newNumberNode(sym->numVal->value);
         }
         case shape: {
-            //TODO
+            return sym->shape;
         }
         case _void: {
             //TODO

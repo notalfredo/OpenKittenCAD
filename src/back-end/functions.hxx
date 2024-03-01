@@ -11,7 +11,7 @@
 enum functionEnum {
     printDouble,
     makeSphere,
-    addSphere
+    addShape
 };
 
 

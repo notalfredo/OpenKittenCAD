@@ -160,6 +160,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
                     NodeShape* shapeNode = static_cast<NodeShape*>(declNode->value);
                     newSym->idType = shape;
                     newSym->shapeType = shapeNode->shapeType;
+                    newSym->shape = shapeNode;
                     break;
                 }
                 case _void: {
