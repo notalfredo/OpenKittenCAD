@@ -10,13 +10,15 @@
 
 enum functionEnum {
     printDouble,
-    makeSphere    
+    makeSphere,
+    addSphere
 };
 
 
 union functionPointers {
     NodeShape* (*makeSphere) (double);
-    void (*println)(double); 
+    void (*println) (double); 
+    void (*addShapeToVTK) (const TopoDS_Shape&);
 };
 
 
@@ -27,9 +29,13 @@ typedef struct functionPtr{
 }functionPtr;
 
 
+void initViewer();
+void startViewer();
+void _addShape(const TopoDS_Shape& shapeToAdd);
+
 void _print(double num);
 functionPtr* lookUpFunc(const char*);
-Node* execFunc(functionPtr* functionPtr, NodeExpression* paramInfo);
+NodeExpression* execFunc(functionPtr* functionPtr, NodeExpression* paramInfo);
 
 
 #endif

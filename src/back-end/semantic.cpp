@@ -43,7 +43,9 @@ static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
 
 void semantic(NodeStmtList* head)
 {
+    initViewer();
     symTableHead = newSymbolTable();
+
     
     if(head->nodeType != STMT_LIST || !head){
         fprintf(stderr, "Head does not have type STMT_LIST or possible NULL\n"); 
@@ -52,7 +54,7 @@ void semantic(NodeStmtList* head)
 
     _processStmtListNode(head);
 
-
+    startViewer();
     freeSymbolTable(&symTableHead);
 }
 
@@ -388,7 +390,7 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
         //      PARAM NEED TO HANDLE MULTIPLE
-        execFunc(funcPtr, evalExpr(funcCallNode->args));
+        return execFunc(funcPtr, evalExpr(funcCallNode->args));
     }
 
     //TODO

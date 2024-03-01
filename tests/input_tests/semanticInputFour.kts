@@ -4,4 +4,9 @@ fn first(x: number) -> number {
 
 {
     print(first(10));
+
+    let myShape: shape := sphere(10);
+
+    addShape(myShape);
+    
 };
