@@ -2,16 +2,12 @@
 #define FUNCTIONS_H
 #include "node.hxx"
 
-#include <BRepPrimAPI_MakeBox.hxx>
-#include <BRepPrimAPI_MakeCone.hxx>
-#include <BRepPrimAPI_MakeSphere.hxx>
-
-
 
 enum functionEnum {
     makeSphere,
     makeCone,
     makeCylinder,
+    makeBox,
 
     printDouble,
     addShape
@@ -20,7 +16,7 @@ enum functionEnum {
 
 union functionPointers {
     NodeShape* (*makeSphere) (double);
-    NodeShape* (*makeBox) (double);
+    NodeShape* (*makeBox) (double, double, double);
     NodeShape* (*makeCone) (double, double, double);
     NodeShape* (*makeCylinder) (double, double);
 

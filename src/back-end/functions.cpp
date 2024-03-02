@@ -130,6 +130,19 @@ NodeShape* _makeCylinder(Standard_Real R1, Standard_Real H)
 }
 
 
+NodeShape* _makeBox(Standard_Real R1, Standard_Real R2, Standard_Real R3)
+{
+    BRepPrimAPI_MakeBox* box = new BRepPrimAPI_MakeBox(R1, R2, R3);
+    const TopoDS_Shape* shape = &box->Shape();
+
+    NodeShape* me = newNodeShape(BOX);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(box);
+    me->shape = shape;
+
+    return me;
+}
+
+
 NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
 {
     BRepPrimAPI_MakeCone* cone = new BRepPrimAPI_MakeCone(R1, R2, H);
@@ -148,6 +161,7 @@ functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
     {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
+    {"box", makeBox,  {.makeBox = _makeBox}},
     
 
     {"print",  printDouble, {.println =  _print}},
@@ -210,6 +224,17 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             NodeShape* sphere = static_cast<NodeShape*>(args[0]);
             _addShape(*sphere->shape);
             return NULL;
+        }
+        case makeBox: {
+            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
+            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
+            NodeNumber* three = static_cast<NodeNumber*>(args[2]);
+
+            return functionPtr->func.makeBox(one->value, two->value, three->value);
+        }
+        default: {
+           fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?"); 
+           exit(1);
         }
     }
 }
