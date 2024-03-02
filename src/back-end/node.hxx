@@ -167,6 +167,7 @@ class NodeTransformation: public NodeExpression {
         TRANSFORMATION_TYPE transformationType;
         NodeTransformation(TRANSFORMATION_TYPE tt, Node* _prevAlloc){
             this->nodeType = TRANSFORMATION;
+            this->nextExpr = NULL;
             this->transformationType = tt;
             this->_allocatedLinkedList = _prevAlloc;
         }
