@@ -161,7 +161,10 @@ void _freeNode(Node* node) {
         case SHAPE: {
             NodeShape* cast = static_cast<NodeShape*>(node);
 
-            delete cast->brepShape;
+            if(cast->brepShape){
+                delete cast->brepShape;
+            }
+
             cast->brepShape = NULL;
             cast->shape = NULL;
             break;

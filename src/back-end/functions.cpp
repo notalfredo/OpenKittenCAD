@@ -9,6 +9,7 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepAlgoAPI_Fuse.hxx>
 
 
 #include <vtkStructuredGrid.h>
@@ -156,12 +157,32 @@ NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
 }
 
 
+NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+{
+    BRepAlgoAPI_Fuse* fuse = new BRepAlgoAPI_Fuse(lhs, rhs);
+    const TopoDS_Shape* shape = &fuse->Shape();
+
+    NodeShape* me = newNodeShape(CUSTOM);
+    me->brepShape = NULL;
+
+    if(shape->IsNull()){
+        fprintf(stderr, "Fuse is null exiting...\n");
+        exit(1);
+    }
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(fuse);
+    me->shape = shape;
+
+    return me;
+}
+
+
 
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
     {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
     {"box", makeBox,  {.makeBox = _makeBox}},
+    {"union", makeUnion,  {.makeUnion = _makeUnion}},
     
 
     {"print",  printDouble, {.println =  _print}},
@@ -224,6 +245,12 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             NodeShape* sphere = static_cast<NodeShape*>(args[0]);
             _addShape(*sphere->shape);
             return NULL;
+        }
+        case makeUnion: {
+            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+            return functionPtr->func.makeUnion(*lhs->shape, *rhs->shape);
         }
         case makeBox: {
             NodeNumber* one = static_cast<NodeNumber*>(args[0]);

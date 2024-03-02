@@ -8,6 +8,7 @@ enum functionEnum {
     makeCone,
     makeCylinder,
     makeBox,
+    makeUnion,
 
     printDouble,
     addShape
@@ -19,6 +20,8 @@ union functionPointers {
     NodeShape* (*makeBox) (double, double, double);
     NodeShape* (*makeCone) (double, double, double);
     NodeShape* (*makeCylinder) (double, double);
+    NodeShape* (*makeUnion) (const TopoDS_Shape&, const TopoDS_Shape&);
+    
 
     void (*println) (double); 
     void (*addShapeToVTK) (const TopoDS_Shape&);
