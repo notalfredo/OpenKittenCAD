@@ -75,6 +75,14 @@ NodeShape* newNodeShape(OCCT_SHAPE shape)
 }
 
 
+NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt)
+{
+    NodeTransformation* me = new NodeTransformation(tt, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType)
 {
     NodeBinaryOperator* me = new NodeBinaryOperator(

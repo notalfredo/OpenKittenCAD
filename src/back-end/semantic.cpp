@@ -290,6 +290,12 @@ NodeExpression* _processNumber(NodeNumber* numberNode)
 }
 
 
+NodeExpression* _processTransformation(NodeTransformation* tNode)
+{
+    return tNode;
+}
+
+
 NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
 {
     functionPtr* funcPtr = lookUpFunc(funcCallNode->id->idName);
@@ -434,6 +440,9 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
         case SHAPE: {
             return _processShape(static_cast<NodeShape*>(state));
+        }
+        case TRANSFORMATION: {
+            return _processTransformation(static_cast<NodeTransformation*>(state));
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));

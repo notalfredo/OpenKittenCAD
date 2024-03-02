@@ -216,10 +216,8 @@ NodeShape* _makeIntersection(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
 }
 
 
-NodeShape* _rotateX(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shapeType)
+NodeShape* _rotate(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shapeType,  gp_Ax1 xAxis)
 {
-    gp_Ax1 xAxis = gp::OX(); 
-
     gp_Trsf transformation; 
     transformation.SetRotation(xAxis, angle);
 
@@ -251,7 +249,7 @@ functionPtr knownFunctions[] {
 
 
 
-    {"rotateX", rotationX,  {.rotationXAxis = _rotateX}},
+    {"rotate", doRotate,  {.rotate = _rotate}},
     
 
     {"print",  printDouble, {.println =  _print}},
@@ -340,10 +338,26 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 
             return functionPtr->func.makeBox(one->value, two->value, three->value);
         }
-        case rotationX: {
+        case doRotate: {
             NodeShape* one = static_cast<NodeShape*>(args[0]);
             NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-            return functionPtr->func.rotationXAxis(*one->shape, two->value, one->shapeType);
+            NodeTransformation* three = static_cast<NodeTransformation*>(args[2]);
+
+            switch(three->transformationType){
+                case rotX: {
+                    return functionPtr->func.rotate(*one->shape, two->value, one->shapeType, gp::OX());
+                }
+                case rotY: {
+                    return functionPtr->func.rotate(*one->shape, two->value, one->shapeType, gp::OY());
+                }
+                case rotZ: {
+                    return functionPtr->func.rotate(*one->shape, two->value, one->shapeType, gp::OZ());
+                }
+                default: {
+                    fprintf(stderr, "Tired to perform rotation but did not specify rotX/rotY/rotZ ... exiting ...\n");
+                    exit(1);
+                }
+            }
         }
 
         default: {

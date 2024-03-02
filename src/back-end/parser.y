@@ -71,6 +71,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
   NodeBlock*      blockNode;
 
   NodeNumber*     numberNode;
+  NodeTransformation*     transformationNode;
   
   NodeType*       idType;
 
@@ -101,6 +102,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token <idNode>         tok_ID
 
 %token <numberNode>     tok_NUM
+
+%token <transformationNode> tok_TRANS
+
 %token <idType>         tok_TYPE
 
     /* Non-terminals */
@@ -230,6 +234,7 @@ expr:
   | expr tok_PIPE expr             { $$ = newBinaryOperatorNode($1, $3, OP_PIPE); }
   | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
   | tok_NUM                        { $$ = $1; }
+  | tok_TRANS                      { $$ = $1; }
   | tok_ID                         { $$ = $1; }
   | tok_ID '(' argList ')'         { $$ = newFunctionCallNode($1, $3); }
   ;

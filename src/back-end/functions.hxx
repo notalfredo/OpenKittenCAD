@@ -13,7 +13,7 @@ enum functionEnum {
     makeIntersection,
 
     
-    rotationX,
+    doRotate,
     
 
     printDouble,
@@ -31,7 +31,7 @@ union functionPointers {
     NodeShape* (*makeIntersection) (const TopoDS_Shape&, const TopoDS_Shape&);
 
 
-    NodeShape* (*rotationXAxis) (const TopoDS_Shape&, double,  OCCT_SHAPE);
+    NodeShape* (*rotate) (const TopoDS_Shape&, double,  OCCT_SHAPE, gp_Ax1 xAxis);
 
 
     

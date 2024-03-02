@@ -3,6 +3,12 @@
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <TopoDS_Shape.hxx>
 
+typedef enum transformation{
+    rotX,
+    rotY,
+    rotZ
+} TRANSFORMATION_TYPE;
+
 typedef enum nodeOp {
     OP_PLUS, 
     OP_SUB,
@@ -25,6 +31,7 @@ typedef enum shape {
 typedef enum idType {
     num,
     shape,
+    transformation,
     _void, //only used for functions
 } ID_TYPE;
 
@@ -58,6 +65,8 @@ typedef enum nodeType {
 
     RETURN_EVAL,
     PLACEHOLDER,
+
+    TRANSFORMATION,
 
     STMT_LIST,
     DECL_LIST,
@@ -150,6 +159,18 @@ class NodeNumber: public NodeExpression {
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;
         }; 
+};
+
+
+class NodeTransformation: public NodeExpression {
+    public:
+        TRANSFORMATION_TYPE transformationType;
+        NodeTransformation(TRANSFORMATION_TYPE tt, Node* _prevAlloc){
+            this->nodeType = TRANSFORMATION;
+            this->transformationType = tt;
+            this->_allocatedLinkedList = _prevAlloc;
+        }
+
 };
 
 
@@ -438,6 +459,7 @@ NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
 NodePlaceHolder* newPlaceHolderNode();
 void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location);
 NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
+NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt);
 void freeAllNodes();
 int countAllocatedNodes();
 
