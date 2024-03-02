@@ -253,6 +253,8 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
 }
 
 
+
+
 NodeExpression* _processId(NodeIdentifier* id)
 {
     Symbol* sym = getSymbolNode(symTableHead, id->idName);
@@ -274,6 +276,11 @@ NodeExpression* _processId(NodeIdentifier* id)
         }
     }
     return NULL;
+}
+
+NodeExpression* _processShape(NodeShape* node)
+{
+    return node;
 }
 
 
@@ -424,6 +431,9 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
         case FUNCTION_CALL: {
             return _processFunctionCall(static_cast<NodeFunctionCall*>(state));
+        }
+        case SHAPE: {
+            return _processShape(static_cast<NodeShape*>(state));
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
