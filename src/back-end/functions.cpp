@@ -8,6 +8,7 @@
 #include <BRepPrimAPI_MakeCone.hxx>
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include "BRepBuilderAPI_MakeShape.hxx"
+#include <BRepPrimAPI_MakeCylinder.hxx>
 
 
 #include <vtkStructuredGrid.h>
@@ -116,6 +117,18 @@ NodeShape* _makeSphere(Standard_Real radius)
     return me;
 }
 
+NodeShape* _makeCylinder(Standard_Real R1, Standard_Real H)
+{
+    BRepPrimAPI_MakeCylinder* cyl = new BRepPrimAPI_MakeCylinder(R1, H);
+    const TopoDS_Shape* shape = &cyl->Shape();
+
+    NodeShape* me = newNodeShape(CYLINDER);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cyl);
+    me->shape = shape;
+
+    return me;
+}
+
 
 NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
 {
@@ -132,9 +145,12 @@ NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
 
 
 functionPtr knownFunctions[] {
-    {"print",  printDouble, {.println =  _print}},
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
+    {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
+    
+
+    {"print",  printDouble, {.println =  _print}},
     {"addShape", addShape,  {.addShapeToVTK = _addShape}}
 };
 
@@ -178,11 +194,17 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             }
 
             NodeExpression* result = functionPtr->func.makeCone(
-                static_cast<NodeNumber*>(args[0])->value,
-                static_cast<NodeNumber*>(args[1])->value,
-                static_cast<NodeNumber*>(args[2])->value
+                one->value,
+                two->value,
+                three->value
             );
             return result;
+        }
+        case makeCylinder: {
+            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
+            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
+
+            return functionPtr->func.makeCylinder(one->value, two->value);
         }
         case addShape: {
             NodeShape* sphere = static_cast<NodeShape*>(args[0]);

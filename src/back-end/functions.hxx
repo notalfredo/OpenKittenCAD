@@ -9,9 +9,11 @@
 
 
 enum functionEnum {
-    printDouble,
     makeSphere,
     makeCone,
+    makeCylinder,
+
+    printDouble,
     addShape
 };
 
@@ -20,6 +22,7 @@ union functionPointers {
     NodeShape* (*makeSphere) (double);
     NodeShape* (*makeBox) (double);
     NodeShape* (*makeCone) (double, double, double);
+    NodeShape* (*makeCylinder) (double, double);
 
     void (*println) (double); 
     void (*addShapeToVTK) (const TopoDS_Shape&);
