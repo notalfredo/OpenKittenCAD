@@ -4,8 +4,7 @@
 #include "lexer.yy.h"
 #include <cstdio>
 
-
-extern void semantic(NodeStmtList* state);
+extern void semantic(NodeStmtList* head, int displayVTK = 1);
 extern int yydebug;
 
 
@@ -37,7 +36,7 @@ TEST(semantic, testOne) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result);
+        semantic((NodeStmtList*)result, 0);
     }
 
 
@@ -72,7 +71,7 @@ TEST(semantic, testTwo) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result);
+        semantic((NodeStmtList*)result, 0);
     }
 
 
@@ -108,7 +107,7 @@ TEST(semantic, testThree) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result);
+        semantic((NodeStmtList*)result, 0);
     }
 
     yylex_destroy(scanner);
@@ -142,7 +141,7 @@ TEST(semantic, testFour) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result);
+        semantic((NodeStmtList*)result, 0);
     }
 
     yylex_destroy(scanner);
