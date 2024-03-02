@@ -1,3 +1,4 @@
+#include "gp_Ax1.hxx"
 #include "node.hxx"
 #include "functions.hxx"
 
@@ -13,6 +14,8 @@
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
+
+#include <BRepBuilderAPI_Transform.hxx>
 
 
 #include <vtkStructuredGrid.h>
@@ -213,6 +216,30 @@ NodeShape* _makeIntersection(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
 }
 
 
+NodeShape* _rotateX(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shapeType)
+{
+    gp_Ax1 xAxis = gp::OX(); 
+
+    gp_Trsf transformation; 
+    transformation.SetRotation(xAxis, angle);
+
+    BRepBuilderAPI_Transform* translation = new BRepBuilderAPI_Transform(currShape, transformation);
+    const TopoDS_Shape* shape = &translation->Shape();
+
+    if(shape->IsNull()){
+        fprintf(stderr, "Fuse is null exiting...\n");
+        exit(1);
+    }
+
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(translation);
+    me->shape = shape;
+
+    return me;
+
+}
+
+
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
@@ -221,6 +248,10 @@ functionPtr knownFunctions[] {
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
     {"difference", makeDifference,  {.makeDifference = _makeDifference}},
     {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
+
+
+
+    {"rotateX", rotationX,  {.rotationXAxis = _rotateX}},
     
 
     {"print",  printDouble, {.println =  _print}},
@@ -308,6 +339,11 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             NodeNumber* three = static_cast<NodeNumber*>(args[2]);
 
             return functionPtr->func.makeBox(one->value, two->value, three->value);
+        }
+        case rotationX: {
+            NodeShape* one = static_cast<NodeShape*>(args[0]);
+            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
+            return functionPtr->func.rotationXAxis(*one->shape, two->value, one->shapeType);
         }
 
         default: {
