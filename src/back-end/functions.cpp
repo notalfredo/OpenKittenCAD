@@ -9,7 +9,10 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <BRepPrimAPI_MakeCylinder.hxx>
+
 #include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepAlgoAPI_Common.hxx>
+#include <BRepAlgoAPI_Cut.hxx>
 
 
 #include <vtkStructuredGrid.h>
@@ -162,19 +165,52 @@ NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
     BRepAlgoAPI_Fuse* fuse = new BRepAlgoAPI_Fuse(lhs, rhs);
     const TopoDS_Shape* shape = &fuse->Shape();
 
-    NodeShape* me = newNodeShape(CUSTOM);
-    me->brepShape = NULL;
-
     if(shape->IsNull()){
         fprintf(stderr, "Fuse is null exiting...\n");
         exit(1);
     }
+
+    NodeShape* me = newNodeShape(CUSTOM);
     me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(fuse);
     me->shape = shape;
 
     return me;
 }
 
+NodeShape* _makeDifference(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+{
+    BRepAlgoAPI_Cut* cut = new BRepAlgoAPI_Cut(lhs, rhs);
+    const TopoDS_Shape* shape = &cut->Shape();
+
+    if(shape->IsNull()){
+        fprintf(stderr, "Fuse is null exiting...\n");
+        exit(1);
+    }
+
+    NodeShape* me = newNodeShape(CUSTOM);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cut);
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeIntersection(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+{
+    BRepAlgoAPI_Common* common = new BRepAlgoAPI_Common(lhs, rhs);
+    const TopoDS_Shape* shape = &common->Shape();
+
+    if(shape->IsNull()){
+        fprintf(stderr, "Fuse is null exiting...\n");
+        exit(1);
+    }
+
+    NodeShape* me = newNodeShape(CUSTOM);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(common);
+    me->shape = shape;
+
+    return me;
+}
 
 
 functionPtr knownFunctions[] {
@@ -183,6 +219,8 @@ functionPtr knownFunctions[] {
     {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
     {"box", makeBox,  {.makeBox = _makeBox}},
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
+    {"difference", makeDifference,  {.makeDifference = _makeDifference}},
+    {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
     
 
     {"print",  printDouble, {.println =  _print}},
@@ -252,6 +290,18 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 
             return functionPtr->func.makeUnion(*lhs->shape, *rhs->shape);
         }
+        case makeDifference: {
+            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+            return functionPtr->func.makeDifference(*lhs->shape, *rhs->shape);
+        }
+        case makeIntersection: {
+            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+            return functionPtr->func.makeIntersection(*lhs->shape, *rhs->shape);
+        }
         case makeBox: {
             NodeNumber* one = static_cast<NodeNumber*>(args[0]);
             NodeNumber* two = static_cast<NodeNumber*>(args[1]);
@@ -259,6 +309,7 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 
             return functionPtr->func.makeBox(one->value, two->value, three->value);
         }
+
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?"); 
            exit(1);
