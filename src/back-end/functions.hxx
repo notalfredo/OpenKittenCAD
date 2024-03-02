@@ -11,12 +11,16 @@
 enum functionEnum {
     printDouble,
     makeSphere,
+    makeCone,
     addShape
 };
 
 
 union functionPointers {
     NodeShape* (*makeSphere) (double);
+    NodeShape* (*makeBox) (double);
+    NodeShape* (*makeCone) (double, double, double);
+
     void (*println) (double); 
     void (*addShapeToVTK) (const TopoDS_Shape&);
 };
@@ -35,7 +39,7 @@ void _addShape(const TopoDS_Shape& shapeToAdd);
 
 void _print(double num);
 functionPtr* lookUpFunc(const char*);
-NodeExpression* execFunc(functionPtr* functionPtr, NodeExpression* paramInfo);
+NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args);
 
 
 #endif

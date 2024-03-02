@@ -71,6 +71,8 @@ add_executable(semantic_test
 )
 add_executable(functions_test
     ./functions_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
 )

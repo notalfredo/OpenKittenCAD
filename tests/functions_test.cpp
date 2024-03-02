@@ -12,7 +12,9 @@ TEST(functions, testOne){
     if(!func){
         CHECK(0);
     }
-    execFunc(func, newNumberNode(10));
+    std::vector<NodeExpression*> vec = {newNumberNode(10)};
+
+    execFunc(func, vec);
 
 
 
@@ -24,7 +26,9 @@ TEST(functions, testTwo){
     if(!func){
         CHECK(0);
     }
-    execFunc(func, newNumberNode(10));
+
+    std::vector<NodeExpression*> vec = {newNumberNode(10)};
+    execFunc(func, vec);
 
 
 

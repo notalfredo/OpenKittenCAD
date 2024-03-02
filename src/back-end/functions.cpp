@@ -1,7 +1,9 @@
-#include "TopoDS_Shape.hxx"
 #include "node.hxx"
 #include "functions.hxx"
 
+
+#include "Standard_TypeDef.hxx"
+#include "TopoDS_Shape.hxx"
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCone.hxx>
 #include <BRepPrimAPI_MakeSphere.hxx>
@@ -79,6 +81,11 @@ void startViewer()
 }
 
 
+/* This function causes memmory leaks 
+ * I am not 100% sure as to why. Something to do 
+ * with VTK. Just creating oocSourceOne is enough
+ * to create the leak
+*/
 void _addShape(const TopoDS_Shape& shapeToAdd)
 {
     vtkNew<IVtkTools_ShapeDataSource> occSourceOne;
@@ -110,9 +117,24 @@ NodeShape* _makeSphere(Standard_Real radius)
 }
 
 
+NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
+{
+    BRepPrimAPI_MakeCone* cone = new BRepPrimAPI_MakeCone(R1, R2, H);
+    const TopoDS_Shape* shape = &cone->Shape();
+
+    NodeShape* me = newNodeShape(CONE);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cone);
+    me->shape = shape;
+
+    return me;
+}
+
+
+
 functionPtr knownFunctions[] {
     {"print",  printDouble, {.println =  _print}},
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
+    {"cone", makeCone,  {.makeCone = _makeCone}},
     {"addShape", addShape,  {.addShapeToVTK = _addShape}}
 };
 
@@ -133,25 +155,37 @@ functionPtr* lookUpFunc(const char * funcName)
 
 //TODO: WHEN WE CALL A FUNCTION RIGHT BEFORE WE CALL IT WE NEED 
 //      TO VERIFY THAT THE CORRECT ARGUMENTS WHERE PASSED IN
-NodeExpression* execFunc(functionPtr* functionPtr, NodeExpression* paramInfo)
+NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args)
 {
     switch(functionPtr->functionType){
         case printDouble: {
-            NodeNumber* numNode = static_cast<NodeNumber*>(paramInfo);
+            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
             functionPtr->func.println(numNode->value);
             return NULL;
         }
         case makeSphere: {
-            /*
-             * For now only handaling this function call need to handle other ways to make a sphere in OCCT
-             *      BRepPrimAPI_MakeSphere::BRepPrimAPI_MakeSphere( const Standard_Real R ) 	 
-            */
-
-            NodeNumber* numNode = static_cast<NodeNumber*>(paramInfo);
+            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
             return functionPtr->func.makeSphere(numNode->value);
         }
+        case makeCone: {
+            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
+            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
+            NodeNumber* three = static_cast<NodeNumber*>(args[2]);
+
+            if(one == two){
+                fprintf(stderr, "When creating cone top and bottom radius cannot be equal to each other");
+                exit(1);
+            }
+
+            NodeExpression* result = functionPtr->func.makeCone(
+                static_cast<NodeNumber*>(args[0])->value,
+                static_cast<NodeNumber*>(args[1])->value,
+                static_cast<NodeNumber*>(args[2])->value
+            );
+            return result;
+        }
         case addShape: {
-            NodeShape* sphere = static_cast<NodeShape*>(paramInfo);
+            NodeShape* sphere = static_cast<NodeShape*>(args[0]);
             _addShape(*sphere->shape);
             return NULL;
         }

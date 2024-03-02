@@ -41,9 +41,9 @@ static NodeExpression* evalExpr(NodeExpression* state);
 static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
 
 
-void semantic(NodeStmtList* head)
+void semantic(NodeStmtList* head, int displayVTK = 1)
 {
-    initViewer();
+    if(displayVTK){initViewer();}
     symTableHead = newSymbolTable();
 
     
@@ -54,7 +54,7 @@ void semantic(NodeStmtList* head)
 
     _processStmtListNode(head);
 
-    startViewer();
+    if(displayVTK){startViewer();}
     freeSymbolTable(&symTableHead);
 }
 
@@ -391,7 +391,18 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
         //      PARAM NEED TO HANDLE MULTIPLE
-        return execFunc(funcPtr, evalExpr(funcCallNode->args));
+        std::vector<NodeExpression*> args;
+
+        NodeExpression* currArg = funcCallNode->args;
+
+        while(currArg){
+            NodeExpression* next = currArg->nextExpr;
+            args.push_back(evalExpr(currArg));
+            currArg = next;
+        }
+
+        
+        return execFunc(funcPtr, args);
     }
 
     //TODO
