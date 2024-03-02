@@ -67,9 +67,17 @@ NodeNumber* newNumberNode(double value)
 }
 
 
-NodeShape* newNodeShape()
+NodeShape* newNodeShape(OCCT_SHAPE shape)
 {
-    NodeShape* me = new NodeShape(_prevAlloc);
+    NodeShape* me = new NodeShape(shape, _prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
+NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt)
+{
+    NodeTransformation* me = new NodeTransformation(tt, _prevAlloc);
     _prevAlloc = me;
     return me;
 }
@@ -156,6 +164,17 @@ void _freeNode(Node* node) {
         case ID: {
             NodeIdentifier* cast = static_cast<NodeIdentifier*>(node);
             free(cast->idName);
+            break;
+        }
+        case SHAPE: {
+            NodeShape* cast = static_cast<NodeShape*>(node);
+
+            if(cast->brepShape){
+                delete cast->brepShape;
+            }
+
+            cast->brepShape = NULL;
+            cast->shape = NULL;
             break;
         }
         default: {

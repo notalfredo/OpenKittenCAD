@@ -1,8 +1,18 @@
 # Test program CMakeLists.txt
 enable_testing()
 
+set(VTK_DIR "/usr/local/occt_tcl_tk/vtk/lib/cmake/vtk-9.3")
+set(OpenCASCADE_DIR "/usr/local/occt_install_vtk/lib/cmake/opencascade")
+
+
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+find_package(VTK)
+find_package(OpenCASCADE)
+
+
+include_directories ( SYSTEM ${OpenCASCADE_INCLUDE_DIR} )
+
 
 BISON_TARGET(
     MyParser /home/alfredo/repos/OpenKittenCad/src/back-end/parser.y
@@ -61,6 +71,8 @@ add_executable(semantic_test
 )
 add_executable(functions_test
     ./functions_test.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
+    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
     /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
 )
@@ -76,11 +88,26 @@ target_link_libraries(parser_test
 target_link_libraries(lexer_test PUBLIC CommonSources tau)
 target_link_libraries(symbol_table_test PUBLIC tau)
 target_link_libraries(semantic_test
-    PUBLIC
     CommonSources
     tau
 )
-target_link_libraries(functions_test PUBLIC tau)
+target_link_libraries(functions_test tau)
+
+
+foreach (LIB ${VTK_LIBRARIES})
+    target_link_libraries(semantic_test "${LIB}")
+    target_link_libraries(functions_test "${LIB}")
+endforeach()
+foreach (LIB ${OpenCASCADE_LIBRARIES})
+  target_link_libraries(semantic_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+  target_link_libraries(semantic_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+
+  target_link_libraries(functions_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+  target_link_libraries(functions_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+endforeach()
+
+
+
 
 # Set the language for lex.yy.c to C++ 
 # NOTE WE ARE NOT USING C++ Flex scanner

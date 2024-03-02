@@ -61,8 +61,10 @@ typedef struct symbol {
                         
     ID_TYPE  idType; // If we are a variable are we a number, shape ... MAKE SURE NOT TO ASSIGN VOID IF VARIABLE
     NodeNumber* numVal; //If variable and a number assign here
+
+
     OCCT_SHAPE shapeType; //If we are a shape assign our shape type here
-    //TODO OCCT_SHAPE shape; //If we are a shape assign here
+    NodeShape* shape;
 
                           
     struct symbol* next;

@@ -41,9 +41,11 @@ static NodeExpression* evalExpr(NodeExpression* state);
 static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
 
 
-void semantic(NodeStmtList* head)
+void semantic(NodeStmtList* head, int displayVTK = 1)
 {
+    if(displayVTK){initViewer();}
     symTableHead = newSymbolTable();
+
     
     if(head->nodeType != STMT_LIST || !head){
         fprintf(stderr, "Head does not have type STMT_LIST or possible NULL\n"); 
@@ -52,7 +54,7 @@ void semantic(NodeStmtList* head)
 
     _processStmtListNode(head);
 
-
+    if(displayVTK){startViewer();}
     freeSymbolTable(&symTableHead);
 }
 
@@ -109,6 +111,7 @@ NodeExpression* _processDeclNode(NodeDecl* node)
 
 
     insertSymbolFromNode(symTableHead, node);
+
 
     return NULL;
 }
@@ -250,6 +253,8 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
 }
 
 
+
+
 NodeExpression* _processId(NodeIdentifier* id)
 {
     Symbol* sym = getSymbolNode(symTableHead, id->idName);
@@ -264,7 +269,7 @@ NodeExpression* _processId(NodeIdentifier* id)
             return newNumberNode(sym->numVal->value);
         }
         case shape: {
-            //TODO
+            return sym->shape;
         }
         case _void: {
             //TODO
@@ -273,10 +278,21 @@ NodeExpression* _processId(NodeIdentifier* id)
     return NULL;
 }
 
+NodeExpression* _processShape(NodeShape* node)
+{
+    return node;
+}
+
 
 NodeExpression* _processNumber(NodeNumber* numberNode)
 {
     return newNumberNode(numberNode->value);
+}
+
+
+NodeExpression* _processTransformation(NodeTransformation* tNode)
+{
+    return tNode;
 }
 
 
@@ -388,7 +404,18 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
     else{
         //TODO: FOR NOW ONLY CALLING FUNCTIONS WITH ONE
         //      PARAM NEED TO HANDLE MULTIPLE
-        execFunc(funcPtr, evalExpr(funcCallNode->args));
+        std::vector<NodeExpression*> args;
+
+        NodeExpression* currArg = funcCallNode->args;
+
+        while(currArg){
+            NodeExpression* next = currArg->nextExpr;
+            args.push_back(evalExpr(currArg));
+            currArg = next;
+        }
+
+        
+        return execFunc(funcPtr, args);
     }
 
     //TODO
@@ -410,6 +437,12 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
         case FUNCTION_CALL: {
             return _processFunctionCall(static_cast<NodeFunctionCall*>(state));
+        }
+        case SHAPE: {
+            return _processShape(static_cast<NodeShape*>(state));
+        }
+        case TRANSFORMATION: {
+            return _processTransformation(static_cast<NodeTransformation*>(state));
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));

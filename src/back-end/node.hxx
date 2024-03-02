@@ -1,5 +1,13 @@
 #ifndef NODE_H
 #define NODE_H
+#include "BRepBuilderAPI_MakeShape.hxx"
+#include <TopoDS_Shape.hxx>
+
+typedef enum transformation{
+    rotX,
+    rotY,
+    rotZ
+} TRANSFORMATION_TYPE;
 
 typedef enum nodeOp {
     OP_PLUS, 
@@ -15,13 +23,15 @@ typedef enum shape {
     BOX,
     CONE,
     CYLINDER,
-    SPHERE
+    SPHERE,
+    CUSTOM
 } OCCT_SHAPE;
 
 
 typedef enum idType {
     num,
     shape,
+    transformation,
     _void, //only used for functions
 } ID_TYPE;
 
@@ -56,11 +66,14 @@ typedef enum nodeType {
     RETURN_EVAL,
     PLACEHOLDER,
 
+    TRANSFORMATION,
+
     STMT_LIST,
     DECL_LIST,
     EXPR_STMT,
     RETURN_STMT,
 } NODE_TYPE;
+
 
 
 #include <string>
@@ -149,13 +162,31 @@ class NodeNumber: public NodeExpression {
 };
 
 
+class NodeTransformation: public NodeExpression {
+    public:
+        TRANSFORMATION_TYPE transformationType;
+        NodeTransformation(TRANSFORMATION_TYPE tt, Node* _prevAlloc){
+            this->nodeType = TRANSFORMATION;
+            this->nextExpr = NULL;
+            this->transformationType = tt;
+            this->_allocatedLinkedList = _prevAlloc;
+        }
+
+};
+
+
 class NodeShape: public NodeExpression {
     public:
-        OCCT_SHAPE shape;
-        NodeShape(Node* _prevAlloc){
+        OCCT_SHAPE shapeType;
+        BRepBuilderAPI_MakeShape* brepShape; 
+        const TopoDS_Shape* shape;
+        NodeShape(OCCT_SHAPE shapeType, Node* _prevAlloc): shapeType(shapeType){
             this->nodeType = SHAPE;
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;
+
+            this->shape = NULL;
+            this->brepShape = NULL;
         }
 };
 
@@ -416,7 +447,7 @@ class NodeIf: public NodeStatement {
 NodeType* newNodeType(ID_TYPE idType);
 NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
-NodeShape* newNodeShape();
+NodeShape* newNodeShape(OCCT_SHAPE shape);
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);
@@ -429,6 +460,7 @@ NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
 NodePlaceHolder* newPlaceHolderNode();
 void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location);
 NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
+NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt);
 void freeAllNodes();
 int countAllocatedNodes();
 
