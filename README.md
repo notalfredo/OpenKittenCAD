@@ -1,4 +1,4 @@
-# OpenKittenCAD
+![image](./images/OpenKittenCad.png)
 
 My hobby project Code CAD program. 
 
