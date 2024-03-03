@@ -1,3 +1,7 @@
+# Examples
+
+## Example One
+```rust
 fn degToRad(degrees: number) -> number {
     return degrees * 3.14 / 180;
 };
@@ -23,4 +27,7 @@ fn degToRad(degrees: number) -> number {
 
 
     addShape(difference(mySphere, superUnion));
-};
+}
+```
+![image](./images/ExampleOne.png)
+

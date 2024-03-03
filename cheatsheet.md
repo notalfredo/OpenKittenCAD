@@ -16,6 +16,7 @@ a - b  Subtraction
 a * b  Multiplication
 a / b  Division
 a |> b Pipeing
+-a     Negation
 ```
 
 ### 3D 

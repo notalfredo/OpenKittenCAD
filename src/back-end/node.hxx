@@ -17,6 +17,7 @@ typedef enum nodeOp {
     OP_MOD,
     OP_ASSIGN,
     OP_PIPE,
+    OP_NEGATE
 } NODE_OP;
 
 typedef enum shape {
@@ -59,6 +60,7 @@ typedef enum nodeType {
     ASSIGN,
 
     BIN_OP,
+    UN_OP,
 
     DOUBLE,
     SHAPE,
@@ -190,6 +192,17 @@ class NodeShape: public NodeExpression {
         }
 };
 
+class NodeUnaryOperator: public NodeExpression {
+    public:
+        NodeExpression* lhs;
+        NODE_OP unaryOperatorType;
+        NodeUnaryOperator(NodeExpression* lhs, NODE_OP unaryOperatorType, Node* _prevAlloc): lhs(lhs), unaryOperatorType(unaryOperatorType) {
+            _allocatedLinkedList = _prevAlloc; 
+            this->nextExpr = NULL;
+            this->nodeType = UN_OP;
+        }
+        
+};
 
 class NodeBinaryOperator: public NodeExpression {
     public:
@@ -458,6 +471,7 @@ NodeFunctionCall* newFunctionCallNode(NodeIdentifier* id, NodeExpression* args);
 NodeExprStmt* newExprStmtNode(NodeExpression* node);
 NodeReturnStmt* newReturnNode(NodeExpression* returnNode);
 NodePlaceHolder* newPlaceHolderNode();
+NodeUnaryOperator* newUnaryOperatorNode(NodeExpression* lhs, NODE_OP unaryOperatorType);
 void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location);
 NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
 NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt);
