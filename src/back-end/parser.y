@@ -227,6 +227,8 @@ exprStmt:
   ;
 
 expr:
+    '-' expr                       { $$ = newUnaryOperatorNode($2, OP_NEGATE); }
+  |
     expr '+' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_PLUS); }
   | expr '-' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
   | expr '*' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_MUL); }

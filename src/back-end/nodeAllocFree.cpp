@@ -83,6 +83,14 @@ NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt)
 }
 
 
+NodeUnaryOperator* newUnaryOperatorNode(NodeExpression* lhs, NODE_OP unaryOperatorType)
+{
+    NodeUnaryOperator* me = new NodeUnaryOperator(lhs, unaryOperatorType, _prevAlloc); 
+    _prevAlloc = me;
+    return me;
+}
+
+
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType)
 {
     NodeBinaryOperator* me = new NodeBinaryOperator(

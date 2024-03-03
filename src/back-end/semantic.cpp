@@ -296,6 +296,20 @@ NodeExpression* _processTransformation(NodeTransformation* tNode)
 }
 
 
+NodeExpression* _processUnaryOp(NodeUnaryOperator* unNode)
+{
+    NodeExpression* expr = evalExpr(unNode->lhs);
+
+    
+    if(expr->nodeType != DOUBLE){
+        fprintf(stderr, "Trying to perfrom unary operator on non number ... exiting ...\n");
+        exit(1);
+    }
+
+    return newNumberNode(-static_cast<NodeNumber*>(expr)->value);
+}
+
+
 NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
 {
     functionPtr* funcPtr = lookUpFunc(funcCallNode->id->idName);
@@ -443,6 +457,9 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
         case TRANSFORMATION: {
             return _processTransformation(static_cast<NodeTransformation*>(state));
+        }
+        case UN_OP: {
+            return _processUnaryOp(static_cast<NodeUnaryOperator*>(state));
         }
         default: {
             fprintf(stderr, "evalExpr/semantic.cpp invalid nodeType: %s\n", nodeTypeToString(state->nodeType));
