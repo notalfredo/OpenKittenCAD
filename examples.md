@@ -1,6 +1,6 @@
 # Examples
 
-## Example One
+### Example One
 ```rust
 fn degToRad(degrees: number) -> number {
     return degrees * 3.14 / 180;

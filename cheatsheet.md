@@ -39,4 +39,8 @@ difference(shape_one, shape_two)
 intersection(shape_one, shape_two)
 ```
 
+### Functions
+```
+addShape(shape)
+```
 
