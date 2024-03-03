@@ -52,6 +52,24 @@ NodeExpression* indexExprList(NodeExpression* node, int index)
     return temp;
 }
 
+/*  
+ * Returns 1 if all nodes in linked list have the same type
+ * as the param 'type'
+*/
+int checkAllExprTypes(NodeExpression* head, NODE_TYPE type)
+{   
+    NodeExpression* tempHead = head;
+
+    while(tempHead){
+        if(tempHead->nodeType != type){
+            return 0;
+        }
+        tempHead = tempHead->nextExpr;
+    }
+
+    return 1;
+}
+
 
 void appendToStmtList(NodeStmtList* list, NodeStatement* newMember)
 {

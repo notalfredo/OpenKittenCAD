@@ -1,12 +1,27 @@
-fn first(x: number) -> number {
-    return x + 20;
+fn degToRad(degrees: number) -> number {
+    return degrees * 3.14 / 180;
 };
 
+
 {
-    print(first(10));
+    let mySphere: shape := sphere(2);   
 
-    let myShape: shape := sphere(10);
+    let myCylOne: shape := cylinder(1, 2);
+    let myCylThree: shape := rotate(myCylOne,  [0, degToRad(90), 0]);
+    let myCylFour: shape := myCylOne |> rotate(%, [degToRad(90), 0, 0]);
 
-    addShape(myShape);
+
     
+
+    let superUnion: shape := union(
+        myCylOne |> rotate(%, [degToRad(180), 0, 0]),
+        union(
+            myCylOne,
+            union(
+                union(myCylThree, rotate(myCylOne,  [-degToRad(90), 0, 0])),
+                union(myCylFour, rotate(myCylOne,  [0, -degToRad(90), 0]))
+            )
+        )
+    );
+
 };

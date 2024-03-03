@@ -75,9 +75,9 @@ NodeShape* newNodeShape(OCCT_SHAPE shape)
 }
 
 
-NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt)
+NodeArray* newArrayNode(NodeExpression* array)
 {
-    NodeTransformation* me = new NodeTransformation(tt, _prevAlloc);
+    NodeArray* me = new NodeArray(array, _prevAlloc);
     _prevAlloc = me;
     return me;
 }

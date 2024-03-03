@@ -7,16 +7,19 @@ fn degToRad(degrees: number) -> number {
     let mySphere: shape := sphere(2);   
 
     let myCylOne: shape := cylinder(1, 2);
-    let myCylThree: shape := rotate(myCylOne,  degToRad(90), rotY);
-    let myCylFour: shape := myCylOne |> rotate(%, degToRad(90), rotX);
+    let myCylThree: shape := rotate(myCylOne,  [0, degToRad(90), 0]);
+    let myCylFour: shape := myCylOne |> rotate(%, [degToRad(90), 0, 0]);
+
+
+    
 
     let superUnion: shape := union(
-        myCylOne |> rotate(%, degToRad(180), rotX),
+        myCylOne |> rotate(%, [degToRad(180), 0, 0]),
         union(
             myCylOne,
             union(
-                union(myCylThree, rotate(myCylOne,  -degToRad(90), rotX)),
-                union(myCylFour, rotate(myCylOne,  -degToRad(90), rotY))
+                union(myCylThree, rotate(myCylOne,  [-degToRad(90), 0, 0])),
+                union(myCylFour, rotate(myCylOne,  [0, -degToRad(90), 0]))
             )
         )
     );
