@@ -290,9 +290,18 @@ NodeExpression* _processNumber(NodeNumber* numberNode)
 }
 
 
-NodeExpression* _processTransformation(NodeTransformation* tNode)
+NodeArray* _processArray(NodeArray* arrayNode)
 {
-    return tNode;
+    NodeExpression* arr = arrayNode->array;
+    NodeExpression* newArr = NULL;
+    
+    int arrLength = getExpressionLength(arr);
+    for(int index = 0; index < arrLength; index++) {
+        NodeExpression* expr = indexExprList(arr, index);
+        appendExprLinkedList(&newArr, evalExpr(expr));
+    }
+
+    return newArrayNode(newArr);
 }
 
 
@@ -455,8 +464,8 @@ NodeExpression* evalExpr(NodeExpression* state)
         case SHAPE: {
             return _processShape(static_cast<NodeShape*>(state));
         }
-        case TRANSFORMATION: {
-            return _processTransformation(static_cast<NodeTransformation*>(state));
+        case ARRAY: {
+            return _processArray(static_cast<NodeArray*>(state));
         }
         case UN_OP: {
             return _processUnaryOp(static_cast<NodeUnaryOperator*>(state));

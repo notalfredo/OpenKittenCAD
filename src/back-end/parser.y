@@ -71,7 +71,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
   NodeBlock*      blockNode;
 
   NodeNumber*     numberNode;
-  NodeTransformation*     transformationNode;
+  NodeArray*      arrayNode;
   
   NodeType*       idType;
 
@@ -100,12 +100,11 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 
 %token <idNode>         tok_ID
-
 %token <numberNode>     tok_NUM
-
-%token <transformationNode> tok_TRANS
-
 %token <idType>         tok_TYPE
+
+
+
 
     /* Non-terminals */
 %type <ifNode>                       ifStmt
@@ -126,10 +125,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type <functionNode>                 functionStmt
 
 %type <idNode>                       identifier
-
 %type <blockNode>                    block
 
-%type<exprNode>                      expr argList initOpt return
+%type<exprNode>                      expr argList initOpt return arrayList
 
 %type<exprStmtNode>                  exprStmt
 
@@ -236,9 +234,18 @@ expr:
   | expr tok_PIPE expr             { $$ = newBinaryOperatorNode($1, $3, OP_PIPE); }
   | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
   | tok_NUM                        { $$ = $1; }
-  | tok_TRANS                      { $$ = $1; }
+  | '[' arrayList ']'              { $$ = newArrayNode($2); } 
   | tok_ID                         { $$ = $1; }
   | tok_ID '(' argList ')'         { $$ = newFunctionCallNode($1, $3); }
+  ;
+
+
+arrayList:
+    arrayList ',' expr  {
+    appendExprLinkedList(&$1, $3);
+    $$ = $1;
+  }
+  | expr  { $$ = $1; }
   ;
 
 argList:

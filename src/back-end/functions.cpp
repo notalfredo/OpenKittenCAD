@@ -18,6 +18,7 @@
 #include <BRepBuilderAPI_Transform.hxx>
 
 
+#include <cstdio>
 #include <vtkStructuredGrid.h>
 #include <vtkDataSetMapper.h>
 #include <vtkExtractEdges.h>
@@ -341,24 +342,27 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
         case doRotate: {
             NodeShape* one = static_cast<NodeShape*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-            NodeTransformation* three = static_cast<NodeTransformation*>(args[2]);
+            NodeArray* two = static_cast<NodeArray*>(args[1]);
 
-            switch(three->transformationType){
-                case rotX: {
-                    return functionPtr->func.rotate(*one->shape, two->value, one->shapeType, gp::OX());
-                }
-                case rotY: {
-                    return functionPtr->func.rotate(*one->shape, two->value, one->shapeType, gp::OY());
-                }
-                case rotZ: {
-                    return functionPtr->func.rotate(*one->shape, two->value, one->shapeType, gp::OZ());
-                }
-                default: {
-                    fprintf(stderr, "Tired to perform rotation but did not specify rotX/rotY/rotZ ... exiting ...\n");
-                    exit(1);
-                }
+            int length = getExpressionLength(two->array);
+            if( length != 3 ){
+                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
             }
+            else if(!checkAllExprTypes(two->array, DOUBLE)){
+                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
+            }
+
+            double numOne = static_cast<NodeNumber*>(two->array)->value;
+            double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+            double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+
+            NodeShape* newShape = NULL;
+            newShape = functionPtr->func.rotate(*one->shape, numOne, one->shapeType, gp::OX());
+            newShape = functionPtr->func.rotate(*newShape->shape, numTwo, one->shapeType, gp::OY());
+            newShape = functionPtr->func.rotate(*newShape->shape, numThree, one->shapeType, gp::OZ());
+
+            return newShape;
         }
 
         default: {

@@ -3,12 +3,6 @@
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <TopoDS_Shape.hxx>
 
-typedef enum transformation{
-    rotX,
-    rotY,
-    rotZ
-} TRANSFORMATION_TYPE;
-
 typedef enum nodeOp {
     OP_PLUS, 
     OP_SUB,
@@ -68,7 +62,7 @@ typedef enum nodeType {
     RETURN_EVAL,
     PLACEHOLDER,
 
-    TRANSFORMATION,
+    ARRAY,
 
     STMT_LIST,
     DECL_LIST,
@@ -164,16 +158,14 @@ class NodeNumber: public NodeExpression {
 };
 
 
-class NodeTransformation: public NodeExpression {
+class NodeArray: public NodeExpression {
     public:
-        TRANSFORMATION_TYPE transformationType;
-        NodeTransformation(TRANSFORMATION_TYPE tt, Node* _prevAlloc){
-            this->nodeType = TRANSFORMATION;
-            this->nextExpr = NULL;
-            this->transformationType = tt;
+        NodeExpression* array;
+        NodeArray(NodeExpression* array, Node* _prevAlloc): array(array) {
+            this->nodeType = ARRAY; 
             this->_allocatedLinkedList = _prevAlloc;
+            this->nextExpr = NULL;
         }
-
 };
 
 
@@ -474,7 +466,7 @@ NodePlaceHolder* newPlaceHolderNode();
 NodeUnaryOperator* newUnaryOperatorNode(NodeExpression* lhs, NODE_OP unaryOperatorType);
 void replacePipeInput(NodeExpression** args, NodeExpression* newArg, int location);
 NodeReturnEvaluated* newReturnEvaluated(NodeExpression* returnNode);
-NodeTransformation* newTransformationNode(TRANSFORMATION_TYPE tt);
+NodeArray* newArrayNode(NodeExpression* array);
 void freeAllNodes();
 int countAllocatedNodes();
 
@@ -492,6 +484,7 @@ extern void addDeclToList(NodeDeclList* list, NodeDecl* newDecl);
 extern int getDeclListSize(NodeDeclList* list);
 extern NodeDecl* indexDeclList(NodeDeclList* list, int index);
 extern NodeExpression* indexExprList(NodeExpression* node, int index);
+extern int checkAllExprTypes(NodeExpression* head, NODE_TYPE type);
 extern ID_TYPE idTypeFromNodeType(NODE_TYPE nodeType);
 extern int getStmtListSize(NodeStmtList* list);
 extern NodeStatement* indexStmtList(NodeStmtList* list, int index);

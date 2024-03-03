@@ -84,23 +84,6 @@ int isKeyWord(std::string id) {
     return 0; 
 }
 
-
-NodeTransformation* nodeTransFromString(char* tokenText){
-    if(!strcmp(tokenText, "rotX")){
-        free(tokenText);
-        return newTransformationNode(rotX);
-    }
-    else if(!strcmp(tokenText, "rotY")){
-        free(tokenText);
-        return newTransformationNode(rotY);
-    }
-    else if(!strcmp(tokenText, "rotZ")){
-        free(tokenText);
-        return newTransformationNode(rotZ);
-    }
-    return NULL;
-}
-
  
 NodeType* nodeTypeFromChar(char* tokenText){
     if(!strcmp(tokenText, "number")){
@@ -134,6 +117,12 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
   // Single character token.  Just return the char itself.
   return yytext[0];
 }
+
+"[" | 
+"]" {
+  return yytext[0];
+}
+
 
 "==" {
     flexString = yytext;
@@ -169,13 +158,6 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 "->" {
     flexString = yytext;
     return tok_ARROW;
-}
-
-"rotX" |
-"rotY" |
-"rotZ" { 
-    yylval->transformationNode = nodeTransFromString(strdup(yytext));
-    return tok_TRANS;
 }
 
 
