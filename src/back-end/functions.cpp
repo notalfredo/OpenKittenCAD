@@ -243,6 +243,7 @@ functionPtr knownFunctions[] {
     {"cone", makeCone,  {.makeCone = _makeCone}},
     {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
     {"box", makeBox,  {.makeBox = _makeBox}},
+
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
     {"difference", makeDifference,  {.makeDifference = _makeDifference}},
     {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
