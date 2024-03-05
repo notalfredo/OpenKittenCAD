@@ -6,6 +6,8 @@
 
 
 ## Dependencies 
+OpenKittenCAD is built on the shoulders of giants.
+
 I am a true believer that for a project to be 
 maintainable in the long term we have to keep
 as little dependancies as possible. This project
@@ -94,7 +96,7 @@ argList         : empty
 If you are wanting to contribute a good start is [Roadmap](https://github.com/notalfredo/OpenKittenCAD/issues/1).
 If you find a issue please open a github issue.
 If you wish to make a PR please open a github issue and link it with it. Unless its a change like grammar fix.
-There is still a lot of work to be done. I work full time so progress on the project may be "slow".
+There is still a lot of work to be done. I work full time so progress on the project may be "slow". :)
 
 ## Building
 
