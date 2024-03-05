@@ -11,39 +11,36 @@
 extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %}
 
-// Make the parser reentrant so we don't have those pesky global
-//  data items.  This affects the signature to the yyerror
-//  routine.  We also have to supply additional info to the lexer
-//  and parser when we do this.  See the following %lex-param,
-//  %parse-param definitions.
+    /*
+    We use reentrant so we dont have to use global data items 
+    Affects the signature of yyerror.
+    We have to suply more information to lex-param and parse-param 
+    */
 %define api.pure full
 
 
-// With reentrancy, we have to pass around all of the scanner
-//  state.  The type of a pointer to an instance of that state is
-//  called yyscan_t.
+    /*
+    Pointer to an instance of state is called yyscan_t
+    */
 %code requires {
   #include "node.hxx"
   #include <iostream>
   typedef void *yyscan_t;
 }
 
-// Add the following parameters to the lexer and parser calls.
-//  This is necessary when we're getting rid of global references.
 %lex-param   { yyscan_t scanner }
 %parse-param { yyscan_t scanner }
 %parse-param { void **result }
 
-// Generate a header file with the token names, union of possible
-//  attributes, etc.  (This header will be included by the lexer.)
+    /*This header contains token name, and unions*/
 %defines "parser.tab.h"
 
-// Enable the use of yylloc.  In the rules below, we get location
-//  information via the '@' marker.
+    /*
+    Enable the use of yylloc.  In the rules below, we get location
+    information via the '@' marker.
+    */
 %locations
 
-// The union of all possible attributes that can be returned by
-//  any category of token.
 %union {
   Node*           node;
 

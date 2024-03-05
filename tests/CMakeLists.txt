@@ -1,9 +1,6 @@
 # Test program CMakeLists.txt
 enable_testing()
 
-set(VTK_DIR "/usr/local/occt_tcl_tk/vtk/lib/cmake/vtk-9.3")
-set(OpenCASCADE_DIR "/usr/local/occt_install_vtk/lib/cmake/opencascade")
-
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
@@ -15,7 +12,8 @@ include_directories ( SYSTEM ${OpenCASCADE_INCLUDE_DIR} )
 
 
 BISON_TARGET(
-    MyParser /home/alfredo/repos/OpenKittenCad/src/back-end/parser.y
+    MyParser 
+    ${PROJECT_SOURCE_DIR}/src/back-end/parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
     COMPILE_FLAGS "--report=itemset --graph --report=lookaheads"
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
@@ -23,75 +21,73 @@ BISON_TARGET(
 
 FLEX_TARGET(
     MyScanner
-    /home/alfredo/repos/OpenKittenCad/src/back-end/lexer.l
+    ${PROJECT_SOURCE_DIR}/src/back-end/lexer.l
     ${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.c
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.h"
 )
  
-include_directories("/home/alfredo/repos/OpenKittenCad/src/back-end/") 
+include_directories("${PROJECT_SOURCE_DIR}/src/back-end/") 
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 
 add_library(CommonSources
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
 
 set(COMMON_INCLUDE_DIRECTORIES
     ./
-    /home/alfredo/repos/OpenKittenCad/src/back-end/node.hxx
+    ${PROJECT_SOURCE_DIR}/src/back-end/node.hxx
 )
 
 
 add_executable(lexer_test ./lexer_test.cpp)
 add_executable(parser_test
     ./parser_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
 )
 add_executable(
     symbol_table_test 
     ./symbol_table_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
 )
 add_executable(semantic_test
     ./semantic_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/semantic.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/semantic.cpp
 )
 add_executable(vtk_test
     ./vtk_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/symbolTable.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/semantic.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/semantic.cpp
 )
 add_executable(functions_test
     ./functions_test.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/enumToString.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeImpl.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/nodeAllocFree.cpp
-    /home/alfredo/repos/OpenKittenCad/src/back-end/functions.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
 )
 
 
 target_link_libraries(parser_test
     PUBLIC 
     CommonSources
-    #${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumper.a
-    #${CMAKE_SOURCE_DIR}/build/src/tree-dump/libTreeDumperHelper.a
     tau
 )
 target_link_libraries(lexer_test PUBLIC CommonSources tau)

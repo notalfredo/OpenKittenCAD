@@ -1,7 +1,3 @@
-set(VTK_DIR "/usr/local/occt_tcl_tk/vtk/lib/cmake/vtk-9.3")
-set(OpenCASCADE_DIR "/usr/local/occt_install_vtk/lib/cmake/opencascade")
-
-
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 find_package(VTK)
