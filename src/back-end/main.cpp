@@ -1,38 +1,39 @@
-#include <string.h>
-
+#include "node.hxx"
 #include "parser.tab.h"
 #include "lexer.yy.h"
+#include <cstdio>
 
+extern void semantic(NodeStmtList* head, int displayVTK = 1);
 
-#include <iostream>  
-#include <sstream>  
-#include <string>    
-#include <streambuf>
-#include <fstream> 
+int main(int argc, char** argv) {
 
-int main() {
-    FILE *srcFP       = fopen( 
-    "/home/alfredo/repos/OpenKittenCad/tests/input_tests/input.kts",
-    "r"
-    );
-    if ( srcFP == NULL ) {
-        printf( "Unable to open file\n");
+    FILE* filePtr = fopen(argv[1], "r");
+    
+    if(!filePtr){
+        fprintf(stderr, "Error opening file semantic testOne\n");
+        fclose(filePtr); 
     }
 
+     
     yyscan_t scanner;
-    yylex_init( &scanner );
-
-    yyrestart( srcFP, scanner );
-
-    yyset_lineno( 1, scanner );
-
-    int tok;
+    yylex_init(&scanner);
+    yyrestart(filePtr, scanner);
+    yyset_lineno(1, scanner);
 
     void *result = NULL;
-    int parseState = yyparse( scanner, &result );
- 
+    int parseState = yyparse(scanner, &result);
 
-    //while ( (tok = yylex(scanner)) ) {
-    //    std::cout << tok << std::endl;
-    //}
+    
+    if(parseState != 0){
+        fprintf(stderr, "Error parsing exiting...\n");
+    }
+    else {
+        fprintf(stdout, "Now performing semantic analysis\n\n");        
+        semantic((NodeStmtList*)result, 1);
+    }
+
+
+    yylex_destroy(scanner);
+    freeAllNodes();
+    fclose(filePtr);
 }

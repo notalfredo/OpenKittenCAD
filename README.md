@@ -97,15 +97,22 @@ If you find an issue please open a issue then link it with a pull request. Any h
 ## Building
 
 ### Specifiable Arguments 
-`VTK_DIR_ARG` PATH
-`OpenCASCADE_DIR_ARG` PATH
-`BUILD_TEST` BOOL
-`BUILD_MAIN` BOOL
+
+| Variable Name          | Variable Type | Description                                 |
+|------------------------|---------------|---------------------------------------------|
+| VTK_DIR_ARG            | PATH          | Path to the VTK directory                   |
+| OpenCASCADE_DIR_ARG    | PATH          | Path to the OpenCASCADE directory           |
+| BUILD_TEST             | BOOL          | Enable or disable testing                   |
+| BUILD_MAIN             | BOOL          | Enable or disable the main build            |
+
 
 ### Linux
-```
-cmake [-options] ..
-make
+```bash
+$ mkdir build 
+$ cd build
+$ cmake [-options] ..
+$ make
+$ ./src/back-end/driver {path to .kts file}
 ```
 
 
