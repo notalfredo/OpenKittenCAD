@@ -90,3 +90,31 @@ argList         : empty
 [examples](./examples.md)
 
 
+## Contributing
+If you are wanting to contribute a good start is [Roadmap](https://github.com/notalfredo/OpenKittenCAD/issues/1).
+If you find an issue please open a issue then link it with a pull request. Any help is appriciated :)
+
+## Building
+
+### Specifiable Arguments 
+`VTK_DIR_ARG` PATH
+`OpenCASCADE_DIR_ARG` PATH
+`BUILD_TEST` BOOL
+`BUILD_MAIN` BOOL
+
+### Linux
+```
+cmake [-options] ..
+make
+```
+
+
+### Windows
+```
+
+```
+
+#### Mac
+```
+
+```
