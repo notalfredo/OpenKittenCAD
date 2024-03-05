@@ -92,7 +92,9 @@ argList         : empty
 
 ## Contributing
 If you are wanting to contribute a good start is [Roadmap](https://github.com/notalfredo/OpenKittenCAD/issues/1).
-If you find an issue please open a issue then link it with a pull request. Any help is appriciated :)
+If you find a issue please open a github issue.
+If you wish to make a PR please open a github issue and link it with it. Unless its a change like grammar fix.
+There is still a lot of work to be done. I work full time so progress on the project may be "slow".
 
 ## Building
 

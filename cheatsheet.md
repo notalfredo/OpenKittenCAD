@@ -29,7 +29,7 @@ box(corner_x, corner_y, corner_z)
 
 ### Transformations 
 ```
-rotate(shape, rad, axis)
+rotate(shape, [x_rad, y_rad, z_rad])
 ```
 
 ### Boolean operations
@@ -42,5 +42,6 @@ intersection(shape_one, shape_two)
 ### Functions
 ```
 addShape(shape)
+print(double)
 ```
 
