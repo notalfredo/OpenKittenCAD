@@ -222,6 +222,29 @@ NodeShape* _rotate(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shape
     gp_Trsf transformation; 
     transformation.SetRotation(xAxis, angle);
 
+    BRepBuilderAPI_Transform* rotation = new BRepBuilderAPI_Transform(currShape, transformation);
+    const TopoDS_Shape* shape = &rotation->Shape();
+
+    if(shape->IsNull()){
+        fprintf(stderr, "Fuse is null exiting...\n");
+        exit(1);
+    }
+
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(rotation);
+    me->shape = shape;
+
+    return me;
+
+}
+
+NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double z, OCCT_SHAPE shapeType)
+{
+    gp_Vec vector = gp_Vec(x, y, z);  
+    gp_Trsf transformation;
+    transformation.SetTranslation(vector);
+
+
     BRepBuilderAPI_Transform* translation = new BRepBuilderAPI_Transform(currShape, transformation);
     const TopoDS_Shape* shape = &translation->Shape();
 
@@ -233,11 +256,11 @@ NodeShape* _rotate(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shape
     NodeShape* me = newNodeShape(shapeType);
     me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(translation);
     me->shape = shape;
-
     return me;
 
-}
 
+    return me;
+}
 
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
@@ -252,6 +275,7 @@ functionPtr knownFunctions[] {
 
 
     {"rotate", doRotate,  {.rotate = _rotate}},
+    {"translate", doTranslate,  {.translate = _translate}},
     
 
     {"print",  printDouble, {.println =  _print}},
@@ -364,9 +388,26 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 
             return newShape;
         }
+        case doTranslate: {
+            NodeShape* one = static_cast<NodeShape*>(args[0]);
+            NodeArray* two = static_cast<NodeArray*>(args[1]);
 
+            int length = getExpressionLength(two->array);
+            if( length != 3 ){
+                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
+            }
+            else if(!checkAllExprTypes(two->array, DOUBLE)){
+                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
+            }
+
+            double xTrans = static_cast<NodeNumber*>(two->array)->value;
+            double yTrans = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+            double zTrans = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+            return functionPtr->func.translate(*one->shape, xTrans, yTrans, zTrans, one->shapeType);
+        }
         default: {
-           fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?"); 
+           fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 
            exit(1);
         }
     }
