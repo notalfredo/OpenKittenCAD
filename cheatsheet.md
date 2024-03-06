@@ -30,6 +30,7 @@ box(corner_x, corner_y, corner_z)
 ### Transformations 
 ```
 rotate(shape, [x_rad, y_rad, z_rad])
+translate(shape, [x_new, y_new, z_new])
 ```
 
 ### Boolean operations

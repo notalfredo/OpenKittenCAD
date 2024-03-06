@@ -14,6 +14,7 @@ enum functionEnum {
 
     
     doRotate,
+    doTranslate,
     
 
     printDouble,
@@ -32,7 +33,7 @@ union functionPointers {
 
 
     NodeShape* (*rotate) (const TopoDS_Shape&, double,  OCCT_SHAPE, gp_Ax1 xAxis);
-
+    NodeShape* (*translate) (const TopoDS_Shape&, double, double, double, OCCT_SHAPE);
 
     
 
@@ -50,6 +51,7 @@ typedef struct functionPtr{
 
 void initViewer();
 void startViewer();
+void resetViewer();
 void _addShape(const TopoDS_Shape& shapeToAdd);
 
 void _print(double num);
