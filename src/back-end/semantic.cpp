@@ -21,6 +21,41 @@ void printText(int tabCount, const char* text)
 }
 
 
+static void _validateRhsEqualsDeclType(ID_TYPE lhs, nodeType rhs)
+{
+    if((rhs != DOUBLE) && (rhs != SHAPE) && (rhs != POINT)){
+        fprintf(stderr, "Right hand side of decl must either evaluate to a number, shape, or point.");
+    }
+
+    switch(lhs){
+        case num: {
+            if(rhs != DOUBLE){
+                fprintf(stderr, "You tried to assign %s, to a number\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+            }
+            return;
+        }
+        case shape: {
+            if(rhs != SHAPE){
+                fprintf(stderr, "You tried to assign %s, to a shape\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+            }
+            return;
+        }
+        case point: {
+            if(rhs != POINT){
+                fprintf(stderr, "You tried to assign %s, to a point\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+            }
+            return;
+        }
+        case _void: {
+            fprintf(stderr, "You cannot assign to void\n");
+            exit(1);
+        }
+    }
+
+}
+
+
+
 /*when we initilziz symTableHead*/
 static SymbolTableHead* symTableHead = NULL;
 
@@ -95,6 +130,7 @@ NodeExpression* _processDeclNode(NodeDecl* node)
 
     NodeExpression* newExprStmt = evalExpr(node->value);
 
+
     if(!newExprStmt){
         fprintf(stderr, "The value of node \"%s\" which is a decl was NULL ... exiting ...\n", node->id->idName);
         exit(1);
@@ -103,9 +139,14 @@ NodeExpression* _processDeclNode(NodeDecl* node)
     else if(newExprStmt->nodeType == RETURN_EVAL){
         NodeReturnEvaluated* funcCall = static_cast<NodeReturnEvaluated*>(newExprStmt);
 
+
+        _validateRhsEqualsDeclType(node->type->idType, funcCall->nodeType);
+
+
         node->value = funcCall->result;
     }
     else{
+        _validateRhsEqualsDeclType(node->type->idType, newExprStmt->nodeType);
         node->value = newExprStmt;
     }
 

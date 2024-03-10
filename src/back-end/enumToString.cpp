@@ -63,6 +63,9 @@ const char* idTypeTostring(ID_TYPE type){
         case _void: {
             return "void";
         }
+        case point: {
+            return "point";
+        }
     }
     //Make the compiler happy
     return NULL;
@@ -80,6 +83,26 @@ const char* numToStrPlace(int num){
         return "rd";
     }
     return "th";
+}
+
+ID_TYPE nodeTypeFromIdType(nodeType rhs)
+{
+    switch(rhs){
+        case DOUBLE: {
+            return num;
+        }
+        case SHAPE: {
+            return shape;
+        }
+        case POINT: {
+            return point;
+        }
+        default: {
+            fprintf(stderr, "No mapping from %s, to ID_TYPE\n", nodeTypeToString(rhs));
+            exit(1);
+        }
+    }
+
 }
 
 

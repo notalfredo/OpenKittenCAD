@@ -28,7 +28,6 @@ typedef enum idType {
     num,
     shape,
     point,
-    transformation,
     _void, //only used for functions
 } ID_TYPE;
 

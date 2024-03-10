@@ -169,10 +169,6 @@ static Symbol* _symbolFromTreeNode(Node* node)
                     newSym->point = nodePoint;
                     break;
                 }
-                case transformation: {
-                    fprintf(stderr, "TODO: TRANSFORMATION EXIT\n");
-                    exit(1);
-                }
                 case _void: {
                     fprintf(stderr, "HIT _VOID IN SWITCH INSIDE symbolFromTreeNode\n");
                     return NULL;
