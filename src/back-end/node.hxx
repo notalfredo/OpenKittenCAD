@@ -1,6 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 #include "BRepBuilderAPI_MakeShape.hxx"
+#include "gp_Pnt.hxx"
 #include <TopoDS_Shape.hxx>
 
 typedef enum nodeOp {
@@ -26,6 +27,7 @@ typedef enum shape {
 typedef enum idType {
     num,
     shape,
+    point,
     transformation,
     _void, //only used for functions
 } ID_TYPE;
@@ -58,6 +60,7 @@ typedef enum nodeType {
 
     DOUBLE,
     SHAPE,
+    POINT,
 
     RETURN_EVAL,
     PLACEHOLDER,
@@ -165,6 +168,17 @@ class NodeArray: public NodeExpression {
             this->nodeType = ARRAY; 
             this->_allocatedLinkedList = _prevAlloc;
             this->nextExpr = NULL;
+        }
+};
+
+class NodePoint: public NodeExpression {
+    public:
+        gp_Pnt* point;
+        NodePoint(Node* _prevAlloc) {
+            this->point = NULL;
+            this->nodeType = POINT;
+            this->nextExpr = NULL;
+            this->_allocatedLinkedList = _prevAlloc;
         }
 };
 
@@ -453,6 +467,7 @@ NodeType* newNodeType(ID_TYPE idType);
 NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
 NodeShape* newNodeShape(OCCT_SHAPE shape);
+NodePoint* newNodePoint();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);

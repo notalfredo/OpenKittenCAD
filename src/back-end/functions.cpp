@@ -1,3 +1,4 @@
+#include "enumToString.hxx"
 #include "gp_Ax1.hxx"
 #include "node.hxx"
 #include "functions.hxx"
@@ -17,8 +18,8 @@
 
 #include <BRepBuilderAPI_Transform.hxx>
 
+#include <gp_Pnt.hxx>
 
-#include <cstdio>
 #include <vtkStructuredGrid.h>
 #include <vtkDataSetMapper.h>
 #include <vtkExtractEdges.h>
@@ -262,6 +263,17 @@ NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double 
     return me;
 }
 
+
+NodePoint* _makePoint(double x, double y, double z)
+{
+    gp_Pnt* point = new gp_Pnt(x, y, z);
+
+    NodePoint* pointNode = newNodePoint();
+    pointNode->point = point;
+
+    return pointNode;
+}
+
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
@@ -277,6 +289,9 @@ functionPtr knownFunctions[] {
     {"rotate", doRotate,  {.rotate = _rotate}},
     {"translate", doTranslate,  {.translate = _translate}},
     
+
+    {"newPoint", makePoint, {.makePoint = _makePoint}},
+
 
     {"print",  printDouble, {.println =  _print}},
     {"addShape", addShape,  {.addShapeToVTK = _addShape}}
@@ -335,6 +350,18 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return functionPtr->func.makeCylinder(one->value, two->value);
         }
         case addShape: {
+
+            if(args.size() != 1){
+                fprintf(stderr, "You can only pass 1 argument to addShape\n");
+            }
+            else if(!args[0]){
+                fprintf(stderr, "First argument to addShape is NULL\n");
+            }
+            else if(args[0]->nodeType != SHAPE){
+                fprintf(stderr, "Argument to addShape must be type shape you passed %s\n", nodeTypeToString(args[0]->nodeType));
+            }
+
+
             NodeShape* sphere = static_cast<NodeShape*>(args[0]);
             _addShape(*sphere->shape);
             return NULL;
@@ -405,6 +432,25 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             double zTrans = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
 
             return functionPtr->func.translate(*one->shape, xTrans, yTrans, zTrans, one->shapeType);
+        }
+        case makePoint: {
+            NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
+
+            int length = getExpressionLength(arrNode->array);
+            if( length != 3 ){
+                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
+            }
+            else if(!checkAllExprTypes(arrNode->array, DOUBLE)){
+                fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
+            }
+            
+
+            double x = static_cast<NodeNumber*>(arrNode->array)->value;
+            double y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
+            double z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
+
+
+            return functionPtr->func.makePoint(x, y, z);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

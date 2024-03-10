@@ -67,6 +67,14 @@ NodeNumber* newNumberNode(double value)
 }
 
 
+NodePoint* newNodePoint()
+{
+    NodePoint* me = new NodePoint(_prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
+
+
 NodeShape* newNodeShape(OCCT_SHAPE shape)
 {
     NodeShape* me = new NodeShape(shape, _prevAlloc);
@@ -184,6 +192,13 @@ void _freeNode(Node* node) {
             cast->brepShape = NULL;
             cast->shape = NULL;
             break;
+        }
+        case POINT: {
+            NodePoint* pnt = static_cast<NodePoint*>(node);
+
+            if(pnt->point){
+                free(pnt->point);
+            }
         }
         default: {
             break;

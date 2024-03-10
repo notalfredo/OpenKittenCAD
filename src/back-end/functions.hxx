@@ -15,6 +15,8 @@ enum functionEnum {
     
     doRotate,
     doTranslate,
+
+    makePoint,
     
 
     printDouble,
@@ -36,6 +38,8 @@ union functionPointers {
     NodeShape* (*translate) (const TopoDS_Shape&, double, double, double, OCCT_SHAPE);
 
     
+    NodePoint* (*makePoint) (double, double, double);
+
 
     void (*println) (double); 
     void (*addShapeToVTK) (const TopoDS_Shape&);
