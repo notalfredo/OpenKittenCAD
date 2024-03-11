@@ -1,3 +1,4 @@
+#include "Geom_TrimmedCurve.hxx"
 #include "enumToString.hxx"
 #include "gp_Ax1.hxx"
 #include "node.hxx"
@@ -19,6 +20,10 @@
 #include <BRepBuilderAPI_Transform.hxx>
 
 #include <gp_Pnt.hxx>
+
+#include <GC_MakeSegment.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+
 
 #include <vtkStructuredGrid.h>
 #include <vtkDataSetMapper.h>
@@ -274,6 +279,40 @@ NodePoint* _makePoint(double x, double y, double z)
     return pointNode;
 }
 
+
+NodeLine* _makeEdge(NodePoint* p1, NodePoint* p2)
+{
+    GC_MakeSegment mkSeg(*p1->point, *p2->point);
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkSeg.IsDone()){
+        aSegment = mkSeg.Value();
+    }
+    else {
+        fprintf(stderr,
+            "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n",
+            p1->point->X(), p1->point->Y(), p1->point->Z(),
+            p2->point->X(), p2->point->Y(), p2->point->Z()
+        );
+        exit(1);
+    }
+
+    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    const TopoDS_Edge* result = &edge->Edge();
+
+    NodeLine* me = newNodeLine();
+    me->brepEdge = edge;
+    me->edge = result;
+
+    return me;
+}
+
+
+NodeLine* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
+{
+    return NULL;
+}
+
+
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
@@ -290,7 +329,9 @@ functionPtr knownFunctions[] {
     {"translate", doTranslate,  {.translate = _translate}},
     
 
-    {"newPoint", makePoint, {.makePoint = _makePoint}},
+    {"dot", makePoint, {.makePoint = _makePoint}},
+    {"line", makeEdge, {.makeEdge = _makeEdge}},
+    {"arc", makeArc, {.makeArc = _makeArc}},
 
 
     {"print",  printDouble, {.println =  _print}},
@@ -451,6 +492,25 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 
 
             return functionPtr->func.makePoint(x, y, z);
+        }
+        case makeEdge: {
+            if(args.size() != 2){
+                fprintf(stderr, "When creating edge must provide 2 points");
+                exit(1);
+            }
+            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT){
+                fprintf(stderr, "When creating an edge it must be between two points lhs: %s, rhs: %s\n",
+                    nodeTypeToString(args[0]->nodeType),
+                    nodeTypeToString(args[1]->nodeType)
+                ); 
+                exit(1);
+            }
+
+            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
+            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
+
+            return functionPtr->func.makeEdge(p1, p2);
+
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

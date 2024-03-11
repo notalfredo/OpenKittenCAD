@@ -66,6 +66,9 @@ const char* idTypeTostring(ID_TYPE type){
         case point: {
             return "point";
         }
+        case edge: {
+            return "edge";
+        }
     }
     //Make the compiler happy
     return NULL;

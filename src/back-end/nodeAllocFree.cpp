@@ -74,6 +74,12 @@ NodePoint* newNodePoint()
     return me;
 }
 
+NodeLine* newNodeLine()
+{
+    NodeLine* me = new NodeLine(_prevAlloc);
+    _prevAlloc = me;
+    return me;
+}
 
 NodeShape* newNodeShape(OCCT_SHAPE shape)
 {
@@ -191,6 +197,17 @@ void _freeNode(Node* node) {
 
             cast->brepShape = NULL;
             cast->shape = NULL;
+            break;
+        }
+        case EDGE: {
+            NodeLine* cast = static_cast<NodeLine*>(node);
+
+            if(cast->brepEdge) {
+                delete cast->brepEdge;
+                cast->brepEdge = NULL;
+                cast->edge = NULL;
+            }
+
             break;
         }
         case POINT: {

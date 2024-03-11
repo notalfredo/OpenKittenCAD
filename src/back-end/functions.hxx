@@ -17,6 +17,8 @@ enum functionEnum {
     doTranslate,
 
     makePoint,
+    makeEdge,
+    makeArc,
     
 
     printDouble,
@@ -39,6 +41,8 @@ union functionPointers {
 
     
     NodePoint* (*makePoint) (double, double, double);
+    NodeLine* (*makeEdge) (NodePoint*, NodePoint*);
+    NodeLine* (*makeArc) (NodePoint*, NodePoint*, NodePoint*);
 
 
     void (*println) (double); 

@@ -1,6 +1,10 @@
 #ifndef NODE_H
 #define NODE_H
+
 #include "BRepBuilderAPI_MakeShape.hxx"
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include "TopoDS_Edge.hxx"
+
 #include "gp_Pnt.hxx"
 #include <TopoDS_Shape.hxx>
 
@@ -28,6 +32,7 @@ typedef enum idType {
     num,
     shape,
     point,
+    edge,
     _void, //only used for functions
 } ID_TYPE;
 
@@ -60,6 +65,7 @@ typedef enum nodeType {
     DOUBLE,
     SHAPE,
     POINT,
+    EDGE,
 
     RETURN_EVAL,
     PLACEHOLDER,
@@ -178,6 +184,24 @@ class NodePoint: public NodeExpression {
             this->nodeType = POINT;
             this->nextExpr = NULL;
             this->_allocatedLinkedList = _prevAlloc;
+        }
+};
+
+
+class NodeLine: public NodeExpression {
+    public:
+        BRepBuilderAPI_MakeEdge* brepEdge;    
+
+        const TopoDS_Edge* edge;
+
+        TopoDS_Edge* line;
+        NodeLine(Node* _prevAlloc) {
+            this->nodeType = EDGE;
+            this->nextExpr = NULL;
+            this->_allocatedLinkedList = _prevAlloc;
+
+            this->brepEdge = NULL;
+            this->edge = NULL;
         }
 };
 
@@ -466,6 +490,7 @@ NodeType* newNodeType(ID_TYPE idType);
 NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
 NodeShape* newNodeShape(OCCT_SHAPE shape);
+NodeLine* newNodeLine();
 NodePoint* newNodePoint();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
