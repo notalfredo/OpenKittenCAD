@@ -74,9 +74,9 @@ NodePoint* newNodePoint()
     return me;
 }
 
-NodeLine* newNodeLine()
+NodeEdge* newNodeEdge()
 {
-    NodeLine* me = new NodeLine(_prevAlloc);
+    NodeEdge* me = new NodeEdge(_prevAlloc);
     _prevAlloc = me;
     return me;
 }
@@ -200,7 +200,7 @@ void _freeNode(Node* node) {
             break;
         }
         case EDGE: {
-            NodeLine* cast = static_cast<NodeLine*>(node);
+            NodeEdge* cast = static_cast<NodeEdge*>(node);
 
             if(cast->brepEdge) {
                 delete cast->brepEdge;

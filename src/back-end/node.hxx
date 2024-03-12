@@ -188,14 +188,14 @@ class NodePoint: public NodeExpression {
 };
 
 
-class NodeLine: public NodeExpression {
+class NodeEdge: public NodeExpression {
     public:
         BRepBuilderAPI_MakeEdge* brepEdge;    
 
         const TopoDS_Edge* edge;
 
         TopoDS_Edge* line;
-        NodeLine(Node* _prevAlloc) {
+        NodeEdge(Node* _prevAlloc) {
             this->nodeType = EDGE;
             this->nextExpr = NULL;
             this->_allocatedLinkedList = _prevAlloc;
@@ -490,7 +490,7 @@ NodeType* newNodeType(ID_TYPE idType);
 NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
 NodeShape* newNodeShape(OCCT_SHAPE shape);
-NodeLine* newNodeLine();
+NodeEdge* newNodeEdge();
 NodePoint* newNodePoint();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);

@@ -41,8 +41,8 @@ union functionPointers {
 
     
     NodePoint* (*makePoint) (double, double, double);
-    NodeLine* (*makeEdge) (NodePoint*, NodePoint*);
-    NodeLine* (*makeArc) (NodePoint*, NodePoint*, NodePoint*);
+    NodeEdge* (*makeEdge) (NodePoint*, NodePoint*);
+    NodeEdge* (*makeArc) (NodePoint*, NodePoint*, NodePoint*);
 
 
     void (*println) (double); 

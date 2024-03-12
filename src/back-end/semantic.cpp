@@ -342,6 +342,18 @@ NodeExpression* _processShape(NodeShape* node)
 }
 
 
+NodeExpression* _processPoint(NodePoint* node)
+{
+    return node;
+}
+
+
+NodeExpression* _processLine(NodeEdge* node)
+{
+    return node;
+}
+
+
 NodeExpression* _processNumber(NodeNumber* numberNode)
 {
     return newNumberNode(numberNode->value);
@@ -521,6 +533,12 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
         case SHAPE: {
             return _processShape(static_cast<NodeShape*>(state));
+        }
+        case POINT: {
+            return _processPoint(static_cast<NodePoint*>(state));
+        }
+        case EDGE: {
+            return _processLine(static_cast<NodeEdge*>(state));
         }
         case ARRAY: {
             return _processArray(static_cast<NodeArray*>(state));

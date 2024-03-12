@@ -25,6 +25,7 @@ const char* nodeTypeToString(NODE_TYPE type)
         case STMT_LIST:      { return "BIN_OP\n";   }
         case DECL_LIST:      { return "DOUBLE\n";   }
         case EXPR_STMT:      { return "EXPR_STMT\n";    }
+        case POINT:          { return "POINT\n";    }
         default: {
             fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
             exit(0);

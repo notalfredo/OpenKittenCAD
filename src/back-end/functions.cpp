@@ -22,6 +22,7 @@
 #include <gp_Pnt.hxx>
 
 #include <GC_MakeSegment.hxx>
+#include <GC_MakeArcOfCircle.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 
 
@@ -280,7 +281,7 @@ NodePoint* _makePoint(double x, double y, double z)
 }
 
 
-NodeLine* _makeEdge(NodePoint* p1, NodePoint* p2)
+NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
 {
     GC_MakeSegment mkSeg(*p1->point, *p2->point);
     Handle(Geom_TrimmedCurve) aSegment;
@@ -299,7 +300,7 @@ NodeLine* _makeEdge(NodePoint* p1, NodePoint* p2)
     BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
     const TopoDS_Edge* result = &edge->Edge();
 
-    NodeLine* me = newNodeLine();
+    NodeEdge* me = newNodeEdge();
     me->brepEdge = edge;
     me->edge = result;
 
@@ -307,9 +308,32 @@ NodeLine* _makeEdge(NodePoint* p1, NodePoint* p2)
 }
 
 
-NodeLine* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
+NodeEdge* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
 {
-    return NULL;
+    GC_MakeArcOfCircle mkArc(*p1->point, *p2->point, *p3->point);
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkArc.IsDone()){
+        aSegment = mkArc.Value();
+    }
+    else {
+        fprintf(stderr,
+            "Unable to make edge between points p1 {x: %f, y: %f, z: %f} and p3 {x: %f, y: %f, z: %f} that cross p2 {x: %f, y: %f, z: %f} ... exiting ...\n",
+            p1->point->X(), p1->point->Y(), p1->point->Z(),
+            p3->point->X(), p3->point->Y(), p3->point->Z(),
+            p2->point->X(), p2->point->Y(), p2->point->Z()
+        );
+        exit(1);
+    }
+
+
+    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    const TopoDS_Edge* result = &edge->Edge();
+
+    NodeEdge* me = newNodeEdge();
+    me->brepEdge = edge;
+    me->edge = result;
+
+    return me;
 }
 
 
@@ -495,11 +519,11 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
         case makeEdge: {
             if(args.size() != 2){
-                fprintf(stderr, "When creating edge must provide 2 points");
+                fprintf(stderr, "When creating line must provide 2 points");
                 exit(1);
             }
             else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT){
-                fprintf(stderr, "When creating an edge it must be between two points lhs: %s, rhs: %s\n",
+                fprintf(stderr, "When creating an edge it must be between two points p1: %s, p2: %s\n",
                     nodeTypeToString(args[0]->nodeType),
                     nodeTypeToString(args[1]->nodeType)
                 ); 
@@ -510,7 +534,26 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             NodePoint* p2 = static_cast<NodePoint*>(args[1]);
 
             return functionPtr->func.makeEdge(p1, p2);
+        }
+        case makeArc: {
+            if(args.size() != 3){
+                fprintf(stderr, "When creating arc must provide 3 points");
+                exit(1);
+            }
+            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT || args[2]->nodeType != POINT){
+                fprintf(stderr, "When creating an edge it must be between three points p: %s, p: %s, p: %s\n",
+                    nodeTypeToString(args[0]->nodeType),
+                    nodeTypeToString(args[1]->nodeType),
+                    nodeTypeToString(args[2]->nodeType)
+                ); 
+                exit(1);
+            }
 
+            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
+            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
+            NodePoint* p3 = static_cast<NodePoint*>(args[2]);
+
+            return functionPtr->func.makeArc(p1, p2, p3);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

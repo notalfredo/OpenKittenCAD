@@ -68,7 +68,7 @@ typedef struct symbol {
 
     NodePoint* point; //IF we are a point assign our point here
                       
-    NodeLine* edge; 
+    NodeEdge* edge; 
 
     struct symbol* next;
 } Symbol ;

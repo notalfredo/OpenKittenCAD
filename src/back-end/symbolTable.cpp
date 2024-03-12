@@ -170,7 +170,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
                     break;
                 }
                 case edge: {
-                    NodeLine* nodeEdge = static_cast<NodeLine*>(declNode->value);
+                    NodeEdge* nodeEdge = static_cast<NodeEdge*>(declNode->value);
                     newSym->idType = edge; 
                     newSym->edge = nodeEdge;
                     break;
