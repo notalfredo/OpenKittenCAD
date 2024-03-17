@@ -665,7 +665,6 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             else {
                 NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
                 NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
-                NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
 
                 return _connect(e1->wireShape, e2->wireShape);
             }
