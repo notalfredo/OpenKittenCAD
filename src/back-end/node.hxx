@@ -16,6 +16,12 @@ typedef enum edgeType {
     type_error
 } EDGE_TYPE;
 
+
+typedef enum dim {
+    TWO_DIM,
+    THREE_DIM,
+} DIMENSION;
+
 typedef enum nodeOp {
     OP_PLUS, 
     OP_SUB,
@@ -32,6 +38,7 @@ typedef enum shape {
     CONE,
     CYLINDER,
     SPHERE,
+    FACE,
     CUSTOM
 } OCCT_SHAPE;
 
@@ -225,6 +232,8 @@ class NodeShape: public NodeExpression {
         OCCT_SHAPE shapeType;
         BRepBuilderAPI_MakeShape* brepShape; 
         const TopoDS_Shape* shape;
+
+
         NodeShape(OCCT_SHAPE shapeType, Node* _prevAlloc): shapeType(shapeType){
             this->nodeType = SHAPE;
             this->_allocatedLinkedList = _prevAlloc;

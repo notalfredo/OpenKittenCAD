@@ -11,10 +11,12 @@ enum functionEnum {
     makeUnion,
     makeDifference,
     makeIntersection,
+    makeFace,
 
     
     doRotate,
     doTranslate,
+    doMirror,
 
     makePoint,
     makeEdge,
@@ -35,15 +37,19 @@ union functionPointers {
     NodeShape* (*makeUnion) (const TopoDS_Shape&, const TopoDS_Shape&);
     NodeShape* (*makeDifference) (const TopoDS_Shape&, const TopoDS_Shape&);
     NodeShape* (*makeIntersection) (const TopoDS_Shape&, const TopoDS_Shape&);
+    NodeShape* (*makeFace) (const TopoDS_Wire* wire);
 
 
     NodeShape* (*rotate) (const TopoDS_Shape&, double,  OCCT_SHAPE, gp_Ax1 xAxis);
     NodeShape* (*translate) (const TopoDS_Shape&, double, double, double, OCCT_SHAPE);
+    NodeEdge* (*mirror) (const TopoDS_Wire*);
 
     
     NodePoint* (*makePoint) (double, double, double);
     NodeEdge* (*makeEdge) (NodePoint*, NodePoint*);
     NodeEdge* (*makeArc) (NodePoint*, NodePoint*, NodePoint*);
+
+
     NodeEdge* (*connect) (const TopoDS_Edge*, const TopoDS_Edge*, const TopoDS_Edge*);
 
 

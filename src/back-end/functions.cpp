@@ -2,6 +2,7 @@
 #include "TopoDS_Wire.hxx"
 #include "enumToString.hxx"
 #include "gp_Ax1.hxx"
+#include "gp_Trsf.hxx"
 #include "node.hxx"
 #include "functions.hxx"
 
@@ -13,10 +14,13 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepPrimAPI_MakePrism.hxx>
 
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
+#include <TopoDS.hxx>
 
 #include <BRepBuilderAPI_Transform.hxx>
 
@@ -272,6 +276,19 @@ NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double 
 }
 
 
+NodeShape* _makeFace(const TopoDS_Wire* wire)
+{
+    BRepBuilderAPI_MakeFace* face = new BRepBuilderAPI_MakeFace(*wire);
+
+
+    NodeShape* me = newNodeShape(FACE);
+    me->brepShape = face;
+    me->shape = &face->Shape();
+
+    return me;
+}
+
+
 NodePoint* _makePoint(double x, double y, double z)
 {
     gp_Pnt* point = new gp_Pnt(x, y, z);
@@ -366,6 +383,50 @@ NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, con
 }
 
 
+NodeEdge* _connect(const TopoDS_Wire* wire1, const TopoDS_Wire* wire2){
+    BRepBuilderAPI_MakeWire* combinedWire = new BRepBuilderAPI_MakeWire();
+    combinedWire->Add(*wire1);
+    combinedWire->Add(*wire2);
+
+    
+
+    NodeEdge* me = newNodeEdge();
+    me->edge = NULL;
+    me->brepEdge = NULL;
+    me->edgeType = type_wire;
+
+    me->brepWire = combinedWire;
+    me->wireShape = &combinedWire->Wire();
+    return me;    
+
+}
+
+
+/*we need to pass some info on what type of shape we are. For now just assume we passed a wire*/
+/*Also for now we just assume we can only mirror on the X axis */
+
+NodeEdge* _mirror(const TopoDS_Wire* shape) {
+    gp_Ax1 axis = gp::OX();
+    gp_Trsf aTrsf;
+    aTrsf.SetMirror(axis);
+
+
+    TopoDS_Wire wire = TopoDS::Wire(BRepBuilderAPI_Transform(*shape, aTrsf).Shape());
+
+
+
+    NodeEdge* me = newNodeEdge();
+    me->edge = NULL;
+    me->brepEdge = NULL;
+    me->edgeType = type_wire;
+
+    me->brepWire = new BRepBuilderAPI_MakeWire(wire);
+    me->wireShape = &me->brepWire->Wire();
+    
+    return me;
+}
+
+
 
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
@@ -376,11 +437,13 @@ functionPtr knownFunctions[] {
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
     {"difference", makeDifference,  {.makeDifference = _makeDifference}},
     {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
+    {"makeFace", makeFace,  {.makeFace = _makeFace}},
 
 
 
     {"rotate", doRotate,  {.rotate = _rotate}},
     {"translate", doTranslate,  {.translate = _translate}},
+    {"mirror", doMirror, {.mirror = _mirror}},
     
 
     {"dot", makePoint, {.makePoint = _makePoint}},
@@ -592,11 +655,30 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
                 exit(1);
             }
 
-            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-            NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
-            NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
+            if(args.size() == 3 ){
+                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
+                NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
 
-            return functionPtr->func.connect(e1->edge, e2->edge, e3->edge);
+                return functionPtr->func.connect(e1->edge, e2->edge, e3->edge);
+            }
+            else {
+                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
+                NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
+
+                return _connect(e1->wireShape, e2->wireShape);
+            }
+        }
+        case doMirror:{
+            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+
+            return functionPtr->func.mirror(e1->wireShape);
+        }
+        case makeFace: {
+            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+
+            return functionPtr->func.makeFace(e1->wireShape);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 
