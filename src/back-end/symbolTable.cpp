@@ -163,6 +163,18 @@ static Symbol* _symbolFromTreeNode(Node* node)
                     newSym->shape = shapeNode;
                     break;
                 }
+                case point: {
+                    NodePoint* nodePoint = static_cast<NodePoint*>(declNode->value);
+                    newSym->idType = point;
+                    newSym->point = nodePoint;
+                    break;
+                }
+                case edge: {
+                    NodeEdge* nodeEdge = static_cast<NodeEdge*>(declNode->value);
+                    newSym->idType = edge; 
+                    newSym->edge = nodeEdge;
+                    break;
+                }
                 case _void: {
                     fprintf(stderr, "HIT _VOID IN SWITCH INSIDE symbolFromTreeNode\n");
                     return NULL;

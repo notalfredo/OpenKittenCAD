@@ -94,6 +94,14 @@ NodeType* nodeTypeFromChar(char* tokenText){
         free(tokenText);
         return newNodeType(shape);
     }
+    else if(!strcmp(tokenText, "point")){
+        free(tokenText);
+        return newNodeType(point);
+    }
+    else if(!strcmp(tokenText, "edge")){
+        free(tokenText);
+        return newNodeType(edge);
+    }
     free(tokenText);
     return newNodeType(_void);
 }
@@ -163,6 +171,8 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 
 "number" |
 "shape"  |
+"point"  |
+"edge"   |
 "void"   {
     flexString = yytext;
     

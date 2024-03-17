@@ -1,7 +1,26 @@
 #ifndef NODE_H
 #define NODE_H
+
 #include "BRepBuilderAPI_MakeShape.hxx"
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
+
+#include "TopoDS_Edge.hxx"
+
+#include "gp_Pnt.hxx"
 #include <TopoDS_Shape.hxx>
+
+typedef enum edgeType {
+    type_edge,
+    type_wire,
+    type_error
+} EDGE_TYPE;
+
+
+typedef enum dim {
+    TWO_DIM,
+    THREE_DIM,
+} DIMENSION;
 
 typedef enum nodeOp {
     OP_PLUS, 
@@ -19,6 +38,7 @@ typedef enum shape {
     CONE,
     CYLINDER,
     SPHERE,
+    FACE,
     CUSTOM
 } OCCT_SHAPE;
 
@@ -26,7 +46,8 @@ typedef enum shape {
 typedef enum idType {
     num,
     shape,
-    transformation,
+    point,
+    edge,
     _void, //only used for functions
 } ID_TYPE;
 
@@ -58,6 +79,8 @@ typedef enum nodeType {
 
     DOUBLE,
     SHAPE,
+    POINT,
+    EDGE,
 
     RETURN_EVAL,
     PLACEHOLDER,
@@ -168,12 +191,49 @@ class NodeArray: public NodeExpression {
         }
 };
 
+class NodePoint: public NodeExpression {
+    public:
+        gp_Pnt* point;
+        NodePoint(Node* _prevAlloc) {
+            this->point = NULL;
+            this->nodeType = POINT;
+            this->nextExpr = NULL;
+            this->_allocatedLinkedList = _prevAlloc;
+        }
+};
+
+
+class NodeEdge: public NodeExpression {
+    public:
+        BRepBuilderAPI_MakeEdge* brepEdge;    
+        const TopoDS_Edge* edge;
+
+        BRepBuilderAPI_MakeWire* brepWire; 
+        const TopoDS_Wire* wireShape;
+        
+        EDGE_TYPE edgeType;
+
+        NodeEdge(Node* _prevAlloc) {
+            this->nodeType = EDGE;
+            this->nextExpr = NULL;
+            this->_allocatedLinkedList = _prevAlloc;
+
+            this->brepEdge = NULL;
+            this->edge = NULL;
+            this->brepWire = NULL;
+            this->wireShape = NULL;
+            this->edgeType = type_error;
+        }
+};
+
 
 class NodeShape: public NodeExpression {
     public:
         OCCT_SHAPE shapeType;
         BRepBuilderAPI_MakeShape* brepShape; 
         const TopoDS_Shape* shape;
+
+
         NodeShape(OCCT_SHAPE shapeType, Node* _prevAlloc): shapeType(shapeType){
             this->nodeType = SHAPE;
             this->_allocatedLinkedList = _prevAlloc;
@@ -453,6 +513,8 @@ NodeType* newNodeType(ID_TYPE idType);
 NodeIdentifier* newIdentifierNode(char* idName);
 NodeNumber* newNumberNode(double value);
 NodeShape* newNodeShape(OCCT_SHAPE shape);
+NodeEdge* newNodeEdge();
+NodePoint* newNodePoint();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);

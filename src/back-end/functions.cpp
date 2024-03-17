@@ -1,4 +1,8 @@
+#include "Geom_TrimmedCurve.hxx"
+#include "TopoDS_Wire.hxx"
+#include "enumToString.hxx"
 #include "gp_Ax1.hxx"
+#include "gp_Trsf.hxx"
 #include "node.hxx"
 #include "functions.hxx"
 
@@ -10,15 +14,24 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepPrimAPI_MakePrism.hxx>
 
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepAlgoAPI_Cut.hxx>
+#include <TopoDS.hxx>
 
 #include <BRepBuilderAPI_Transform.hxx>
 
+#include <gp_Pnt.hxx>
 
-#include <cstdio>
+#include <GC_MakeSegment.hxx>
+#include <GC_MakeArcOfCircle.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
+
+
 #include <vtkStructuredGrid.h>
 #include <vtkDataSetMapper.h>
 #include <vtkExtractEdges.h>
@@ -262,6 +275,159 @@ NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double 
     return me;
 }
 
+
+NodeShape* _makeFace(const TopoDS_Wire* wire)
+{
+    BRepBuilderAPI_MakeFace* face = new BRepBuilderAPI_MakeFace(*wire);
+
+
+    NodeShape* me = newNodeShape(FACE);
+    me->brepShape = face;
+    me->shape = &face->Shape();
+
+    return me;
+}
+
+
+NodePoint* _makePoint(double x, double y, double z)
+{
+    gp_Pnt* point = new gp_Pnt(x, y, z);
+
+    NodePoint* pointNode = newNodePoint();
+    pointNode->point = point;
+
+    return pointNode;
+}
+
+
+NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
+{
+    GC_MakeSegment mkSeg(*p1->point, *p2->point);
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkSeg.IsDone()){
+        aSegment = mkSeg.Value();
+    }
+    else {
+        fprintf(stderr,
+            "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n",
+            p1->point->X(), p1->point->Y(), p1->point->Z(),
+            p2->point->X(), p2->point->Y(), p2->point->Z()
+        );
+        exit(1);
+    }
+
+    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    const TopoDS_Edge* result = &edge->Edge();
+
+    NodeEdge* me = newNodeEdge();
+    me->edgeType = type_edge;
+    me->brepEdge = edge;
+    me->edge = result;
+
+    me->wireShape = NULL;
+    me->brepWire = NULL;
+
+    return me;
+}
+
+
+NodeEdge* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
+{
+    GC_MakeArcOfCircle mkArc(*p1->point, *p2->point, *p3->point);
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkArc.IsDone()){
+        aSegment = mkArc.Value();
+    }
+    else {
+        fprintf(stderr,
+            "Unable to make edge between points p1 {x: %f, y: %f, z: %f} and p3 {x: %f, y: %f, z: %f} that cross p2 {x: %f, y: %f, z: %f} ... exiting ...\n",
+            p1->point->X(), p1->point->Y(), p1->point->Z(),
+            p3->point->X(), p3->point->Y(), p3->point->Z(),
+            p2->point->X(), p2->point->Y(), p2->point->Z()
+        );
+        exit(1);
+    }
+
+
+    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    const TopoDS_Edge* result = &edge->Edge();
+
+    NodeEdge* me = newNodeEdge();
+    me->edgeType = type_edge;
+    me->brepEdge = edge;
+    me->edge = result;
+
+    me->wireShape = NULL;
+    me->brepWire = NULL;
+
+    return me;
+}
+
+
+NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, const TopoDS_Edge* edge3)
+{
+    BRepBuilderAPI_MakeWire* brepWire = new BRepBuilderAPI_MakeWire(*edge1, *edge2, *edge3);
+
+    const TopoDS_Wire* wireShape = &brepWire->Wire();
+
+
+    NodeEdge* me = newNodeEdge();
+    me->edge = NULL;
+    me->brepEdge = NULL;
+    me->edgeType = type_wire;
+
+    me->brepWire = brepWire;
+    me->wireShape = wireShape;
+
+    return me;    
+}
+
+
+NodeEdge* _connect(const TopoDS_Wire* wire1, const TopoDS_Wire* wire2){
+    BRepBuilderAPI_MakeWire* combinedWire = new BRepBuilderAPI_MakeWire();
+    combinedWire->Add(*wire1);
+    combinedWire->Add(*wire2);
+
+    
+
+    NodeEdge* me = newNodeEdge();
+    me->edge = NULL;
+    me->brepEdge = NULL;
+    me->edgeType = type_wire;
+
+    me->brepWire = combinedWire;
+    me->wireShape = &combinedWire->Wire();
+    return me;    
+
+}
+
+
+/*we need to pass some info on what type of shape we are. For now just assume we passed a wire*/
+/*Also for now we just assume we can only mirror on the X axis */
+
+NodeEdge* _mirror(const TopoDS_Wire* shape) {
+    gp_Ax1 axis = gp::OX();
+    gp_Trsf aTrsf;
+    aTrsf.SetMirror(axis);
+
+
+    TopoDS_Wire wire = TopoDS::Wire(BRepBuilderAPI_Transform(*shape, aTrsf).Shape());
+
+
+
+    NodeEdge* me = newNodeEdge();
+    me->edge = NULL;
+    me->brepEdge = NULL;
+    me->edgeType = type_wire;
+
+    me->brepWire = new BRepBuilderAPI_MakeWire(wire);
+    me->wireShape = &me->brepWire->Wire();
+    
+    return me;
+}
+
+
+
 functionPtr knownFunctions[] {
     {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
@@ -271,12 +437,20 @@ functionPtr knownFunctions[] {
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
     {"difference", makeDifference,  {.makeDifference = _makeDifference}},
     {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
+    {"makeFace", makeFace,  {.makeFace = _makeFace}},
 
 
 
     {"rotate", doRotate,  {.rotate = _rotate}},
     {"translate", doTranslate,  {.translate = _translate}},
+    {"mirror", doMirror, {.mirror = _mirror}},
     
+
+    {"dot", makePoint, {.makePoint = _makePoint}},
+    {"line", makeEdge, {.makeEdge = _makeEdge}},
+    {"arc", makeArc, {.makeArc = _makeArc}},
+    {"connect", connect, {.connect = _connect}},
+
 
     {"print",  printDouble, {.println =  _print}},
     {"addShape", addShape,  {.addShapeToVTK = _addShape}}
@@ -335,6 +509,18 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return functionPtr->func.makeCylinder(one->value, two->value);
         }
         case addShape: {
+
+            if(args.size() != 1){
+                fprintf(stderr, "You can only pass 1 argument to addShape\n");
+            }
+            else if(!args[0]){
+                fprintf(stderr, "First argument to addShape is NULL\n");
+            }
+            else if(args[0]->nodeType != SHAPE){
+                fprintf(stderr, "Argument to addShape must be type shape you passed %s\n", nodeTypeToString(args[0]->nodeType));
+            }
+
+
             NodeShape* sphere = static_cast<NodeShape*>(args[0]);
             _addShape(*sphere->shape);
             return NULL;
@@ -405,6 +591,93 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             double zTrans = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
 
             return functionPtr->func.translate(*one->shape, xTrans, yTrans, zTrans, one->shapeType);
+        }
+        case makePoint: {
+            NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
+
+            int length = getExpressionLength(arrNode->array);
+            if( length != 3 ){
+                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
+            }
+            else if(!checkAllExprTypes(arrNode->array, DOUBLE)){
+                fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
+            }
+            
+
+            double x = static_cast<NodeNumber*>(arrNode->array)->value;
+            double y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
+            double z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
+
+
+            return functionPtr->func.makePoint(x, y, z);
+        }
+        case makeEdge: {
+            if(args.size() != 2){
+                fprintf(stderr, "When creating line must provide 2 points");
+                exit(1);
+            }
+            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT){
+                fprintf(stderr, "When creating an edge it must be between two points p1: %s, p2: %s\n",
+                    nodeTypeToString(args[0]->nodeType),
+                    nodeTypeToString(args[1]->nodeType)
+                ); 
+                exit(1);
+            }
+
+            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
+            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
+
+            return functionPtr->func.makeEdge(p1, p2);
+        }
+        case makeArc: {
+            if(args.size() != 3){
+                fprintf(stderr, "When creating arc must provide 3 points");
+                exit(1);
+            }
+            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT || args[2]->nodeType != POINT){
+                fprintf(stderr, "When creating an edge it must be between three points p: %s, p: %s, p: %s\n",
+                    nodeTypeToString(args[0]->nodeType),
+                    nodeTypeToString(args[1]->nodeType),
+                    nodeTypeToString(args[2]->nodeType)
+                ); 
+                exit(1);
+            }
+
+            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
+            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
+            NodePoint* p3 = static_cast<NodePoint*>(args[2]);
+
+            return functionPtr->func.makeArc(p1, p2, p3);
+        }
+        case connect:{
+            if(args.size() != 3 && args.size() != 2){
+                fprintf(stderr, "When connecting edges must connect only 2 or 3 at a time, you passed %ld\n", args.size());
+                exit(1);
+            }
+
+            if(args.size() == 3 ){
+                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
+                NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
+
+                return functionPtr->func.connect(e1->edge, e2->edge, e3->edge);
+            }
+            else {
+                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
+
+                return _connect(e1->wireShape, e2->wireShape);
+            }
+        }
+        case doMirror:{
+            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+
+            return functionPtr->func.mirror(e1->wireShape);
+        }
+        case makeFace: {
+            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+
+            return functionPtr->func.makeFace(e1->wireShape);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

@@ -15,6 +15,4 @@
     
 
     let myFace: shape := makeFace(connectedStuff);
-
-    addShape(myFace);
 };

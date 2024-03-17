@@ -25,6 +25,7 @@ const char* nodeTypeToString(NODE_TYPE type)
         case STMT_LIST:      { return "BIN_OP\n";   }
         case DECL_LIST:      { return "DOUBLE\n";   }
         case EXPR_STMT:      { return "EXPR_STMT\n";    }
+        case POINT:          { return "POINT\n";    }
         default: {
             fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
             exit(0);
@@ -63,6 +64,12 @@ const char* idTypeTostring(ID_TYPE type){
         case _void: {
             return "void";
         }
+        case point: {
+            return "point";
+        }
+        case edge: {
+            return "edge";
+        }
     }
     //Make the compiler happy
     return NULL;
@@ -80,6 +87,26 @@ const char* numToStrPlace(int num){
         return "rd";
     }
     return "th";
+}
+
+ID_TYPE nodeTypeFromIdType(nodeType rhs)
+{
+    switch(rhs){
+        case DOUBLE: {
+            return num;
+        }
+        case SHAPE: {
+            return shape;
+        }
+        case POINT: {
+            return point;
+        }
+        default: {
+            fprintf(stderr, "No mapping from %s, to ID_TYPE\n", nodeTypeToString(rhs));
+            exit(1);
+        }
+    }
+
 }
 
 

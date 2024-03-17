@@ -21,6 +21,52 @@ void printText(int tabCount, const char* text)
 }
 
 
+static void _validateRhsEqualsDeclType(ID_TYPE lhs, nodeType rhs)
+{
+    if((rhs != DOUBLE) && (rhs != SHAPE) && (rhs != POINT) && (rhs != EDGE)){
+        fprintf(stderr, "Right hand side of decl must either evaluate to a number, shape, point or edge ... exiting ...\n");
+        exit(1);
+    }
+
+    switch(lhs){
+        case num: {
+            if(rhs != DOUBLE){
+                fprintf(stderr, "You tried to assign %s, to a number\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+                exit(1);
+            }
+            return;
+        }
+        case shape: {
+            if(rhs != SHAPE){
+                fprintf(stderr, "You tried to assign %s, to a shape\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+                exit(1);
+            }
+            return;
+        }
+        case point: {
+            if(rhs != POINT){
+                fprintf(stderr, "You tried to assign %s, to a point\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+                exit(1);
+            }
+            return;
+        }
+        case edge: {
+            if(rhs != EDGE){
+                fprintf(stderr, "You tried to assign %s, to a edge\n", idTypeTostring(nodeTypeFromIdType(rhs)));
+                exit(1);
+            }
+            return;
+        }
+        case _void: {
+            fprintf(stderr, "You cannot assign to void\n");
+            exit(1);
+        }
+    }
+
+}
+
+
+
 /*when we initilziz symTableHead*/
 static SymbolTableHead* symTableHead = NULL;
 
@@ -95,6 +141,7 @@ NodeExpression* _processDeclNode(NodeDecl* node)
 
     NodeExpression* newExprStmt = evalExpr(node->value);
 
+
     if(!newExprStmt){
         fprintf(stderr, "The value of node \"%s\" which is a decl was NULL ... exiting ...\n", node->id->idName);
         exit(1);
@@ -103,9 +150,14 @@ NodeExpression* _processDeclNode(NodeDecl* node)
     else if(newExprStmt->nodeType == RETURN_EVAL){
         NodeReturnEvaluated* funcCall = static_cast<NodeReturnEvaluated*>(newExprStmt);
 
+
+        _validateRhsEqualsDeclType(node->type->idType, funcCall->nodeType);
+
+
         node->value = funcCall->result;
     }
     else{
+        _validateRhsEqualsDeclType(node->type->idType, newExprStmt->nodeType);
         node->value = newExprStmt;
     }
 
@@ -271,6 +323,12 @@ NodeExpression* _processId(NodeIdentifier* id)
         case shape: {
             return sym->shape;
         }
+        case point: {
+            return sym->point;
+        }
+        case edge: {
+            return sym->edge;
+        }
         case _void: {
             //TODO
         }
@@ -279,6 +337,18 @@ NodeExpression* _processId(NodeIdentifier* id)
 }
 
 NodeExpression* _processShape(NodeShape* node)
+{
+    return node;
+}
+
+
+NodeExpression* _processPoint(NodePoint* node)
+{
+    return node;
+}
+
+
+NodeExpression* _processLine(NodeEdge* node)
 {
     return node;
 }
@@ -463,6 +533,12 @@ NodeExpression* evalExpr(NodeExpression* state)
         }
         case SHAPE: {
             return _processShape(static_cast<NodeShape*>(state));
+        }
+        case POINT: {
+            return _processPoint(static_cast<NodePoint*>(state));
+        }
+        case EDGE: {
+            return _processLine(static_cast<NodeEdge*>(state));
         }
         case ARRAY: {
             return _processArray(static_cast<NodeArray*>(state));
