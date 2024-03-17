@@ -3,10 +3,18 @@
 
 #include "BRepBuilderAPI_MakeShape.hxx"
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
+
 #include "TopoDS_Edge.hxx"
 
 #include "gp_Pnt.hxx"
 #include <TopoDS_Shape.hxx>
+
+typedef enum edgeType {
+    type_edge,
+    type_wire,
+    type_error
+} EDGE_TYPE;
 
 typedef enum nodeOp {
     OP_PLUS, 
@@ -191,10 +199,13 @@ class NodePoint: public NodeExpression {
 class NodeEdge: public NodeExpression {
     public:
         BRepBuilderAPI_MakeEdge* brepEdge;    
-
         const TopoDS_Edge* edge;
 
-        TopoDS_Edge* line;
+        BRepBuilderAPI_MakeWire* brepWire; 
+        const TopoDS_Wire* wireShape;
+        
+        EDGE_TYPE edgeType;
+
         NodeEdge(Node* _prevAlloc) {
             this->nodeType = EDGE;
             this->nextExpr = NULL;
@@ -202,6 +213,9 @@ class NodeEdge: public NodeExpression {
 
             this->brepEdge = NULL;
             this->edge = NULL;
+            this->brepWire = NULL;
+            this->wireShape = NULL;
+            this->edgeType = type_error;
         }
 };
 

@@ -19,6 +19,7 @@ enum functionEnum {
     makePoint,
     makeEdge,
     makeArc,
+    connect,
     
 
     printDouble,
@@ -43,6 +44,7 @@ union functionPointers {
     NodePoint* (*makePoint) (double, double, double);
     NodeEdge* (*makeEdge) (NodePoint*, NodePoint*);
     NodeEdge* (*makeArc) (NodePoint*, NodePoint*, NodePoint*);
+    NodeEdge* (*connect) (const TopoDS_Edge*, const TopoDS_Edge*, const TopoDS_Edge*);
 
 
     void (*println) (double); 

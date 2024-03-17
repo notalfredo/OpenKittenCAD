@@ -7,4 +7,6 @@
 
     let pointThree: point := dot([0, 5, 0]);
     let arcOne: edge := arc(pointOne, pointThree, pointTwo);
+
+    let connectedEdges: edge := connect(lineOne, arcOne, lineTwo);
 };

@@ -1,4 +1,5 @@
 #include "Geom_TrimmedCurve.hxx"
+#include "TopoDS_Wire.hxx"
 #include "enumToString.hxx"
 #include "gp_Ax1.hxx"
 #include "node.hxx"
@@ -24,6 +25,7 @@
 #include <GC_MakeSegment.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeWire.hxx>
 
 
 #include <vtkStructuredGrid.h>
@@ -301,8 +303,12 @@ NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
     const TopoDS_Edge* result = &edge->Edge();
 
     NodeEdge* me = newNodeEdge();
+    me->edgeType = type_edge;
     me->brepEdge = edge;
     me->edge = result;
+
+    me->wireShape = NULL;
+    me->brepWire = NULL;
 
     return me;
 }
@@ -330,11 +336,35 @@ NodeEdge* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
     const TopoDS_Edge* result = &edge->Edge();
 
     NodeEdge* me = newNodeEdge();
+    me->edgeType = type_edge;
     me->brepEdge = edge;
     me->edge = result;
 
+    me->wireShape = NULL;
+    me->brepWire = NULL;
+
     return me;
 }
+
+
+NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, const TopoDS_Edge* edge3)
+{
+    BRepBuilderAPI_MakeWire* brepWire = new BRepBuilderAPI_MakeWire(*edge1, *edge2, *edge3);
+
+    const TopoDS_Wire* wireShape = &brepWire->Wire();
+
+
+    NodeEdge* me = newNodeEdge();
+    me->edge = NULL;
+    me->brepEdge = NULL;
+    me->edgeType = type_wire;
+
+    me->brepWire = brepWire;
+    me->wireShape = wireShape;
+
+    return me;    
+}
+
 
 
 functionPtr knownFunctions[] {
@@ -356,6 +386,7 @@ functionPtr knownFunctions[] {
     {"dot", makePoint, {.makePoint = _makePoint}},
     {"line", makeEdge, {.makeEdge = _makeEdge}},
     {"arc", makeArc, {.makeArc = _makeArc}},
+    {"connect", connect, {.connect = _connect}},
 
 
     {"print",  printDouble, {.println =  _print}},
@@ -554,6 +585,18 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             NodePoint* p3 = static_cast<NodePoint*>(args[2]);
 
             return functionPtr->func.makeArc(p1, p2, p3);
+        }
+        case connect:{
+            if(args.size() != 3 && args.size() != 2){
+                fprintf(stderr, "When connecting edges must connect only 2 or 3 at a time, you passed %ld\n", args.size());
+                exit(1);
+            }
+
+            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
+            NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
+            NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
+
+            return functionPtr->func.connect(e1->edge, e2->edge, e3->edge);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

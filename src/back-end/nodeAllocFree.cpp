@@ -202,12 +202,14 @@ void _freeNode(Node* node) {
         case EDGE: {
             NodeEdge* cast = static_cast<NodeEdge*>(node);
 
-            if(cast->brepEdge) {
+            if (cast->edgeType == type_edge) {
                 delete cast->brepEdge;
-                cast->brepEdge = NULL;
                 cast->edge = NULL;
             }
-
+            else if (cast->edgeType == type_wire) {
+                delete cast->brepWire;
+                cast->wireShape = NULL;
+            }
             break;
         }
         case POINT: {
