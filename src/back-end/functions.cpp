@@ -477,10 +477,53 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 {
     switch(functionPtr->functionType){
         case printDouble: {
-            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
-            functionPtr->func.println(numNode->value);
+            if(args.size() != 1){
+                fprintf(stderr, "print only takes 1 argument you passed %ld\n", args.size());
+                exit(1);
+            }
+
+            switch(args[0]->nodeType){
+                case DOUBLE:{
+                    NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
+                    _print(numNode->value);
+                    return NULL;
+                }
+                case EDGE: {
+                    NodeEdge* edgeNode = static_cast<NodeEdge*>(args[0]);        
+                    switch(edgeNode->edgeType){
+                        case type_edge: {
+                            edgeNode->edge->DumpJson(std::cout);
+                            return NULL;
+                        }
+                        case type_wire: {
+                            edgeNode->wireShape->DumpJson(std::cout);
+                            return NULL;
+                        }
+                        default: {
+                            fprintf(stderr, "Unable to print edge exiting .. \n"); 
+                            exit(1);
+                        }
+                    }
+                }
+                case POINT: {
+                    NodePoint* pointNode = static_cast<NodePoint*>(args[0]);
+                    fprintf(stderr, "Point {X: %lf, Y: %lf, Z: %lf}\n", pointNode->point->X(), pointNode->point->Y(), pointNode->point->Y());
+                    return NULL;
+
+                }
+                case SHAPE: {
+                    NodeShape* shapeNode = static_cast<NodeShape*>(args[0]);
+                    shapeNode->shape->DumpJson(std::cout);
+                    return NULL;
+                }
+                default: {
+                    fprintf(stderr, "You can only print numbers, points, edges, and shapes\n");
+                    exit(1);
+                }
+            }
             return NULL;
         }
+
         case makeSphere: {
             NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
             return functionPtr->func.makeSphere(numNode->value);
@@ -540,6 +583,9 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         case makeIntersection: {
             NodeShape* lhs = static_cast<NodeShape*>(args[0]);
             NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+
+            
 
             return functionPtr->func.makeIntersection(*lhs->shape, *rhs->shape);
         }

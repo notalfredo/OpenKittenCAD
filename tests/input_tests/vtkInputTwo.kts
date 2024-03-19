@@ -16,5 +16,7 @@
 
     let myFace: shape := makeFace(connectedStuff);
 
+
+    print(myFace);
     addShape(myFace);
 };
