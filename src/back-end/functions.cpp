@@ -5,6 +5,7 @@
 #include "gp_Trsf.hxx"
 #include "node.hxx"
 #include "functions.hxx"
+#include "enumToString.hxx"
 
 
 #include "Standard_TypeDef.hxx"
@@ -119,16 +120,128 @@ void _addShape(const TopoDS_Shape& shapeToAdd)
     ren->AddActor(actorOne);
 }
 
+void dumpArgumentsAndCorrectArguments(std::vector<std::vector<PARAM_INFO>>& paramInfo, std::vector<NodeExpression*>& args, const char* functionName){
+    
+    fprintf(stderr, "You invoked %s with incompatible arguments\n", functionName); 
+    fprintf(stderr, "Valid arguments are: \n");
+
+    for(int i = 0; i < paramInfo.size(); i++){
+        fprintf(stderr, "(");
+       
+        for(int j = 0; j < paramInfo[i].size(); j++){
+            fprintf(stderr, "%s: %s, ", 
+                paramInfo[i][j].name.c_str(),
+                nodeTypeToString(paramInfo[i][j].type)
+            );
+        }
+
+        fprintf(stderr, ")\n");
+    }
+
+    fprintf(stderr, "You invoked with: \n");
+
+    fprintf(stderr, "(");
+    for(int i = 0; i < args.size(); i++){
+        fprintf(stderr, "%s",  nodeTypeToString(args[i]->nodeType));
+    }
+    fprintf(stderr, ") ... exiting ...\n");
+    exit(1);
+}
+
+
+
+int validateFunctionArguments(std::vector<std::vector<PARAM_INFO>>& paramInfo, std::vector<NodeExpression*>& args){
+
+    for(int i = 0; i < paramInfo.size(); i++){
+        if(args.size() != paramInfo[i].size()){
+            continue;
+        }
+
+        for(int j = 0; j < paramInfo[i].size(); j++){
+            if(args[j]->nodeType != paramInfo[i][j].type){
+               continue; 
+            }
+        }
+        return i;
+    }
+
+    return -1;
+}
+
+
+BRepPrimAPI_MakeSphere* _validateSphere(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "radius"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "angle"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "angleOne"}, {DOUBLE, "angleTwo"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "angleOne"}, {DOUBLE, "angleTwo"}, {DOUBLE, "angle"} },
+    };
+
+
+
+    if((args.size() < 1) && (args.size() > 4)){
+        fprintf(stderr, "Sphere can only be invoked with 1-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            return new BRepPrimAPI_MakeSphere(arg1->value);
+        }
+        case 1: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            return new BRepPrimAPI_MakeSphere(arg1->value, arg2->value);
+        }
+        case 2: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            if(!((0 < (arg3->value - arg2->value)) && ((arg3->value - arg2->value) < 2*3.14))) {
+
+                fprintf(stderr, 
+                    "The angles angle1, angle2 must follow the relation 0 < a2 - a1 < 2*PI, (%lf - %lf = %lf) ... exiting ...\n",
+                    arg3->value, arg2->value,
+                    (arg3->value - arg2->value)
+                );
+                exit(1);
+            }
+
+            return new BRepPrimAPI_MakeSphere(arg1->value, arg2->value, arg3->value);
+        }
+        case 3: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+            NodeNumber* arg4 = static_cast<NodeNumber*>(args[3]); 
+            return new BRepPrimAPI_MakeSphere(arg1->value, arg2->value, arg3->value, arg4->value);
+        }
+
+        default: {
+            fprintf(stderr, "Hit the default case in _validateSphere ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
 
 void _print(double num)
 {
     fprintf(stdout, "%f\n", num);
 }
 
-
-NodeShape* _makeSphere(Standard_Real radius)
+NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakeSphere* sphere = new BRepPrimAPI_MakeSphere(radius);
+    BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
+
     const TopoDS_Shape* shape = &sphere->Shape();
 
     NodeShape* me = newNodeShape(SPHERE);
@@ -429,10 +542,10 @@ NodeEdge* _mirror(const TopoDS_Wire* shape) {
 
 
 functionPtr knownFunctions[] {
-    {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
     {"cone", makeCone,  {.makeCone = _makeCone}},
     {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
     {"box", makeBox,  {.makeBox = _makeBox}},
+    {"sphere", makeSphere,  {.makeBox = _makeBox}},
 
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
     {"difference", makeDifference,  {.makeDifference = _makeDifference}},
@@ -525,9 +638,9 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
 
         case makeSphere: {
-            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
-            return functionPtr->func.makeSphere(numNode->value);
+            return _makeSphere(args);
         }
+
         case makeCone: {
             NodeNumber* one = static_cast<NodeNumber*>(args[0]);
             NodeNumber* two = static_cast<NodeNumber*>(args[1]);
