@@ -233,15 +233,163 @@ BRepPrimAPI_MakeSphere* _validateSphere(std::vector<NodeExpression*>& args)
     }
 }
 
+
+BRepPrimAPI_MakeCone* _validateCone(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "radius1"}, {DOUBLE, "radius2"}, {DOUBLE, "height"} },
+        { {DOUBLE, "radius1"}, {DOUBLE, "radius2"}, {DOUBLE, "height"}, {DOUBLE, "angle"} },
+    };
+
+
+
+    if((args.size() < 3) && (args.size() > 4)){
+        fprintf(stderr, "Cone can only be invoked with 3-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            if(arg1 == arg2){
+                fprintf(stderr, "Cone top radius cannot equal bottom radius you passed (%lf, %lf)", arg1->value, arg2->value);
+                exit(1);
+            }
+
+
+            return new BRepPrimAPI_MakeCone(arg1->value, arg2->value, arg3->value);
+        }
+        case 1: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+            NodeNumber* arg4 = static_cast<NodeNumber*>(args[3]); 
+
+            if(arg1 == arg2){
+                fprintf(stderr, "Cone top radius cannot equal bottom radius you passed (%lf, %lf)", arg1->value, arg2->value);
+                exit(1);
+            }
+
+            return new BRepPrimAPI_MakeCone(arg1->value, arg2->value, arg3->value, arg4->value);
+        }
+        default: {
+            fprintf(stderr, "Hit the default case in _validateCone ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+BRepPrimAPI_MakeCylinder* _validateCylinder(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "radius"}, {DOUBLE, "height"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "height"}, {DOUBLE, "angle"} },
+    };
+
+
+    if((args.size() < 2) && (args.size() > 3)){
+        fprintf(stderr, "Cone can only be invoked with 2-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+
+            return new BRepPrimAPI_MakeCylinder(arg1->value, arg2->value);
+        }
+        case 1: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            return new BRepPrimAPI_MakeCylinder(arg1->value, arg2->value, arg3->value);
+        }
+        default: {
+            fprintf(stderr, "Hit the default case in _validateCylinder ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+BRepPrimAPI_MakeBox* _validateBox(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "dx"}, {DOUBLE, "dy"}, {DOUBLE, "dz"} },
+        { {POINT, "point"}, {DOUBLE, "dx"}, {DOUBLE, "dy"}, {DOUBLE, "dz"} },
+        { {POINT, "point1"}, {POINT, "point2"} },
+    };
+
+
+    if((args.size() < 3) && (args.size() > 4)){
+        fprintf(stderr, "Box can only be invoked with 3-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            return new BRepPrimAPI_MakeBox(arg1->value, arg2->value, arg3->value);
+        }
+        case 1: {
+            NodePoint* arg1 = static_cast<NodePoint*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+            NodeNumber* arg4 = static_cast<NodeNumber*>(args[3]); 
+
+            return new BRepPrimAPI_MakeBox(*arg1->point, arg2->value, arg3->value, arg4->value);
+        }
+        case 2: {
+            NodePoint* arg1 = static_cast<NodePoint*>(args[0]); 
+            NodePoint* arg2 = static_cast<NodePoint*>(args[1]); 
+
+            return new BRepPrimAPI_MakeBox(*arg1->point, *arg2->point);
+        }
+        default: {
+            fprintf(stderr, "Hit the default case in _validateCylinder ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+
 void _print(double num)
 {
     fprintf(stdout, "%f\n", num);
 }
 
+
 NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
 {
     BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
-
     const TopoDS_Shape* shape = &sphere->Shape();
 
     NodeShape* me = newNodeShape(SPHERE);
@@ -251,9 +399,23 @@ NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
     return me;
 }
 
-NodeShape* _makeCylinder(Standard_Real R1, Standard_Real H)
+
+NodeShape* _makeCone(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakeCylinder* cyl = new BRepPrimAPI_MakeCylinder(R1, H);
+    BRepPrimAPI_MakeCone* cone = _validateCone(args);
+    const TopoDS_Shape* shape = &cone->Shape();
+
+    NodeShape* me = newNodeShape(CONE);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cone);
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeCylinder(std::vector<NodeExpression*>& args)
+{
+    BRepPrimAPI_MakeCylinder* cyl = _validateCylinder(args);
     const TopoDS_Shape* shape = &cyl->Shape();
 
     NodeShape* me = newNodeShape(CYLINDER);
@@ -264,9 +426,9 @@ NodeShape* _makeCylinder(Standard_Real R1, Standard_Real H)
 }
 
 
-NodeShape* _makeBox(Standard_Real R1, Standard_Real R2, Standard_Real R3)
+NodeShape* _makeBox(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakeBox* box = new BRepPrimAPI_MakeBox(R1, R2, R3);
+    BRepPrimAPI_MakeBox* box = _validateBox(args);
     const TopoDS_Shape* shape = &box->Shape();
 
     NodeShape* me = newNodeShape(BOX);
@@ -277,17 +439,6 @@ NodeShape* _makeBox(Standard_Real R1, Standard_Real R2, Standard_Real R3)
 }
 
 
-NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
-{
-    BRepPrimAPI_MakeCone* cone = new BRepPrimAPI_MakeCone(R1, R2, H);
-    const TopoDS_Shape* shape = &cone->Shape();
-
-    NodeShape* me = newNodeShape(CONE);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cone);
-    me->shape = shape;
-
-    return me;
-}
 
 
 NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
@@ -542,10 +693,11 @@ NodeEdge* _mirror(const TopoDS_Wire* shape) {
 
 
 functionPtr knownFunctions[] {
-    {"cone", makeCone,  {.makeCone = _makeCone}},
-    {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
-    {"box", makeBox,  {.makeBox = _makeBox}},
-    {"sphere", makeSphere,  {.makeBox = _makeBox}},
+    {"sphere", makeSphere,  {.makeSphere = NULL}},
+    {"cone", makeCone, {.makeCone = NULL}},
+    {"cylinder", makeCylinder,  {.makeCylinder = NULL}},
+    {"box", makeBox,  {.makeBox = NULL}},
+
 
     {"union", makeUnion,  {.makeUnion = _makeUnion}},
     {"difference", makeDifference,  {.makeDifference = _makeDifference}},
@@ -642,27 +794,13 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
 
         case makeCone: {
-            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-            NodeNumber* three = static_cast<NodeNumber*>(args[2]);
-
-            if(one == two){
-                fprintf(stderr, "When creating cone top and bottom radius cannot be equal to each other");
-                exit(1);
-            }
-
-            NodeExpression* result = functionPtr->func.makeCone(
-                one->value,
-                two->value,
-                three->value
-            );
-            return result;
+            return _makeCone(args);
         }
         case makeCylinder: {
-            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-
-            return functionPtr->func.makeCylinder(one->value, two->value);
+            return _makeCylinder(args);
+        }
+        case makeBox: {
+            return _makeBox(args);
         }
         case addShape: {
 
@@ -701,13 +839,6 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             
 
             return functionPtr->func.makeIntersection(*lhs->shape, *rhs->shape);
-        }
-        case makeBox: {
-            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-            NodeNumber* three = static_cast<NodeNumber*>(args[2]);
-
-            return functionPtr->func.makeBox(one->value, two->value, three->value);
         }
         case doRotate: {
             NodeShape* one = static_cast<NodeShape*>(args[0]);
