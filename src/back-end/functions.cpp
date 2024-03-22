@@ -473,6 +473,27 @@ void _print(std::vector<NodeExpression*>& args)
 }
 
 
+void _validatePoint(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> paramInfo = {
+        { {ARRAY, "point"} }
+    };
+
+    validateFunctionArguments(paramInfo, args);
+
+
+    int length = getExpressionLength(static_cast<NodeArray*>(args[0])->array);
+
+    if( length != 3 ){
+        fprintf(stderr, "Array argument to point must be length 3 ... exiting ...\n");
+    }
+    else if(!checkAllExprTypes(static_cast<NodeArray*>(args[0])->array, DOUBLE)){
+        fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
+    }
+
+}
+
+
 NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
 {
     BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
@@ -614,6 +635,27 @@ NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
 }
 
 
+NodePoint* _makePoint(std::vector<NodeExpression*>& args)
+{
+    _validatePoint(args);
+
+
+
+    NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
+    double x = static_cast<NodeNumber*>(arrNode->array)->value;
+    double y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
+    double z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
+
+    gp_Pnt* point = new gp_Pnt(x, y, z);
+
+    NodePoint* pointNode = newNodePoint();
+    pointNode->point = point;
+
+    return pointNode;
+}
+
+
+
 NodeShape* _rotate(std::vector<NodeExpression*>& args)
 {
     _validateRotateTranslate(args);
@@ -700,15 +742,6 @@ NodeShape* _makeFace(const TopoDS_Wire* wire)
 }
 
 
-NodePoint* _makePoint(double x, double y, double z)
-{
-    gp_Pnt* point = new gp_Pnt(x, y, z);
-
-    NodePoint* pointNode = newNodePoint();
-    pointNode->point = point;
-
-    return pointNode;
-}
 
 
 NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
@@ -924,29 +957,7 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _translate(args); 
         }
         case makePoint: {
-            if(args.size() != 1){
-                fprintf(stderr, "dot only takes one arguments\n");
-            }
-
-            NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
-
-            
-
-            int length = getExpressionLength(arrNode->array);
-            if( length != 3 ){
-                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
-            }
-            else if(!checkAllExprTypes(arrNode->array, DOUBLE)){
-                fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
-            }
-            
-
-            double x = static_cast<NodeNumber*>(arrNode->array)->value;
-            double y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
-            double z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
-
-
-            return functionPtr->func.makePoint(x, y, z);
+            return _makePoint(args);
         }
         case makeEdge: {
             if(args.size() != 2){
