@@ -76,7 +76,6 @@ void startViewer();
 void resetViewer();
 void _addShape(const TopoDS_Shape& shapeToAdd);
 
-void _print(double num);
 functionPtr* lookUpFunc(const char*);
 NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args);
 

@@ -380,7 +380,8 @@ BRepPrimAPI_MakeBox* _validateBox(std::vector<NodeExpression*>& args)
 }
 
 
-void _validateBoolean(std::vector<NodeExpression*>& args){
+void _validateBoolean(std::vector<NodeExpression*>& args)
+{
     std::vector<std::vector<PARAM_INFO>> validParams {
         { {SHAPE, "lhs"}, {SHAPE, "rhs"} },
     };
@@ -394,9 +395,81 @@ void _validateBoolean(std::vector<NodeExpression*>& args){
 }
 
 
-void _print(double num)
+void _validateRotateTranslate(std::vector<NodeExpression*>& args){
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {SHAPE, "shape"}, {ARRAY, "rotation"} },
+    };
+
+    if( args.size() != 2 ){
+        fprintf(stderr, "Rotation operation can only be invoked with 2 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    validateFunctionArguments(validParams, args);
+
+    int length = getExpressionLength(static_cast<NodeArray*>(args[1])->array);
+    
+    if( (length < 1) || (length > 3) ){
+        fprintf(stderr, "Valid for arrays for Rotate or Translate must have length 1-3, you gave array of size %d\n", length);
+        exit(1);
+    }
+    else if(!checkAllExprTypes(static_cast<NodeArray*>(args[1])->array, DOUBLE)){
+        fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
+    }
+}
+
+
+void _print(std::vector<NodeExpression*>& args)
 {
-    fprintf(stdout, "%f\n", num);
+    if(args.size() != 1){
+        fprintf(stderr, "print only takes 1 argument you passed %ld\n", args.size());
+        exit(1);
+    }
+    else if(!args[0]){
+        fprintf(stderr, "print was given a null argument ... exiting ... \n");
+        exit(1);
+    }
+
+    switch(args[0]->nodeType){
+        case DOUBLE:{
+            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
+            fprintf(stdout, "%lf\n", numNode->value);
+            return;
+        }
+        case EDGE: {
+            NodeEdge* edgeNode = static_cast<NodeEdge*>(args[0]);        
+            switch(edgeNode->edgeType){
+                case type_edge: {
+                    edgeNode->edge->DumpJson(std::cout);
+                    return;
+                }
+                case type_wire: {
+                    edgeNode->wireShape->DumpJson(std::cout);
+                    return;
+                }
+                default: {
+                    fprintf(stderr, "Unable to print edge exiting .. \n"); 
+                    exit(1);
+                }
+            }
+        }
+        case POINT: {
+            NodePoint* pointNode = static_cast<NodePoint*>(args[0]);
+            fprintf(stderr, "Point {X: %lf, Y: %lf, Z: %lf}\n", pointNode->point->X(), pointNode->point->Y(), pointNode->point->Y());
+            return;
+
+        }
+        case SHAPE: {
+            NodeShape* shapeNode = static_cast<NodeShape*>(args[0]);
+            shapeNode->shape->DumpJson(std::cout);
+            return;
+        }
+        default: {
+            fprintf(stderr, "You can only print numbers, points, edges, and shapes\n");
+            exit(1);
+        }
+    }
+    return;
 }
 
 
@@ -541,35 +614,65 @@ NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
 }
 
 
-NodeShape* _rotate(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shapeType,  gp_Ax1 xAxis)
+NodeShape* _rotate(std::vector<NodeExpression*>& args)
 {
-    gp_Trsf transformation; 
-    transformation.SetRotation(xAxis, angle);
+    _validateRotateTranslate(args);
 
-    BRepBuilderAPI_Transform* rotation = new BRepBuilderAPI_Transform(currShape, transformation);
-    const TopoDS_Shape* shape = &rotation->Shape();
+
+    NodeShape* one = static_cast<NodeShape*>(args[0]);
+    NodeArray* two = static_cast<NodeArray*>(args[1]);
+
+
+    double numOne = static_cast<NodeNumber*>(two->array)->value;
+    double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+    double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+
+    gp_Trsf xRotation, yRotation, zRotation; 
+    xRotation.SetRotation(gp::OX(), numOne);
+    yRotation.SetRotation(gp::OY(), numTwo);
+    zRotation.SetRotation(gp::OZ(), numThree);
+
+
+
+    BRepBuilderAPI_Transform* xRot = new BRepBuilderAPI_Transform(*one->shape, xRotation);
+    BRepBuilderAPI_Transform* xyRot = new BRepBuilderAPI_Transform(xRot->Shape(), yRotation);
+    BRepBuilderAPI_Transform* xyzRot = new BRepBuilderAPI_Transform(xyRot->Shape(), zRotation);
+
+
+    const TopoDS_Shape* shape = &xyzRot->Shape();
 
     if(shape->IsNull()){
         fprintf(stderr, "Fuse is null exiting...\n");
         exit(1);
     }
 
-    NodeShape* me = newNodeShape(shapeType);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(rotation);
+    NodeShape* me = newNodeShape(one->shapeType);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(xyzRot);
     me->shape = shape;
 
     return me;
-
 }
 
-NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double z, OCCT_SHAPE shapeType)
+NodeShape* _translate(std::vector<NodeExpression*>& args)
 {
-    gp_Vec vector = gp_Vec(x, y, z);  
+    _validateRotateTranslate(args);
+
+
+    NodeShape* one = static_cast<NodeShape*>(args[0]);
+    NodeArray* two = static_cast<NodeArray*>(args[1]);
+
+
+    double x = static_cast<NodeNumber*>(two->array)->value;
+    double y = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+    double z = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+
     gp_Trsf transformation;
-    transformation.SetTranslation(vector);
+    transformation.SetTranslation(gp_Vec(x, y, z));
 
 
-    BRepBuilderAPI_Transform* translation = new BRepBuilderAPI_Transform(currShape, transformation);
+    BRepBuilderAPI_Transform* translation = new BRepBuilderAPI_Transform(*one->shape, transformation);
     const TopoDS_Shape* shape = &translation->Shape();
 
     if(shape->IsNull()){
@@ -577,12 +680,9 @@ NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double 
         exit(1);
     }
 
-    NodeShape* me = newNodeShape(shapeType);
+    NodeShape* me = newNodeShape(one->shapeType);
     me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(translation);
     me->shape = shape;
-    return me;
-
-
     return me;
 }
 
@@ -789,53 +889,9 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
 {
     switch(functionPtr->functionType){
         case printDouble: {
-            if(args.size() != 1){
-                fprintf(stderr, "print only takes 1 argument you passed %ld\n", args.size());
-                exit(1);
-            }
-
-            switch(args[0]->nodeType){
-                case DOUBLE:{
-                    NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
-                    _print(numNode->value);
-                    return NULL;
-                }
-                case EDGE: {
-                    NodeEdge* edgeNode = static_cast<NodeEdge*>(args[0]);        
-                    switch(edgeNode->edgeType){
-                        case type_edge: {
-                            edgeNode->edge->DumpJson(std::cout);
-                            return NULL;
-                        }
-                        case type_wire: {
-                            edgeNode->wireShape->DumpJson(std::cout);
-                            return NULL;
-                        }
-                        default: {
-                            fprintf(stderr, "Unable to print edge exiting .. \n"); 
-                            exit(1);
-                        }
-                    }
-                }
-                case POINT: {
-                    NodePoint* pointNode = static_cast<NodePoint*>(args[0]);
-                    fprintf(stderr, "Point {X: %lf, Y: %lf, Z: %lf}\n", pointNode->point->X(), pointNode->point->Y(), pointNode->point->Y());
-                    return NULL;
-
-                }
-                case SHAPE: {
-                    NodeShape* shapeNode = static_cast<NodeShape*>(args[0]);
-                    shapeNode->shape->DumpJson(std::cout);
-                    return NULL;
-                }
-                default: {
-                    fprintf(stderr, "You can only print numbers, points, edges, and shapes\n");
-                    exit(1);
-                }
-            }
+            _print(args);
             return NULL;
         }
-
         case makeSphere: {
             return _makeSphere(args);
         }
@@ -862,46 +918,10 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _makeIntersection(args);
         }
         case doRotate: {
-            NodeShape* one = static_cast<NodeShape*>(args[0]);
-            NodeArray* two = static_cast<NodeArray*>(args[1]);
-
-            int length = getExpressionLength(two->array);
-            if( length != 3 ){
-                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
-            }
-            else if(!checkAllExprTypes(two->array, DOUBLE)){
-                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
-            }
-
-            double numOne = static_cast<NodeNumber*>(two->array)->value;
-            double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
-            double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
-
-
-            NodeShape* newShape = NULL;
-            newShape = functionPtr->func.rotate(*one->shape, numOne, one->shapeType, gp::OX());
-            newShape = functionPtr->func.rotate(*newShape->shape, numTwo, one->shapeType, gp::OY());
-            newShape = functionPtr->func.rotate(*newShape->shape, numThree, one->shapeType, gp::OZ());
-
-            return newShape;
+            return _rotate(args);
         }
         case doTranslate: {
-            NodeShape* one = static_cast<NodeShape*>(args[0]);
-            NodeArray* two = static_cast<NodeArray*>(args[1]);
-
-            int length = getExpressionLength(two->array);
-            if( length != 3 ){
-                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
-            }
-            else if(!checkAllExprTypes(two->array, DOUBLE)){
-                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
-            }
-
-            double xTrans = static_cast<NodeNumber*>(two->array)->value;
-            double yTrans = static_cast<NodeNumber*>(two->array->nextExpr)->value;
-            double zTrans = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
-
-            return functionPtr->func.translate(*one->shape, xTrans, yTrans, zTrans, one->shapeType);
+            return _translate(args); 
         }
         case makePoint: {
             if(args.size() != 1){
