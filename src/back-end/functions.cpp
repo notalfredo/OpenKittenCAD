@@ -109,7 +109,7 @@ void startViewer()
  * with VTK. Just creating oocSourceOne is enough
  * to create the leak
 */
-void _addShape(const TopoDS_Shape& shapeToAdd)
+void _addShapeVtk(const TopoDS_Shape& shapeToAdd)
 {
     vtkNew<IVtkTools_ShapeDataSource> occSourceOne;
     occSourceOne->SetShape(new IVtkOCC_Shape(shapeToAdd));
@@ -380,6 +380,19 @@ BRepPrimAPI_MakeBox* _validateBox(std::vector<NodeExpression*>& args)
 }
 
 
+void _validateBoolean(std::vector<NodeExpression*>& args){
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {SHAPE, "lhs"}, {SHAPE, "rhs"} },
+    };
+
+    if( args.size() != 2 ){
+        fprintf(stderr, "Boolean operations can only be invoked with 2 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    validateFunctionArguments(validParams, args);
+}
+
 
 void _print(double num)
 {
@@ -439,11 +452,33 @@ NodeShape* _makeBox(std::vector<NodeExpression*>& args)
 }
 
 
-
-
-NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+NodeExpression* _addShape(std::vector<NodeExpression*>& args)
 {
-    BRepAlgoAPI_Fuse* fuse = new BRepAlgoAPI_Fuse(lhs, rhs);
+    if(args.size() != 1){
+        fprintf(stderr, "You can only pass 1 argument to addShape\n");
+            }
+    else if(!args[0]){
+        fprintf(stderr, "First argument to addShape is NULL\n");
+    }
+    else if(args[0]->nodeType != SHAPE){
+        fprintf(stderr, "Argument to addShape must be type shape you passed %s\n", nodeTypeToString(args[0]->nodeType));
+    }
+
+
+    NodeShape* sphere = static_cast<NodeShape*>(args[0]);
+    _addShapeVtk(*sphere->shape);
+    return NULL;
+}
+
+
+NodeShape* _makeUnion(std::vector<NodeExpression*>& args)
+{
+    _validateBoolean(args);
+
+    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+    BRepAlgoAPI_Fuse* fuse = new BRepAlgoAPI_Fuse(*lhs->shape, *rhs->shape);
     const TopoDS_Shape* shape = &fuse->Shape();
 
     if(shape->IsNull()){
@@ -458,9 +493,15 @@ NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
     return me;
 }
 
-NodeShape* _makeDifference(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+NodeShape* _makeDifference(std::vector<NodeExpression*>& args)
 {
-    BRepAlgoAPI_Cut* cut = new BRepAlgoAPI_Cut(lhs, rhs);
+    _validateBoolean(args);
+
+    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+
+    BRepAlgoAPI_Cut* cut = new BRepAlgoAPI_Cut(*lhs->shape, *rhs->shape);
     const TopoDS_Shape* shape = &cut->Shape();
 
     if(shape->IsNull()){
@@ -476,9 +517,15 @@ NodeShape* _makeDifference(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
 }
 
 
-NodeShape* _makeIntersection(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
 {
-    BRepAlgoAPI_Common* common = new BRepAlgoAPI_Common(lhs, rhs);
+    _validateBoolean(args);
+
+    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+
+    BRepAlgoAPI_Common* common = new BRepAlgoAPI_Common(*lhs->shape, *rhs->shape);
     const TopoDS_Shape* shape = &common->Shape();
 
     if(shape->IsNull()){
@@ -699,26 +746,26 @@ functionPtr knownFunctions[] {
     {"box", makeBox,  {.makeBox = NULL}},
 
 
-    {"union", makeUnion,  {.makeUnion = _makeUnion}},
-    {"difference", makeDifference,  {.makeDifference = _makeDifference}},
-    {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
-    {"makeFace", makeFace,  {.makeFace = _makeFace}},
+    {"union", makeUnion,  {.makeUnion = NULL}},
+    {"difference", makeDifference,  {.makeDifference = NULL}},
+    {"intersection", makeIntersection,  {.makeIntersection = NULL}},
+    {"makeFace", makeFace,  {.makeFace = NULL}},
 
 
 
-    {"rotate", doRotate,  {.rotate = _rotate}},
-    {"translate", doTranslate,  {.translate = _translate}},
-    {"mirror", doMirror, {.mirror = _mirror}},
+    {"rotate", doRotate,  {.rotate = NULL}},
+    {"translate", doTranslate,  {.translate = NULL}},
+    {"mirror", doMirror, {.mirror = NULL}},
     
 
-    {"dot", makePoint, {.makePoint = _makePoint}},
-    {"line", makeEdge, {.makeEdge = _makeEdge}},
-    {"arc", makeArc, {.makeArc = _makeArc}},
-    {"connect", connect, {.connect = _connect}},
+    {"dot", makePoint, {.makePoint = NULL}},
+    {"line", makeEdge, {.makeEdge = NULL}},
+    {"arc", makeArc, {.makeArc = NULL}},
+    {"connect", connect, {.connect = NULL}},
 
 
-    {"print",  printDouble, {.println =  _print}},
-    {"addShape", addShape,  {.addShapeToVTK = _addShape}}
+    {"print",  printDouble, {.println =  NULL}},
+    {"addShape", addShape,  {.addShapeToVTK = NULL}}
 };
 
 
@@ -803,42 +850,16 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _makeBox(args);
         }
         case addShape: {
-
-            if(args.size() != 1){
-                fprintf(stderr, "You can only pass 1 argument to addShape\n");
-            }
-            else if(!args[0]){
-                fprintf(stderr, "First argument to addShape is NULL\n");
-            }
-            else if(args[0]->nodeType != SHAPE){
-                fprintf(stderr, "Argument to addShape must be type shape you passed %s\n", nodeTypeToString(args[0]->nodeType));
-            }
-
-
-            NodeShape* sphere = static_cast<NodeShape*>(args[0]);
-            _addShape(*sphere->shape);
-            return NULL;
+            return _addShape(args);
         }
         case makeUnion: {
-            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-            return functionPtr->func.makeUnion(*lhs->shape, *rhs->shape);
+            return _makeUnion(args);
         }
         case makeDifference: {
-            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-            return functionPtr->func.makeDifference(*lhs->shape, *rhs->shape);
+            return _makeDifference(args);
         }
         case makeIntersection: {
-            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-
-            
-
-            return functionPtr->func.makeIntersection(*lhs->shape, *rhs->shape);
+            return _makeIntersection(args);
         }
         case doRotate: {
             NodeShape* one = static_cast<NodeShape*>(args[0]);
@@ -883,7 +904,13 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return functionPtr->func.translate(*one->shape, xTrans, yTrans, zTrans, one->shapeType);
         }
         case makePoint: {
+            if(args.size() != 1){
+                fprintf(stderr, "dot only takes one arguments\n");
+            }
+
             NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
+
+            
 
             int length = getExpressionLength(arrNode->array);
             if( length != 3 ){
