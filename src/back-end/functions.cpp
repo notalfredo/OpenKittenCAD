@@ -46,6 +46,9 @@
 #include <vtkPolyDataMapper.h>
 
 
+NodePoint* _makePoint(std::vector<NodeExpression*>& args);
+
+
 static vtkNew<vtkRenderWindow> renwin;
 static vtkNew<vtkRenderWindowInteractor> iren;
 static vtkNew<vtkRenderer> ren;
@@ -157,11 +160,18 @@ int validateFunctionArguments(std::vector<std::vector<PARAM_INFO>>& paramInfo, s
             continue;
         }
 
+        int contFlag = 0;
+
         for(int j = 0; j < paramInfo[i].size(); j++){
             if(args[j]->nodeType != paramInfo[i][j].type){
-               continue; 
+               contFlag = 1; 
             }
         }
+
+        if (contFlag) {
+            continue;
+        }
+
         return i;
     }
 
@@ -494,6 +504,77 @@ void _validatePoint(std::vector<NodeExpression*>& args)
 }
 
 
+void _validateEdge(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> paramInfo = {
+        { {POINT, "point1"}, {POINT, "point2"} },
+        { {ARRAY, "point1"}, {ARRAY, "point2"} }
+    };
+
+    int index = validateFunctionArguments(paramInfo, args);
+
+    if(index == 1){
+        NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
+        NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
+
+        if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
+            fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
+            exit(1);
+        }
+        if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
+            fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
+            exit(1);
+        }
+        std::vector<NodeExpression*> first {arrOne};
+        std::vector<NodeExpression*> second {arrTwo};
+
+        std::vector<NodeExpression*> newVec {
+            _makePoint(first), _makePoint(second)
+        };
+        args = newVec;
+    }
+}
+
+
+void _validateArc(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> paramInfo = {
+        { {POINT, "point1"}, {POINT, "point2"}, {POINT, "point3"} },
+        { {ARRAY, "point1"}, {ARRAY, "point2"}, {ARRAY, "point3"}}
+    };
+
+    int index = validateFunctionArguments(paramInfo, args);
+
+    if(index == 1){
+        NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
+        NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
+        NodeArray* arrThree = static_cast<NodeArray*>(args[2]);
+
+        if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
+            fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
+            exit(1);
+        }
+        if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
+            fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
+            exit(1);
+        }
+        if(!checkAllExprTypes(arrThree->array, DOUBLE) && (getExpressionLength(arrThree->array) != 3)){
+            fprintf(stderr, "Thrid point of edge must be length 3 and must be all double\n");
+            exit(1);
+        }
+
+        std::vector<NodeExpression*> first {arrOne};
+        std::vector<NodeExpression*> second {arrTwo};
+        std::vector<NodeExpression*> thrid {arrThree};
+
+        std::vector<NodeExpression*> newVec {
+            _makePoint(first), _makePoint(second), _makePoint(thrid)
+        };
+        args = newVec;
+    }
+}
+
+
 NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
 {
     BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
@@ -743,20 +824,23 @@ NodeShape* _makeFace(const TopoDS_Wire* wire)
 
 
 
-
-NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
+NodeEdge* _makeEdge(std::vector<NodeExpression*>& args)
+//NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
 {
-    GC_MakeSegment mkSeg(*p1->point, *p2->point);
+
+    _validateEdge(args);
+
+    NodePoint* point1 = static_cast<NodePoint*>(args[0]);
+    NodePoint* point2 = static_cast<NodePoint*>(args[1]);
+
+
+    GC_MakeSegment mkSeg(*point1->point, *point2->point);
     Handle(Geom_TrimmedCurve) aSegment;
     if(mkSeg.IsDone()){
         aSegment = mkSeg.Value();
     }
     else {
-        fprintf(stderr,
-            "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n",
-            p1->point->X(), p1->point->Y(), p1->point->Z(),
-            p2->point->X(), p2->point->Y(), p2->point->Z()
-        );
+        fprintf(stderr, "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n", point1->point->X(), point1->point->Y(), point1->point->Z(), point2->point->X(), point2->point->Y(), point2->point->Z());
         exit(1);
     }
 
@@ -775,8 +859,15 @@ NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
 }
 
 
-NodeEdge* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
+NodeEdge* _makeArc(std::vector<NodeExpression*>& args)
 {
+    _validateArc(args);
+
+    NodePoint* p1 = static_cast<NodePoint*>(args[0]);
+    NodePoint* p2 = static_cast<NodePoint*>(args[1]);
+    NodePoint* p3 = static_cast<NodePoint*>(args[2]);
+
+
     GC_MakeArcOfCircle mkArc(*p1->point, *p2->point, *p3->point);
     Handle(Geom_TrimmedCurve) aSegment;
     if(mkArc.IsDone()){
@@ -894,6 +985,7 @@ functionPtr knownFunctions[] {
     {"dot", makePoint, {.makePoint = NULL}},
     {"line", makeEdge, {.makeEdge = NULL}},
     {"arc", makeArc, {.makeArc = NULL}},
+
     {"connect", connect, {.connect = NULL}},
 
 
@@ -960,44 +1052,15 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _makePoint(args);
         }
         case makeEdge: {
-            if(args.size() != 2){
-                fprintf(stderr, "When creating line must provide 2 points");
-                exit(1);
-            }
-            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT){
-                fprintf(stderr, "When creating an edge it must be between two points p1: %s, p2: %s\n",
-                    nodeTypeToString(args[0]->nodeType),
-                    nodeTypeToString(args[1]->nodeType)
-                ); 
-                exit(1);
-            }
-
-            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
-            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
-
-            return functionPtr->func.makeEdge(p1, p2);
+            return _makeEdge(args);
         }
         case makeArc: {
-            if(args.size() != 3){
-                fprintf(stderr, "When creating arc must provide 3 points");
-                exit(1);
-            }
-            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT || args[2]->nodeType != POINT){
-                fprintf(stderr, "When creating an edge it must be between three points p: %s, p: %s, p: %s\n",
-                    nodeTypeToString(args[0]->nodeType),
-                    nodeTypeToString(args[1]->nodeType),
-                    nodeTypeToString(args[2]->nodeType)
-                ); 
-                exit(1);
-            }
-
-            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
-            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
-            NodePoint* p3 = static_cast<NodePoint*>(args[2]);
-
-            return functionPtr->func.makeArc(p1, p2, p3);
+            return _makeArc(args);
         }
         case connect:{
+
+
+
             if(args.size() != 3 && args.size() != 2){
                 fprintf(stderr, "When connecting edges must connect only 2 or 3 at a time, you passed %ld\n", args.size());
                 exit(1);
