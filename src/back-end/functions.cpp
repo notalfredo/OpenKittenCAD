@@ -46,6 +46,19 @@
 #include <vtkPolyDataMapper.h>
 
 
+typedef enum occt_boolean {
+    FUSE,
+    DIFFERENCE,
+    INTERSECTION
+}OCCT_BOOLEAN;
+
+typedef enum occt_transformation {
+    ROTATE,
+    TRANSLATION
+}OCCT_TRANSFORMATION;
+
+
+
 NodePoint* _makePoint(std::vector<NodeExpression*>& args);
 
 
@@ -390,7 +403,7 @@ BRepPrimAPI_MakeBox* _validateBox(std::vector<NodeExpression*>& args)
 }
 
 
-void _validateBoolean(std::vector<NodeExpression*>& args)
+BRepAlgoAPI_BooleanOperation* _validateBoolean(std::vector<NodeExpression*>& args, OCCT_BOOLEAN booleanType)
 {
     std::vector<std::vector<PARAM_INFO>> validParams {
         { {SHAPE, "lhs"}, {SHAPE, "rhs"} },
@@ -401,7 +414,40 @@ void _validateBoolean(std::vector<NodeExpression*>& args)
         exit(1);
     }
 
-    validateFunctionArguments(validParams, args);
+    int index = validateFunctionArguments(validParams, args);
+
+    if(index == -1){
+        switch(booleanType){
+            case FUSE: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "FUSE");
+            }
+            case DIFFERENCE: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "difference");
+            }
+            case INTERSECTION: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "intersection");
+            }
+        }
+    }
+
+
+    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+    switch(booleanType){
+        case FUSE: {
+            return new BRepAlgoAPI_Fuse(*lhs->shape, *rhs->shape);
+        }
+        case DIFFERENCE: {
+            return new BRepAlgoAPI_Cut(*lhs->shape, *rhs->shape);
+        }
+        case INTERSECTION: {
+            return new BRepAlgoAPI_Common(*lhs->shape, *rhs->shape);
+        }
+    }
+
+    fprintf(stderr, "Hit out of flow validate boolean\n");
+    exit(1);
 }
 
 
@@ -483,28 +529,51 @@ void _print(std::vector<NodeExpression*>& args)
 }
 
 
-void _validatePoint(std::vector<NodeExpression*>& args)
+gp_Pnt* _validatePoint(std::vector<NodeExpression*>& args)
 {
     std::vector<std::vector<PARAM_INFO>> paramInfo = {
         { {ARRAY, "point"} }
     };
 
-    validateFunctionArguments(paramInfo, args);
+    int index = validateFunctionArguments(paramInfo, args);
+
+    if(index == -1){
+        dumpArgumentsAndCorrectArguments(paramInfo, args, "point");
+    }
 
 
     int length = getExpressionLength(static_cast<NodeArray*>(args[0])->array);
 
-    if( length != 3 ){
-        fprintf(stderr, "Array argument to point must be length 3 ... exiting ...\n");
-    }
-    else if(!checkAllExprTypes(static_cast<NodeArray*>(args[0])->array, DOUBLE)){
-        fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
+
+    double x, y ,z;
+
+    switch(index){
+        case 1: {
+            if( length != 3 ){
+                fprintf(stderr, "Array argument to point must be length 3 ... exiting ...\n");
+            }
+            else if(!checkAllExprTypes(static_cast<NodeArray*>(args[0])->array, DOUBLE)){
+                fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
+            }
+
+
+            NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
+            x = static_cast<NodeNumber*>(arrNode->array)->value;
+            y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
+            z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
+            break;
+        }
+        default :{
+            fprintf(stderr, "Hit default case in validating point ... exiting ... \n");
+            exit(1);
+        }
     }
 
+    return new gp_Pnt(x, y, z);
 }
 
 
-void _validateEdge(std::vector<NodeExpression*>& args)
+BRepBuilderAPI_MakeEdge* _validateEdge(std::vector<NodeExpression*>& args)
 {
     std::vector<std::vector<PARAM_INFO>> paramInfo = {
         { {POINT, "point1"}, {POINT, "point2"} },
@@ -513,30 +582,64 @@ void _validateEdge(std::vector<NodeExpression*>& args)
 
     int index = validateFunctionArguments(paramInfo, args);
 
-    if(index == 1){
-        NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
-        NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
 
-        if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
-            fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
-            exit(1);
-        }
-        if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
-            fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
-            exit(1);
-        }
-        std::vector<NodeExpression*> first {arrOne};
-        std::vector<NodeExpression*> second {arrTwo};
-
-        std::vector<NodeExpression*> newVec {
-            _makePoint(first), _makePoint(second)
-        };
-        args = newVec;
+    if(index == -1){
+        dumpArgumentsAndCorrectArguments(paramInfo, args, "edge") ;
     }
+
+
+    GC_MakeSegment* mkSeg = NULL;
+    NodePoint* point1 = NULL;
+    NodePoint* point2 = NULL;
+
+    switch(index){
+        case 0: {
+            point1 = static_cast<NodePoint*>(args[0]);
+            point2 = static_cast<NodePoint*>(args[1]);
+            mkSeg = new GC_MakeSegment(*point1->point, *point2->point);
+            break;
+        }
+        case 1: {
+            NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
+            NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
+
+            if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
+                fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
+                fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+
+            std::vector<NodeExpression*> first {arrOne};
+            std::vector<NodeExpression*> second {arrTwo};
+
+            point1 = _makePoint(first);
+            point2 = _makePoint(second);
+            mkSeg = new GC_MakeSegment(*point1->point, *point2->point);
+            break;
+        }
+        default: {
+            fprintf(stderr, "Hit default case in validate edge exiting ...");
+            exit(1);
+        }
+    }
+
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkSeg->IsDone()){
+        aSegment = mkSeg->Value();
+    }
+    else {
+        fprintf(stderr, "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n", point1->point->X(), point1->point->Y(), point1->point->Z(), point2->point->X(), point2->point->Y(), point2->point->Z());
+        exit(1);
+    }
+
+    return new BRepBuilderAPI_MakeEdge(aSegment);    
 }
 
 
-void _validateArc(std::vector<NodeExpression*>& args)
+BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args)
 {
     std::vector<std::vector<PARAM_INFO>> paramInfo = {
         { {POINT, "point1"}, {POINT, "point2"}, {POINT, "point3"} },
@@ -544,34 +647,91 @@ void _validateArc(std::vector<NodeExpression*>& args)
     };
 
     int index = validateFunctionArguments(paramInfo, args);
-
-    if(index == 1){
-        NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
-        NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
-        NodeArray* arrThree = static_cast<NodeArray*>(args[2]);
-
-        if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
-            fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
-            exit(1);
-        }
-        if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
-            fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
-            exit(1);
-        }
-        if(!checkAllExprTypes(arrThree->array, DOUBLE) && (getExpressionLength(arrThree->array) != 3)){
-            fprintf(stderr, "Thrid point of edge must be length 3 and must be all double\n");
-            exit(1);
-        }
-
-        std::vector<NodeExpression*> first {arrOne};
-        std::vector<NodeExpression*> second {arrTwo};
-        std::vector<NodeExpression*> thrid {arrThree};
-
-        std::vector<NodeExpression*> newVec {
-            _makePoint(first), _makePoint(second), _makePoint(thrid)
-        };
-        args = newVec;
+    if(index == -1){
+        dumpArgumentsAndCorrectArguments(paramInfo, args, "arc");
     }
+
+    
+    GC_MakeArcOfCircle* mkArc = NULL;
+    NodePoint* p1 = NULL;
+    NodePoint* p2 = NULL;
+    NodePoint* p3 = NULL;
+
+    switch(index){
+        case 0: {
+            p1 = static_cast<NodePoint*>(args[0]);
+            p2 = static_cast<NodePoint*>(args[1]);
+            p3 = static_cast<NodePoint*>(args[2]);
+
+            mkArc = new GC_MakeArcOfCircle(*p1->point, *p2->point, *p3->point);
+            break;
+        }
+        case 1: {
+            NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
+            NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
+            NodeArray* arrThree = static_cast<NodeArray*>(args[2]);
+
+            if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
+                fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
+                fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            if(!checkAllExprTypes(arrThree->array, DOUBLE) && (getExpressionLength(arrThree->array) != 3)){
+                fprintf(stderr, "Thrid point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            std::vector<NodeExpression*> first {arrOne};
+            std::vector<NodeExpression*> second {arrTwo};
+            std::vector<NodeExpression*> thrid {arrThree};
+
+            p1 = _makePoint(first);
+            p2 = _makePoint(second);
+            p3 = _makePoint(thrid);
+
+            mkArc = new GC_MakeArcOfCircle(*p1->point, *p2->point, *p3->point);
+            break;
+        }
+        default: {
+            fprintf(stderr, "When validating arc hit default case exiting ... \n");
+            exit(1);
+        }
+    }
+
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkArc->IsDone()){
+        aSegment = mkArc->Value();
+    }
+    else {
+        fprintf(stderr,
+            "Unable to make edge between points p1 {x: %f, y: %f, z: %f} and p3 {x: %f, y: %f, z: %f} that cross p2 {x: %f, y: %f, z: %f} ... exiting ...\n",
+            p1->point->X(), p1->point->Y(), p1->point->Z(),
+            p3->point->X(), p3->point->Y(), p3->point->Z(),
+            p2->point->X(), p2->point->Y(), p2->point->Z()
+        );
+        exit(1);
+    }
+
+    return new BRepBuilderAPI_MakeEdge(aSegment);    
+}
+
+
+void _validateConnect(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {EDGE, "edge1"}, {EDGE, "edge2"} },
+        { {EDGE, "edge1"}, {EDGE, "edge2"}, {EDGE, "edge3"} }
+    };
+
+    
+    int argIndex = validateFunctionArguments(param, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "connect");
+    }
+
+
 }
 
 
@@ -648,12 +808,7 @@ NodeExpression* _addShape(std::vector<NodeExpression*>& args)
 
 NodeShape* _makeUnion(std::vector<NodeExpression*>& args)
 {
-    _validateBoolean(args);
-
-    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-    BRepAlgoAPI_Fuse* fuse = new BRepAlgoAPI_Fuse(*lhs->shape, *rhs->shape);
+    BRepAlgoAPI_Fuse* fuse = static_cast<BRepAlgoAPI_Fuse*>(_validateBoolean(args, FUSE));
     const TopoDS_Shape* shape = &fuse->Shape();
 
     if(shape->IsNull()){
@@ -670,13 +825,7 @@ NodeShape* _makeUnion(std::vector<NodeExpression*>& args)
 
 NodeShape* _makeDifference(std::vector<NodeExpression*>& args)
 {
-    _validateBoolean(args);
-
-    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-
-    BRepAlgoAPI_Cut* cut = new BRepAlgoAPI_Cut(*lhs->shape, *rhs->shape);
+    BRepAlgoAPI_Cut* cut = static_cast<BRepAlgoAPI_Cut*>(_validateBoolean(args, DIFFERENCE));
     const TopoDS_Shape* shape = &cut->Shape();
 
     if(shape->IsNull()){
@@ -694,13 +843,7 @@ NodeShape* _makeDifference(std::vector<NodeExpression*>& args)
 
 NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
 {
-    _validateBoolean(args);
-
-    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-
-    BRepAlgoAPI_Common* common = new BRepAlgoAPI_Common(*lhs->shape, *rhs->shape);
+    BRepAlgoAPI_Common* common = static_cast<BRepAlgoAPI_Common*>(_validateBoolean(args, INTERSECTION));
     const TopoDS_Shape* shape = &common->Shape();
 
     if(shape->IsNull()){
@@ -718,16 +861,7 @@ NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
 
 NodePoint* _makePoint(std::vector<NodeExpression*>& args)
 {
-    _validatePoint(args);
-
-
-
-    NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
-    double x = static_cast<NodeNumber*>(arrNode->array)->value;
-    double y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
-    double z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
-
-    gp_Pnt* point = new gp_Pnt(x, y, z);
+    gp_Pnt* point = _validatePoint(args);
 
     NodePoint* pointNode = newNodePoint();
     pointNode->point = point;
@@ -827,24 +961,7 @@ NodeShape* _makeFace(const TopoDS_Wire* wire)
 NodeEdge* _makeEdge(std::vector<NodeExpression*>& args)
 //NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
 {
-
-    _validateEdge(args);
-
-    NodePoint* point1 = static_cast<NodePoint*>(args[0]);
-    NodePoint* point2 = static_cast<NodePoint*>(args[1]);
-
-
-    GC_MakeSegment mkSeg(*point1->point, *point2->point);
-    Handle(Geom_TrimmedCurve) aSegment;
-    if(mkSeg.IsDone()){
-        aSegment = mkSeg.Value();
-    }
-    else {
-        fprintf(stderr, "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n", point1->point->X(), point1->point->Y(), point1->point->Z(), point2->point->X(), point2->point->Y(), point2->point->Z());
-        exit(1);
-    }
-
-    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    BRepBuilderAPI_MakeEdge* edge = _validateEdge(args);    
     const TopoDS_Edge* result = &edge->Edge();
 
     NodeEdge* me = newNodeEdge();
@@ -861,30 +978,7 @@ NodeEdge* _makeEdge(std::vector<NodeExpression*>& args)
 
 NodeEdge* _makeArc(std::vector<NodeExpression*>& args)
 {
-    _validateArc(args);
-
-    NodePoint* p1 = static_cast<NodePoint*>(args[0]);
-    NodePoint* p2 = static_cast<NodePoint*>(args[1]);
-    NodePoint* p3 = static_cast<NodePoint*>(args[2]);
-
-
-    GC_MakeArcOfCircle mkArc(*p1->point, *p2->point, *p3->point);
-    Handle(Geom_TrimmedCurve) aSegment;
-    if(mkArc.IsDone()){
-        aSegment = mkArc.Value();
-    }
-    else {
-        fprintf(stderr,
-            "Unable to make edge between points p1 {x: %f, y: %f, z: %f} and p3 {x: %f, y: %f, z: %f} that cross p2 {x: %f, y: %f, z: %f} ... exiting ...\n",
-            p1->point->X(), p1->point->Y(), p1->point->Z(),
-            p3->point->X(), p3->point->Y(), p3->point->Z(),
-            p2->point->X(), p2->point->Y(), p2->point->Z()
-        );
-        exit(1);
-    }
-
-
-    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    BRepBuilderAPI_MakeEdge* edge = _validateArc(args);    
     const TopoDS_Edge* result = &edge->Edge();
 
     NodeEdge* me = newNodeEdge();
@@ -1058,8 +1152,8 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _makeArc(args);
         }
         case connect:{
-
-
+            
+        
 
             if(args.size() != 3 && args.size() != 2){
                 fprintf(stderr, "When connecting edges must connect only 2 or 3 at a time, you passed %ld\n", args.size());
