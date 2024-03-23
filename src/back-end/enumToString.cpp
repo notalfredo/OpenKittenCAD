@@ -1,3 +1,4 @@
+#include "BRepBuilderAPI_WireError.hxx"
 #include "node.hxx"
 
 
@@ -109,5 +110,22 @@ ID_TYPE nodeTypeFromIdType(nodeType rhs)
 
 }
 
-
+const char* wireContructionError(BRepBuilderAPI_WireError errorMsg)
+{
+    switch(errorMsg){
+        case BRepBuilderAPI_EmptyWire: {
+            return "No initialization of the algorithm. Only an empty constructor was used. exiting ... \n";
+        }
+        case BRepBuilderAPI_DisconnectedWire: {
+            return "The last edge which you attempted to add was not connected to the wire.\n";
+        }
+        case BRepBuilderAPI_NonManifoldWire: {
+            return "The wire with some singularity\n";
+        }
+        default:{
+            return NULL;
+        }
+    }
+    return NULL;
+}
 

@@ -1,3 +1,4 @@
+#include "BRepBuilderAPI_ModifyShape.hxx"
 #include "Geom_TrimmedCurve.hxx"
 #include "TopoDS_Wire.hxx"
 #include "enumToString.hxx"
@@ -53,7 +54,7 @@ typedef enum occt_boolean {
 }OCCT_BOOLEAN;
 
 typedef enum occt_transformation {
-    ROTATE,
+    ROTATION,
     TRANSLATION
 }OCCT_TRANSFORMATION;
 
@@ -451,7 +452,7 @@ BRepAlgoAPI_BooleanOperation* _validateBoolean(std::vector<NodeExpression*>& arg
 }
 
 
-void _validateRotateTranslate(std::vector<NodeExpression*>& args){
+BRepBuilderAPI_ModifyShape* _validateRotateTranslate(std::vector<NodeExpression*>& args, OCCT_TRANSFORMATION transformation, OCCT_SHAPE& shapeType){
     std::vector<std::vector<PARAM_INFO>> validParams {
         { {SHAPE, "shape"}, {ARRAY, "rotation"} },
     };
@@ -461,16 +462,76 @@ void _validateRotateTranslate(std::vector<NodeExpression*>& args){
         exit(1);
     }
 
-    validateFunctionArguments(validParams, args);
-
-    int length = getExpressionLength(static_cast<NodeArray*>(args[1])->array);
-    
-    if( (length < 1) || (length > 3) ){
-        fprintf(stderr, "Valid for arrays for Rotate or Translate must have length 1-3, you gave array of size %d\n", length);
-        exit(1);
+    int index = validateFunctionArguments(validParams, args);
+    if(index == -1){
+        switch(transformation){
+            case ROTATION: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "rotate");
+            }
+            case TRANSLATION: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "translation");
+            }
+        }
     }
-    else if(!checkAllExprTypes(static_cast<NodeArray*>(args[1])->array, DOUBLE)){
-        fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
+
+
+    switch(index){
+        case 0:{
+            int length = getExpressionLength(static_cast<NodeArray*>(args[1])->array);
+            
+            if( (length < 1) || (length > 3) ){
+                fprintf(stderr, "Valid for arrays for Rotate or Translate must have length 1-3, you gave array of size %d\n", length);
+                exit(1);
+            }
+            else if(!checkAllExprTypes(static_cast<NodeArray*>(args[1])->array, DOUBLE)){
+                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
+            }
+            switch(transformation){
+                case ROTATION: {
+
+                    NodeShape* one = static_cast<NodeShape*>(args[0]);
+                    NodeArray* two = static_cast<NodeArray*>(args[1]);
+
+
+                    double numOne = static_cast<NodeNumber*>(two->array)->value;
+                    double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+                    double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+                    gp_Trsf xRotation, yRotation, zRotation; 
+                    xRotation.SetRotation(gp::OX(), numOne);
+                    yRotation.SetRotation(gp::OY(), numTwo);
+                    zRotation.SetRotation(gp::OZ(), numThree);
+
+
+                    shapeType = one->shapeType;
+                    return new BRepBuilderAPI_Transform(
+                        BRepBuilderAPI_Transform(
+                            BRepBuilderAPI_Transform(
+                                *one->shape,
+                                xRotation
+                            ).Shape(),
+                            yRotation
+                        ),
+                        zRotation
+                    );
+                }
+                case TRANSLATION: {
+                    NodeShape* one = static_cast<NodeShape*>(args[0]);
+                    NodeArray* two = static_cast<NodeArray*>(args[1]);
+
+
+                    double x = static_cast<NodeNumber*>(two->array)->value;
+                    double y = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+                    double z = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+
+                    gp_Trsf transformation;
+                    transformation.SetTranslation(gp_Vec(x, y, z));
+
+                   return new BRepBuilderAPI_Transform(*one->shape, transformation);
+                }
+            }
+        }
     }
 }
 
@@ -548,7 +609,7 @@ gp_Pnt* _validatePoint(std::vector<NodeExpression*>& args)
     double x, y ,z;
 
     switch(index){
-        case 1: {
+        case 0: {
             if( length != 3 ){
                 fprintf(stderr, "Array argument to point must be length 3 ... exiting ...\n");
             }
@@ -718,11 +779,12 @@ BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args)
 }
 
 
-void _validateConnect(std::vector<NodeExpression*>& args)
+
+BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*> args)
 {
     std::vector<std::vector<PARAM_INFO>> param {
-        { {EDGE, "edge1"}, {EDGE, "edge2"} },
-        { {EDGE, "edge1"}, {EDGE, "edge2"}, {EDGE, "edge3"} }
+        { {EDGE, "EDGE1"}, {EDGE, "EDGE2"} },
+        { {EDGE, "EDGE1"}, {EDGE, "EDGE2"}, {EDGE, "EDGE3"} }
     };
 
     
@@ -731,7 +793,48 @@ void _validateConnect(std::vector<NodeExpression*>& args)
         dumpArgumentsAndCorrectArguments(param, args, "connect");
     }
 
+    BRepBuilderAPI_MakeWire* myWire = new BRepBuilderAPI_MakeWire();
 
+    for(int index = 0; index < param[argIndex].size(); index ++){
+        NodeEdge* myEdge = static_cast<NodeEdge*>(args[index]);
+
+        switch(myEdge->edgeType){
+            case type_edge: {
+                myWire->Add(*myEdge->edge);
+                break;
+            }
+            case type_wire: {
+                myWire->Add(*myEdge->brepWire);
+                break;
+            }
+            case type_error: {
+                fprintf(stderr, "Trying to connect a type_error wire\n"); 
+                exit(1);
+            }
+        }
+    }
+
+    if(myWire->Error() != BRepBuilderAPI_WireDone){
+        fprintf(stderr, "When connecting edges erorr occured %s ... exiting ... ", wireContructionError(myWire->Error()));
+        exit(1);
+    }
+
+    return myWire; 
+}
+
+
+void _validateMirror(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {EDGE, "EDGE"} },
+        { {SHAPE, "SHAPE"} }
+    };
+
+    
+    int paramIndex = validateFunctionArguments(param, args);
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "mirror");
+    }
 }
 
 
@@ -873,39 +976,19 @@ NodePoint* _makePoint(std::vector<NodeExpression*>& args)
 
 NodeShape* _rotate(std::vector<NodeExpression*>& args)
 {
-    _validateRotateTranslate(args);
+    OCCT_SHAPE shapeType;
 
+    BRepBuilderAPI_Transform* rotations = static_cast<BRepBuilderAPI_Transform*>(_validateRotateTranslate(args, ROTATION, shapeType));
 
-    NodeShape* one = static_cast<NodeShape*>(args[0]);
-    NodeArray* two = static_cast<NodeArray*>(args[1]);
-
-
-    double numOne = static_cast<NodeNumber*>(two->array)->value;
-    double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
-    double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
-
-
-    gp_Trsf xRotation, yRotation, zRotation; 
-    xRotation.SetRotation(gp::OX(), numOne);
-    yRotation.SetRotation(gp::OY(), numTwo);
-    zRotation.SetRotation(gp::OZ(), numThree);
-
-
-
-    BRepBuilderAPI_Transform* xRot = new BRepBuilderAPI_Transform(*one->shape, xRotation);
-    BRepBuilderAPI_Transform* xyRot = new BRepBuilderAPI_Transform(xRot->Shape(), yRotation);
-    BRepBuilderAPI_Transform* xyzRot = new BRepBuilderAPI_Transform(xyRot->Shape(), zRotation);
-
-
-    const TopoDS_Shape* shape = &xyzRot->Shape();
+    const TopoDS_Shape* shape = &rotations->Shape();
 
     if(shape->IsNull()){
         fprintf(stderr, "Fuse is null exiting...\n");
         exit(1);
     }
 
-    NodeShape* me = newNodeShape(one->shapeType);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(xyzRot);
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(rotations);
     me->shape = shape;
 
     return me;
@@ -913,23 +996,11 @@ NodeShape* _rotate(std::vector<NodeExpression*>& args)
 
 NodeShape* _translate(std::vector<NodeExpression*>& args)
 {
-    _validateRotateTranslate(args);
 
+    OCCT_SHAPE shapeType;
 
-    NodeShape* one = static_cast<NodeShape*>(args[0]);
-    NodeArray* two = static_cast<NodeArray*>(args[1]);
+    BRepBuilderAPI_Transform* translation = static_cast<BRepBuilderAPI_Transform*>(_validateRotateTranslate(args, TRANSLATION, shapeType));
 
-
-    double x = static_cast<NodeNumber*>(two->array)->value;
-    double y = static_cast<NodeNumber*>(two->array->nextExpr)->value;
-    double z = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
-
-
-    gp_Trsf transformation;
-    transformation.SetTranslation(gp_Vec(x, y, z));
-
-
-    BRepBuilderAPI_Transform* translation = new BRepBuilderAPI_Transform(*one->shape, transformation);
     const TopoDS_Shape* shape = &translation->Shape();
 
     if(shape->IsNull()){
@@ -937,7 +1008,7 @@ NodeShape* _translate(std::vector<NodeExpression*>& args)
         exit(1);
     }
 
-    NodeShape* me = newNodeShape(one->shapeType);
+    NodeShape* me = newNodeShape(shapeType);
     me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(translation);
     me->shape = shape;
     return me;
@@ -993,9 +1064,10 @@ NodeEdge* _makeArc(std::vector<NodeExpression*>& args)
 }
 
 
-NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, const TopoDS_Edge* edge3)
+NodeEdge* _connect(std::vector<NodeExpression*> args)
 {
-    BRepBuilderAPI_MakeWire* brepWire = new BRepBuilderAPI_MakeWire(*edge1, *edge2, *edge3);
+
+    BRepBuilderAPI_MakeWire* brepWire = _validateConnect(args);
 
     const TopoDS_Wire* wireShape = &brepWire->Wire();
 
@@ -1012,47 +1084,66 @@ NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, con
 }
 
 
-NodeEdge* _connect(const TopoDS_Wire* wire1, const TopoDS_Wire* wire2){
-    BRepBuilderAPI_MakeWire* combinedWire = new BRepBuilderAPI_MakeWire();
-    combinedWire->Add(*wire1);
-    combinedWire->Add(*wire2);
-
-    
-
-    NodeEdge* me = newNodeEdge();
-    me->edge = NULL;
-    me->brepEdge = NULL;
-    me->edgeType = type_wire;
-
-    me->brepWire = combinedWire;
-    me->wireShape = &combinedWire->Wire();
-    return me;    
-
-}
-
 
 /*we need to pass some info on what type of shape we are. For now just assume we passed a wire*/
 /*Also for now we just assume we can only mirror on the X axis */
 
-NodeEdge* _mirror(const TopoDS_Wire* shape) {
-    gp_Ax1 axis = gp::OX();
-    gp_Trsf aTrsf;
-    aTrsf.SetMirror(axis);
+NodeExpression* _mirror(std::vector<NodeExpression*>& args) {
 
+    _validateMirror(args);
 
-    TopoDS_Wire wire = TopoDS::Wire(BRepBuilderAPI_Transform(*shape, aTrsf).Shape());
-
-
-
-    NodeEdge* me = newNodeEdge();
-    me->edge = NULL;
-    me->brepEdge = NULL;
-    me->edgeType = type_wire;
-
-    me->brepWire = new BRepBuilderAPI_MakeWire(wire);
-    me->wireShape = &me->brepWire->Wire();
     
-    return me;
+    gp_Trsf aTrsf;
+    aTrsf.SetMirror(gp::OX());
+
+
+    switch(args[0]->nodeType){
+        case EDGE:{
+            NodeEdge* myEdge = static_cast<NodeEdge*>(args[0]);
+            TopoDS_Wire wire;
+
+
+            if(myEdge->edge){
+                wire = TopoDS::Wire(BRepBuilderAPI_Transform(*myEdge->edge, aTrsf).Shape());
+            }
+            else if(myEdge->wireShape){
+                wire = TopoDS::Wire(BRepBuilderAPI_Transform(*myEdge->wireShape, aTrsf).Shape());
+            }
+            else {
+                fprintf(stderr, "Unable to mirror shape ... exiting ..\n");
+                exit(1);
+            }
+
+            NodeEdge* me = newNodeEdge();
+            me->edge = NULL;
+            me->brepEdge = NULL;
+            me->edgeType = type_wire;
+
+            me->brepWire = new BRepBuilderAPI_MakeWire(wire);
+            me->wireShape = &me->brepWire->Wire();
+            
+            return me;
+        }
+        case SHAPE: {
+            NodeShape* myShape = static_cast<NodeShape*>(args[0]);
+            BRepBuilderAPI_Transform transform(*myShape->shape, aTrsf);
+            
+            BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
+            const TopoDS_Shape* shape = &sphere->Shape();
+
+            NodeShape* me = newNodeShape(SPHERE);
+            me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(sphere);
+            me->shape = shape;
+
+            return me;
+        }
+        default: {
+            fprintf(stderr, "Hit default case in mirroing shape exiting ...\n");
+            exit(1);
+        }
+    }
+
+
 }
 
 
@@ -1152,27 +1243,7 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _makeArc(args);
         }
         case connect:{
-            
-        
-
-            if(args.size() != 3 && args.size() != 2){
-                fprintf(stderr, "When connecting edges must connect only 2 or 3 at a time, you passed %ld\n", args.size());
-                exit(1);
-            }
-
-            if(args.size() == 3 ){
-                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
-                NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
-
-                return functionPtr->func.connect(e1->edge, e2->edge, e3->edge);
-            }
-            else {
-                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
-
-                return _connect(e1->wireShape, e2->wireShape);
-            }
+            return _connect(args);
         }
         case doMirror:{
             NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
