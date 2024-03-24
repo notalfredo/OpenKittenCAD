@@ -60,6 +60,7 @@ add_executable(
 )
 add_executable(semantic_test
     ./semantic_test.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/validateFunc.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
@@ -69,6 +70,7 @@ add_executable(semantic_test
 )
 add_executable(vtk_test
     ./vtk_test.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/validateFunc.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
@@ -78,6 +80,7 @@ add_executable(vtk_test
 )
 add_executable(functions_test
     ./functions_test.cpp
+    ${PROJECT_SOURCE_DIR}/src/back-end/validateFunc.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
     ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp

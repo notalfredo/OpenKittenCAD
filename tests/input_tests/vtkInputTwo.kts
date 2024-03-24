@@ -20,6 +20,7 @@
     let myFace: shape := makeFace(connectedStuff);
 
 
-    print(myFace);
-    addShape(myFace);
+    addShape(
+        myFace |> extrude(%, [0, 0, 5])
+    );
 };
