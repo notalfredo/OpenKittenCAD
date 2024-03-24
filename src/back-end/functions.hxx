@@ -3,11 +3,6 @@
 #include "node.hxx"
 
 
-typedef struct paramInfo {
-    nodeType type;
-    std::string name;
-} PARAM_INFO;
-
 
 enum functionEnum {
     makeSphere,
@@ -23,6 +18,7 @@ enum functionEnum {
     doRotate,
     doTranslate,
     doMirror,
+    doExtrude,
 
     makePoint,
     makeEdge,
