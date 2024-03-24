@@ -29,6 +29,10 @@
 #include <GC_MakeArcOfCircle.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <BRepFilletAPI_MakeFillet.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopAbs_ShapeEnum.hxx>
+#include <BRepFilletAPI_MakeChamfer.hxx>
 
 typedef struct paramInfo {
     nodeType type;
@@ -92,5 +96,10 @@ extern BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*> args)
 extern NodeShape* _makeSphere(std::vector<NodeExpression*>& args);
 
 
-extern BRepPrimAPI_MakePrism* _makePrism(std::vector<NodeExpression*>& args);
+extern BRepPrimAPI_MakePrism* _validateExtrude(std::vector<NodeExpression*>& args);
+
+
+extern BRepFilletAPI_MakeFillet* _validateFillet(std::vector<NodeExpression*>& args, OCCT_SHAPE& shapeType);
+
+extern BRepFilletAPI_MakeChamfer* _validateChamfer(std::vector<NodeExpression*>& args, OCCT_SHAPE& shapeType);
 #endif

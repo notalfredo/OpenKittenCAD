@@ -32,7 +32,7 @@
 #include <GC_MakeArcOfCircle.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
-
+#include <BRepFilletAPI_MakeFillet.hxx>
 
 #include <vtkStructuredGrid.h>
 #include <vtkDataSetMapper.h>
@@ -492,14 +492,43 @@ NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
 }
 
 
+
 NodeShape* _makeExtrude(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakePrism* prism = _makePrism(args);
+    BRepPrimAPI_MakePrism* prism = _validateExtrude(args);
 
     const TopoDS_Shape* shape = &prism->Shape();
 
     NodeShape* me = newNodeShape(CUSTOM);
     me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(prism);
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeFillet(std::vector<NodeExpression*>& args)
+{
+    OCCT_SHAPE shapeType;
+    BRepFilletAPI_MakeFillet* myFillet = _validateFillet(args, shapeType);
+    const TopoDS_Shape* shape = &myFillet->Shape();
+
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = myFillet;
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeChamfer(std::vector<NodeExpression*>& args)
+{
+    OCCT_SHAPE shapeType;
+    BRepFilletAPI_MakeChamfer* myFillet = _validateChamfer(args, shapeType);
+    const TopoDS_Shape* shape = &myFillet->Shape();
+
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = myFillet;
     me->shape = shape;
 
     return me;
@@ -523,6 +552,8 @@ functionPtr knownFunctions[] {
     {"translate", doTranslate},
     {"mirror", doMirror},
     {"extrude", doExtrude}, 
+    {"fillet", doFillet},
+    {"chamfer", doChamfer},
     
 
     {"dot", makePoint},
@@ -608,6 +639,12 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
         case doExtrude: {
             return _makeExtrude(args); 
+        }
+        case doFillet: {
+            return _makeFillet(args); 
+        }
+        case doChamfer: {
+            return _makeChamfer(args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

@@ -19,6 +19,8 @@ enum functionEnum {
     doTranslate,
     doMirror,
     doExtrude,
+    doFillet,
+    doChamfer,
 
     makePoint,
     makeEdge,

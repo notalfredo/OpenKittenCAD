@@ -21,6 +21,6 @@
 
 
     addShape(
-        myFace |> extrude(%, [0, 0, 5])
+        myFace |> extrude(%, [0, 0, 5]) |> chamfer(%, 1.0)
     );
 };
