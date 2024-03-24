@@ -696,6 +696,8 @@ BRepBuilderAPI_MakeEdge* _validateEdge(std::vector<NodeExpression*>& args)
         exit(1);
     }
 
+
+    delete mkSeg;
     return new BRepBuilderAPI_MakeEdge(aSegment);    
 }
 
@@ -775,6 +777,7 @@ BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args)
         exit(1);
     }
 
+    delete mkArc;
     return new BRepBuilderAPI_MakeEdge(aSegment);    
 }
 
@@ -835,6 +838,33 @@ void _validateMirror(std::vector<NodeExpression*>& args)
     if(paramIndex == -1){
         dumpArgumentsAndCorrectArguments(param, args, "mirror");
     }
+}
+
+
+BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*> args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {EDGE, "EDGE"} },
+    };
+
+    int paramIndex = validateFunctionArguments(param, args);
+
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "makeFace");
+    }
+
+    NodeEdge* myEdge = static_cast<NodeEdge*>(args[0]);
+    if(myEdge->brepEdge && myEdge->edge){
+        TopoDS_Wire wire = TopoDS::Wire(*myEdge->edge);
+
+        return new BRepBuilderAPI_MakeFace(wire);
+    }
+    else if(myEdge->brepWire && myEdge->wireShape){
+        return new BRepBuilderAPI_MakeFace(*myEdge->wireShape);
+    }
+
+    fprintf(stderr, "Unable to create face from edges\n");
+    exit(1);
 }
 
 
@@ -1015,9 +1045,9 @@ NodeShape* _translate(std::vector<NodeExpression*>& args)
 }
 
 
-NodeShape* _makeFace(const TopoDS_Wire* wire)
+NodeShape* _makeFace(std::vector<NodeExpression*> args)
 {
-    BRepBuilderAPI_MakeFace* face = new BRepBuilderAPI_MakeFace(*wire);
+    BRepBuilderAPI_MakeFace* face = _validateFace(args);
 
 
     NodeShape* me = newNodeShape(FACE);
@@ -1147,35 +1177,33 @@ NodeExpression* _mirror(std::vector<NodeExpression*>& args) {
 }
 
 
-
 functionPtr knownFunctions[] {
-    {"sphere", makeSphere,  {.makeSphere = NULL}},
-    {"cone", makeCone, {.makeCone = NULL}},
-    {"cylinder", makeCylinder,  {.makeCylinder = NULL}},
-    {"box", makeBox,  {.makeBox = NULL}},
+    {"sphere", makeSphere},
+    {"cone", makeCone},
+    {"cylinder", makeCylinder},
+    {"box", makeBox},
 
 
-    {"union", makeUnion,  {.makeUnion = NULL}},
-    {"difference", makeDifference,  {.makeDifference = NULL}},
-    {"intersection", makeIntersection,  {.makeIntersection = NULL}},
-    {"makeFace", makeFace,  {.makeFace = NULL}},
+    {"union", makeUnion},
+    {"difference", makeDifference},
+    {"intersection", makeIntersection},
+    {"makeFace", makeFace},
 
 
-
-    {"rotate", doRotate,  {.rotate = NULL}},
-    {"translate", doTranslate,  {.translate = NULL}},
-    {"mirror", doMirror, {.mirror = NULL}},
+    {"rotate", doRotate},
+    {"translate", doTranslate},
+    {"mirror", doMirror},
     
 
-    {"dot", makePoint, {.makePoint = NULL}},
-    {"line", makeEdge, {.makeEdge = NULL}},
-    {"arc", makeArc, {.makeArc = NULL}},
+    {"dot", makePoint},
+    {"line", makeEdge},
+    {"arc", makeArc},
 
-    {"connect", connect, {.connect = NULL}},
+    {"connect", connect},
 
 
-    {"print",  printDouble, {.println =  NULL}},
-    {"addShape", addShape,  {.addShapeToVTK = NULL}}
+    {"print",  printDouble},
+    {"addShape", addShape}
 };
 
 
@@ -1193,8 +1221,6 @@ functionPtr* lookUpFunc(const char * funcName)
 }
 
 
-//TODO: WHEN WE CALL A FUNCTION RIGHT BEFORE WE CALL IT WE NEED 
-//      TO VERIFY THAT THE CORRECT ARGUMENTS WHERE PASSED IN
 NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args)
 {
     switch(functionPtr->functionType){
@@ -1205,7 +1231,6 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         case makeSphere: {
             return _makeSphere(args);
         }
-
         case makeCone: {
             return _makeCone(args);
         }
@@ -1246,14 +1271,10 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
             return _connect(args);
         }
         case doMirror:{
-            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-
-            return functionPtr->func.mirror(e1->wireShape);
+            return _mirror(args);
         }
         case makeFace: {
-            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-
-            return functionPtr->func.makeFace(e1->wireShape);
+            return _makeFace(args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

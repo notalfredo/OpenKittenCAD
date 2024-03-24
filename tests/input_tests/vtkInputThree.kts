@@ -1,5 +1,9 @@
 {
-    let mySphere: shape := sphere(3);
+    let mySphere: shape := sphere(1);
+    let myCylinder: shape := cylinder(1, 2);
 
-    addShape(mySphere);
+
+    addShape(
+        myCylinder |> intersection(%, mySphere)
+    );
 };

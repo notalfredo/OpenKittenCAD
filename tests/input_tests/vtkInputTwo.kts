@@ -9,7 +9,10 @@
     let arcOne: edge := arc(pointOne, pointThree, pointTwo);
 
     let connectedEdges: edge := connect(lineOne, arcOne, lineTwo);
+
+
     let connectedEdgesMirror: edge := mirror(connectedEdges);
+
 
     let connectedStuff: edge := connect(connectedEdges, connectedEdgesMirror);
     
