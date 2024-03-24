@@ -1,31 +1,32 @@
+#include "BRepBuilderAPI_WireError.hxx"
 #include "node.hxx"
 
 
 const char* nodeTypeToString(NODE_TYPE type)
 {  
     switch(type) {
-        case IF:             { return "IF\n";       }
-        case ELIF:           { return "ELIF\n";     }
-        case ELSE:           { return "ELSE\n";     }
-        case FOR:            { return "FOR\n";      }
-        case WHILE:          { return "WHILE\n";    }
-        case REPEAT:         { return "REPEAT\n";   }
-        case UNTIL:          { return "UNTIL\n";    }
-        case DECL:           { return "DECl\n";     }
-        case STMT:           { return "STMT\n";     }
-        case FUNCTION:       { return "FUNCTION\n"; }
-        case ID:             { return "ID\n";       }
-        case FUNCTION_CALL:  { return "ID\n";       }
-        case TYPE:           { return "TYPE\n";     }
-        case BLOCK:          { return "BLOCK\n";    }
-        case ASSIGN:         { return "ASSIGN\n";   }
-        case BIN_OP:         { return "BIN_OP\n";   }
-        case DOUBLE:         { return "DOUBLE\n";   }
-        case SHAPE:          { return "SHAPE\n";    }
-        case STMT_LIST:      { return "BIN_OP\n";   }
-        case DECL_LIST:      { return "DOUBLE\n";   }
-        case EXPR_STMT:      { return "EXPR_STMT\n";    }
-        case POINT:          { return "POINT\n";    }
+        case IF:             { return "IF";            }
+        case ELIF:           { return "ELIF";          }
+        case ELSE:           { return "ELSE";          }
+        case FOR:            { return "FOR";           }
+        case WHILE:          { return "WHILE";         }
+        case REPEAT:         { return "REPEAT";        }
+        case UNTIL:          { return "UNTIL";         }
+        case DECL:           { return "DECl";          }
+        case STMT:           { return "STMT";          }
+        case FUNCTION:       { return "FUNCTION";      }
+        case ID:             { return "ID";            }
+        case FUNCTION_CALL:  { return "FUNCTION_CALL"; }
+        case TYPE:           { return "TYPE";          }
+        case BLOCK:          { return "BLOCK";         }
+        case ASSIGN:         { return "ASSIGN";        }
+        case BIN_OP:         { return "BIN_OP";        }
+        case DOUBLE:         { return "DOUBLE";        }
+        case SHAPE:          { return "SHAPE";         }
+        case STMT_LIST:      { return "BIN_OP";        }
+        case DECL_LIST:      { return "DOUBLE";        }
+        case EXPR_STMT:      { return "EXPR_STMT";     }
+        case POINT:          { return "POINT";         }
         default: {
             fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
             exit(0);
@@ -109,5 +110,22 @@ ID_TYPE nodeTypeFromIdType(nodeType rhs)
 
 }
 
-
+const char* wireContructionError(BRepBuilderAPI_WireError errorMsg)
+{
+    switch(errorMsg){
+        case BRepBuilderAPI_EmptyWire: {
+            return "No initialization of the algorithm. Only an empty constructor was used. exiting ... \n";
+        }
+        case BRepBuilderAPI_DisconnectedWire: {
+            return "The last edge which you attempted to add was not connected to the wire.\n";
+        }
+        case BRepBuilderAPI_NonManifoldWire: {
+            return "The wire with some singularity\n";
+        }
+        default:{
+            return NULL;
+        }
+    }
+    return NULL;
+}
 

@@ -1,3 +1,4 @@
+#include "BRepBuilderAPI_ModifyShape.hxx"
 #include "Geom_TrimmedCurve.hxx"
 #include "TopoDS_Wire.hxx"
 #include "enumToString.hxx"
@@ -5,6 +6,7 @@
 #include "gp_Trsf.hxx"
 #include "node.hxx"
 #include "functions.hxx"
+#include "enumToString.hxx"
 
 
 #include "Standard_TypeDef.hxx"
@@ -43,6 +45,22 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkPolyDataMapper.h>
+
+
+typedef enum occt_boolean {
+    FUSE,
+    DIFFERENCE,
+    INTERSECTION
+}OCCT_BOOLEAN;
+
+typedef enum occt_transformation {
+    ROTATION,
+    TRANSLATION
+}OCCT_TRANSFORMATION;
+
+
+
+NodePoint* _makePoint(std::vector<NodeExpression*>& args);
 
 
 static vtkNew<vtkRenderWindow> renwin;
@@ -108,7 +126,7 @@ void startViewer()
  * with VTK. Just creating oocSourceOne is enough
  * to create the leak
 */
-void _addShape(const TopoDS_Shape& shapeToAdd)
+void _addShapeVtk(const TopoDS_Shape& shapeToAdd)
 {
     vtkNew<IVtkTools_ShapeDataSource> occSourceOne;
     occSourceOne->SetShape(new IVtkOCC_Shape(shapeToAdd));
@@ -119,16 +137,740 @@ void _addShape(const TopoDS_Shape& shapeToAdd)
     ren->AddActor(actorOne);
 }
 
+void dumpArgumentsAndCorrectArguments(std::vector<std::vector<PARAM_INFO>>& paramInfo, std::vector<NodeExpression*>& args, const char* functionName){
+    
+    fprintf(stderr, "You invoked %s with incompatible arguments\n", functionName); 
+    fprintf(stderr, "Valid arguments are: \n");
 
-void _print(double num)
-{
-    fprintf(stdout, "%f\n", num);
+    for(int i = 0; i < paramInfo.size(); i++){
+        fprintf(stderr, "(");
+       
+        for(int j = 0; j < paramInfo[i].size(); j++){
+            fprintf(stderr, "%s: %s, ", 
+                paramInfo[i][j].name.c_str(),
+                nodeTypeToString(paramInfo[i][j].type)
+            );
+        }
+
+        fprintf(stderr, ")\n");
+    }
+
+    fprintf(stderr, "You invoked with: \n");
+
+    fprintf(stderr, "(");
+    for(int i = 0; i < args.size(); i++){
+        fprintf(stderr, "%s",  nodeTypeToString(args[i]->nodeType));
+    }
+    fprintf(stderr, ") ... exiting ...\n");
+    exit(1);
 }
 
 
-NodeShape* _makeSphere(Standard_Real radius)
+
+int validateFunctionArguments(std::vector<std::vector<PARAM_INFO>>& paramInfo, std::vector<NodeExpression*>& args){
+
+    for(int i = 0; i < paramInfo.size(); i++){
+        if(args.size() != paramInfo[i].size()){
+            continue;
+        }
+
+        int contFlag = 0;
+
+        for(int j = 0; j < paramInfo[i].size(); j++){
+            if(args[j]->nodeType != paramInfo[i][j].type){
+               contFlag = 1; 
+            }
+        }
+
+        if (contFlag) {
+            continue;
+        }
+
+        return i;
+    }
+
+    return -1;
+}
+
+
+BRepPrimAPI_MakeSphere* _validateSphere(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakeSphere* sphere = new BRepPrimAPI_MakeSphere(radius);
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "radius"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "angle"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "angleOne"}, {DOUBLE, "angleTwo"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "angleOne"}, {DOUBLE, "angleTwo"}, {DOUBLE, "angle"} },
+    };
+
+
+
+    if((args.size() < 1) && (args.size() > 4)){
+        fprintf(stderr, "Sphere can only be invoked with 1-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            return new BRepPrimAPI_MakeSphere(arg1->value);
+        }
+        case 1: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            return new BRepPrimAPI_MakeSphere(arg1->value, arg2->value);
+        }
+        case 2: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            if(!((0 < (arg3->value - arg2->value)) && ((arg3->value - arg2->value) < 2*3.14))) {
+
+                fprintf(stderr, 
+                    "The angles angle1, angle2 must follow the relation 0 < a2 - a1 < 2*PI, (%lf - %lf = %lf) ... exiting ...\n",
+                    arg3->value, arg2->value,
+                    (arg3->value - arg2->value)
+                );
+                exit(1);
+            }
+
+            return new BRepPrimAPI_MakeSphere(arg1->value, arg2->value, arg3->value);
+        }
+        case 3: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+            NodeNumber* arg4 = static_cast<NodeNumber*>(args[3]); 
+            return new BRepPrimAPI_MakeSphere(arg1->value, arg2->value, arg3->value, arg4->value);
+        }
+
+        default: {
+            fprintf(stderr, "Hit the default case in _validateSphere ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+BRepPrimAPI_MakeCone* _validateCone(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "radius1"}, {DOUBLE, "radius2"}, {DOUBLE, "height"} },
+        { {DOUBLE, "radius1"}, {DOUBLE, "radius2"}, {DOUBLE, "height"}, {DOUBLE, "angle"} },
+    };
+
+
+
+    if((args.size() < 3) && (args.size() > 4)){
+        fprintf(stderr, "Cone can only be invoked with 3-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            if(arg1 == arg2){
+                fprintf(stderr, "Cone top radius cannot equal bottom radius you passed (%lf, %lf)", arg1->value, arg2->value);
+                exit(1);
+            }
+
+
+            return new BRepPrimAPI_MakeCone(arg1->value, arg2->value, arg3->value);
+        }
+        case 1: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+            NodeNumber* arg4 = static_cast<NodeNumber*>(args[3]); 
+
+            if(arg1 == arg2){
+                fprintf(stderr, "Cone top radius cannot equal bottom radius you passed (%lf, %lf)", arg1->value, arg2->value);
+                exit(1);
+            }
+
+            return new BRepPrimAPI_MakeCone(arg1->value, arg2->value, arg3->value, arg4->value);
+        }
+        default: {
+            fprintf(stderr, "Hit the default case in _validateCone ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+BRepPrimAPI_MakeCylinder* _validateCylinder(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "radius"}, {DOUBLE, "height"} },
+        { {DOUBLE, "radius"}, {DOUBLE, "height"}, {DOUBLE, "angle"} },
+    };
+
+
+    if((args.size() < 2) && (args.size() > 3)){
+        fprintf(stderr, "Cone can only be invoked with 2-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+
+            return new BRepPrimAPI_MakeCylinder(arg1->value, arg2->value);
+        }
+        case 1: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            return new BRepPrimAPI_MakeCylinder(arg1->value, arg2->value, arg3->value);
+        }
+        default: {
+            fprintf(stderr, "Hit the default case in _validateCylinder ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+BRepPrimAPI_MakeBox* _validateBox(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {DOUBLE, "dx"}, {DOUBLE, "dy"}, {DOUBLE, "dz"} },
+        { {POINT, "point"}, {DOUBLE, "dx"}, {DOUBLE, "dy"}, {DOUBLE, "dz"} },
+        { {POINT, "point1"}, {POINT, "point2"} },
+    };
+
+
+    if((args.size() < 3) && (args.size() > 4)){
+        fprintf(stderr, "Box can only be invoked with 3-4 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
+    }
+
+
+    switch(argIndex){
+        case 0: {
+            NodeNumber* arg1 = static_cast<NodeNumber*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+
+            return new BRepPrimAPI_MakeBox(arg1->value, arg2->value, arg3->value);
+        }
+        case 1: {
+            NodePoint* arg1 = static_cast<NodePoint*>(args[0]); 
+            NodeNumber* arg2 = static_cast<NodeNumber*>(args[1]); 
+            NodeNumber* arg3 = static_cast<NodeNumber*>(args[2]); 
+            NodeNumber* arg4 = static_cast<NodeNumber*>(args[3]); 
+
+            return new BRepPrimAPI_MakeBox(*arg1->point, arg2->value, arg3->value, arg4->value);
+        }
+        case 2: {
+            NodePoint* arg1 = static_cast<NodePoint*>(args[0]); 
+            NodePoint* arg2 = static_cast<NodePoint*>(args[1]); 
+
+            return new BRepPrimAPI_MakeBox(*arg1->point, *arg2->point);
+        }
+        default: {
+            fprintf(stderr, "Hit the default case in _validateCylinder ... this should not be possible \n");
+            return NULL;
+        }
+    }
+}
+
+
+BRepAlgoAPI_BooleanOperation* _validateBoolean(std::vector<NodeExpression*>& args, OCCT_BOOLEAN booleanType)
+{
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {SHAPE, "lhs"}, {SHAPE, "rhs"} },
+    };
+
+    if( args.size() != 2 ){
+        fprintf(stderr, "Boolean operations can only be invoked with 2 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int index = validateFunctionArguments(validParams, args);
+
+    if(index == -1){
+        switch(booleanType){
+            case FUSE: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "FUSE");
+            }
+            case DIFFERENCE: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "difference");
+            }
+            case INTERSECTION: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "intersection");
+            }
+        }
+    }
+
+
+    NodeShape* lhs = static_cast<NodeShape*>(args[0]);
+    NodeShape* rhs = static_cast<NodeShape*>(args[1]);
+
+    switch(booleanType){
+        case FUSE: {
+            return new BRepAlgoAPI_Fuse(*lhs->shape, *rhs->shape);
+        }
+        case DIFFERENCE: {
+            return new BRepAlgoAPI_Cut(*lhs->shape, *rhs->shape);
+        }
+        case INTERSECTION: {
+            return new BRepAlgoAPI_Common(*lhs->shape, *rhs->shape);
+        }
+    }
+
+    fprintf(stderr, "Hit out of flow validate boolean\n");
+    exit(1);
+}
+
+
+BRepBuilderAPI_ModifyShape* _validateRotateTranslate(std::vector<NodeExpression*>& args, OCCT_TRANSFORMATION transformation, OCCT_SHAPE& shapeType){
+    std::vector<std::vector<PARAM_INFO>> validParams {
+        { {SHAPE, "shape"}, {ARRAY, "rotation"} },
+    };
+
+    if( args.size() != 2 ){
+        fprintf(stderr, "Rotation operation can only be invoked with 2 arguments you passed %ld ... exiting ...", args.size());
+        exit(1);
+    }
+
+    int index = validateFunctionArguments(validParams, args);
+    if(index == -1){
+        switch(transformation){
+            case ROTATION: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "rotate");
+            }
+            case TRANSLATION: {
+                dumpArgumentsAndCorrectArguments(validParams, args, "translation");
+            }
+        }
+    }
+
+
+    switch(index){
+        case 0:{
+            int length = getExpressionLength(static_cast<NodeArray*>(args[1])->array);
+            
+            if( (length < 1) || (length > 3) ){
+                fprintf(stderr, "Valid for arrays for Rotate or Translate must have length 1-3, you gave array of size %d\n", length);
+                exit(1);
+            }
+            else if(!checkAllExprTypes(static_cast<NodeArray*>(args[1])->array, DOUBLE)){
+                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
+            }
+            switch(transformation){
+                case ROTATION: {
+
+                    NodeShape* one = static_cast<NodeShape*>(args[0]);
+                    NodeArray* two = static_cast<NodeArray*>(args[1]);
+
+
+                    double numOne = static_cast<NodeNumber*>(two->array)->value;
+                    double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+                    double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+                    gp_Trsf xRotation, yRotation, zRotation; 
+                    xRotation.SetRotation(gp::OX(), numOne);
+                    yRotation.SetRotation(gp::OY(), numTwo);
+                    zRotation.SetRotation(gp::OZ(), numThree);
+
+
+                    shapeType = one->shapeType;
+                    return new BRepBuilderAPI_Transform(
+                        BRepBuilderAPI_Transform(
+                            BRepBuilderAPI_Transform(
+                                *one->shape,
+                                xRotation
+                            ).Shape(),
+                            yRotation
+                        ),
+                        zRotation
+                    );
+                }
+                case TRANSLATION: {
+                    NodeShape* one = static_cast<NodeShape*>(args[0]);
+                    NodeArray* two = static_cast<NodeArray*>(args[1]);
+
+
+                    double x = static_cast<NodeNumber*>(two->array)->value;
+                    double y = static_cast<NodeNumber*>(two->array->nextExpr)->value;
+                    double z = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
+
+
+                    gp_Trsf transformation;
+                    transformation.SetTranslation(gp_Vec(x, y, z));
+
+                   return new BRepBuilderAPI_Transform(*one->shape, transformation);
+                }
+            }
+        }
+    }
+}
+
+
+void _print(std::vector<NodeExpression*>& args)
+{
+    if(args.size() != 1){
+        fprintf(stderr, "print only takes 1 argument you passed %ld\n", args.size());
+        exit(1);
+    }
+    else if(!args[0]){
+        fprintf(stderr, "print was given a null argument ... exiting ... \n");
+        exit(1);
+    }
+
+    switch(args[0]->nodeType){
+        case DOUBLE:{
+            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
+            fprintf(stdout, "%lf\n", numNode->value);
+            return;
+        }
+        case EDGE: {
+            NodeEdge* edgeNode = static_cast<NodeEdge*>(args[0]);        
+            switch(edgeNode->edgeType){
+                case type_edge: {
+                    edgeNode->edge->DumpJson(std::cout);
+                    return;
+                }
+                case type_wire: {
+                    edgeNode->wireShape->DumpJson(std::cout);
+                    return;
+                }
+                default: {
+                    fprintf(stderr, "Unable to print edge exiting .. \n"); 
+                    exit(1);
+                }
+            }
+        }
+        case POINT: {
+            NodePoint* pointNode = static_cast<NodePoint*>(args[0]);
+            fprintf(stderr, "Point {X: %lf, Y: %lf, Z: %lf}\n", pointNode->point->X(), pointNode->point->Y(), pointNode->point->Y());
+            return;
+
+        }
+        case SHAPE: {
+            NodeShape* shapeNode = static_cast<NodeShape*>(args[0]);
+            shapeNode->shape->DumpJson(std::cout);
+            return;
+        }
+        default: {
+            fprintf(stderr, "You can only print numbers, points, edges, and shapes\n");
+            exit(1);
+        }
+    }
+    return;
+}
+
+
+gp_Pnt* _validatePoint(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> paramInfo = {
+        { {ARRAY, "point"} }
+    };
+
+    int index = validateFunctionArguments(paramInfo, args);
+
+    if(index == -1){
+        dumpArgumentsAndCorrectArguments(paramInfo, args, "point");
+    }
+
+
+    int length = getExpressionLength(static_cast<NodeArray*>(args[0])->array);
+
+
+    double x, y ,z;
+
+    switch(index){
+        case 0: {
+            if( length != 3 ){
+                fprintf(stderr, "Array argument to point must be length 3 ... exiting ...\n");
+            }
+            else if(!checkAllExprTypes(static_cast<NodeArray*>(args[0])->array, DOUBLE)){
+                fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
+            }
+
+
+            NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
+            x = static_cast<NodeNumber*>(arrNode->array)->value;
+            y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
+            z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
+            break;
+        }
+        default :{
+            fprintf(stderr, "Hit default case in validating point ... exiting ... \n");
+            exit(1);
+        }
+    }
+
+    return new gp_Pnt(x, y, z);
+}
+
+
+BRepBuilderAPI_MakeEdge* _validateEdge(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> paramInfo = {
+        { {POINT, "point1"}, {POINT, "point2"} },
+        { {ARRAY, "point1"}, {ARRAY, "point2"} }
+    };
+
+    int index = validateFunctionArguments(paramInfo, args);
+
+
+    if(index == -1){
+        dumpArgumentsAndCorrectArguments(paramInfo, args, "edge") ;
+    }
+
+
+    GC_MakeSegment* mkSeg = NULL;
+    NodePoint* point1 = NULL;
+    NodePoint* point2 = NULL;
+
+    switch(index){
+        case 0: {
+            point1 = static_cast<NodePoint*>(args[0]);
+            point2 = static_cast<NodePoint*>(args[1]);
+            mkSeg = new GC_MakeSegment(*point1->point, *point2->point);
+            break;
+        }
+        case 1: {
+            NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
+            NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
+
+            if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
+                fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
+                fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+
+            std::vector<NodeExpression*> first {arrOne};
+            std::vector<NodeExpression*> second {arrTwo};
+
+            point1 = _makePoint(first);
+            point2 = _makePoint(second);
+            mkSeg = new GC_MakeSegment(*point1->point, *point2->point);
+            break;
+        }
+        default: {
+            fprintf(stderr, "Hit default case in validate edge exiting ...");
+            exit(1);
+        }
+    }
+
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkSeg->IsDone()){
+        aSegment = mkSeg->Value();
+    }
+    else {
+        fprintf(stderr, "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n", point1->point->X(), point1->point->Y(), point1->point->Z(), point2->point->X(), point2->point->Y(), point2->point->Z());
+        exit(1);
+    }
+
+
+    delete mkSeg;
+    return new BRepBuilderAPI_MakeEdge(aSegment);    
+}
+
+
+BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> paramInfo = {
+        { {POINT, "point1"}, {POINT, "point2"}, {POINT, "point3"} },
+        { {ARRAY, "point1"}, {ARRAY, "point2"}, {ARRAY, "point3"}}
+    };
+
+    int index = validateFunctionArguments(paramInfo, args);
+    if(index == -1){
+        dumpArgumentsAndCorrectArguments(paramInfo, args, "arc");
+    }
+
+    
+    GC_MakeArcOfCircle* mkArc = NULL;
+    NodePoint* p1 = NULL;
+    NodePoint* p2 = NULL;
+    NodePoint* p3 = NULL;
+
+    switch(index){
+        case 0: {
+            p1 = static_cast<NodePoint*>(args[0]);
+            p2 = static_cast<NodePoint*>(args[1]);
+            p3 = static_cast<NodePoint*>(args[2]);
+
+            mkArc = new GC_MakeArcOfCircle(*p1->point, *p2->point, *p3->point);
+            break;
+        }
+        case 1: {
+            NodeArray* arrOne = static_cast<NodeArray*>(args[0]);
+            NodeArray* arrTwo = static_cast<NodeArray*>(args[1]);
+            NodeArray* arrThree = static_cast<NodeArray*>(args[2]);
+
+            if(!checkAllExprTypes(arrOne->array, DOUBLE) && (getExpressionLength(arrOne->array) != 3)){
+                fprintf(stderr, "First point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            if(!checkAllExprTypes(arrTwo->array, DOUBLE) && (getExpressionLength(arrTwo->array) != 3)){
+                fprintf(stderr, "Second point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            if(!checkAllExprTypes(arrThree->array, DOUBLE) && (getExpressionLength(arrThree->array) != 3)){
+                fprintf(stderr, "Thrid point of edge must be length 3 and must be all double\n");
+                exit(1);
+            }
+            std::vector<NodeExpression*> first {arrOne};
+            std::vector<NodeExpression*> second {arrTwo};
+            std::vector<NodeExpression*> thrid {arrThree};
+
+            p1 = _makePoint(first);
+            p2 = _makePoint(second);
+            p3 = _makePoint(thrid);
+
+            mkArc = new GC_MakeArcOfCircle(*p1->point, *p2->point, *p3->point);
+            break;
+        }
+        default: {
+            fprintf(stderr, "When validating arc hit default case exiting ... \n");
+            exit(1);
+        }
+    }
+
+    Handle(Geom_TrimmedCurve) aSegment;
+    if(mkArc->IsDone()){
+        aSegment = mkArc->Value();
+    }
+    else {
+        fprintf(stderr,
+            "Unable to make edge between points p1 {x: %f, y: %f, z: %f} and p3 {x: %f, y: %f, z: %f} that cross p2 {x: %f, y: %f, z: %f} ... exiting ...\n",
+            p1->point->X(), p1->point->Y(), p1->point->Z(),
+            p3->point->X(), p3->point->Y(), p3->point->Z(),
+            p2->point->X(), p2->point->Y(), p2->point->Z()
+        );
+        exit(1);
+    }
+
+    delete mkArc;
+    return new BRepBuilderAPI_MakeEdge(aSegment);    
+}
+
+
+
+BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*> args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {EDGE, "EDGE1"}, {EDGE, "EDGE2"} },
+        { {EDGE, "EDGE1"}, {EDGE, "EDGE2"}, {EDGE, "EDGE3"} }
+    };
+
+    
+    int argIndex = validateFunctionArguments(param, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "connect");
+    }
+
+    BRepBuilderAPI_MakeWire* myWire = new BRepBuilderAPI_MakeWire();
+
+    for(int index = 0; index < param[argIndex].size(); index ++){
+        NodeEdge* myEdge = static_cast<NodeEdge*>(args[index]);
+
+        switch(myEdge->edgeType){
+            case type_edge: {
+                myWire->Add(*myEdge->edge);
+                break;
+            }
+            case type_wire: {
+                myWire->Add(*myEdge->brepWire);
+                break;
+            }
+            case type_error: {
+                fprintf(stderr, "Trying to connect a type_error wire\n"); 
+                exit(1);
+            }
+        }
+    }
+
+    if(myWire->Error() != BRepBuilderAPI_WireDone){
+        fprintf(stderr, "When connecting edges erorr occured %s ... exiting ... ", wireContructionError(myWire->Error()));
+        exit(1);
+    }
+
+    return myWire; 
+}
+
+
+void _validateMirror(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {EDGE, "EDGE"} },
+        { {SHAPE, "SHAPE"} }
+    };
+
+    
+    int paramIndex = validateFunctionArguments(param, args);
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "mirror");
+    }
+}
+
+
+BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*> args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {EDGE, "EDGE"} },
+    };
+
+    int paramIndex = validateFunctionArguments(param, args);
+
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "makeFace");
+    }
+
+    NodeEdge* myEdge = static_cast<NodeEdge*>(args[0]);
+    if(myEdge->brepEdge && myEdge->edge){
+        TopoDS_Wire wire = TopoDS::Wire(*myEdge->edge);
+
+        return new BRepBuilderAPI_MakeFace(wire);
+    }
+    else if(myEdge->brepWire && myEdge->wireShape){
+        return new BRepBuilderAPI_MakeFace(*myEdge->wireShape);
+    }
+
+    fprintf(stderr, "Unable to create face from edges\n");
+    exit(1);
+}
+
+
+NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
+{
+    BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
     const TopoDS_Shape* shape = &sphere->Shape();
 
     NodeShape* me = newNodeShape(SPHERE);
@@ -138,35 +880,10 @@ NodeShape* _makeSphere(Standard_Real radius)
     return me;
 }
 
-NodeShape* _makeCylinder(Standard_Real R1, Standard_Real H)
+
+NodeShape* _makeCone(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakeCylinder* cyl = new BRepPrimAPI_MakeCylinder(R1, H);
-    const TopoDS_Shape* shape = &cyl->Shape();
-
-    NodeShape* me = newNodeShape(CYLINDER);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cyl);
-    me->shape = shape;
-
-    return me;
-}
-
-
-NodeShape* _makeBox(Standard_Real R1, Standard_Real R2, Standard_Real R3)
-{
-    BRepPrimAPI_MakeBox* box = new BRepPrimAPI_MakeBox(R1, R2, R3);
-    const TopoDS_Shape* shape = &box->Shape();
-
-    NodeShape* me = newNodeShape(BOX);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(box);
-    me->shape = shape;
-
-    return me;
-}
-
-
-NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
-{
-    BRepPrimAPI_MakeCone* cone = new BRepPrimAPI_MakeCone(R1, R2, H);
+    BRepPrimAPI_MakeCone* cone = _validateCone(args);
     const TopoDS_Shape* shape = &cone->Shape();
 
     NodeShape* me = newNodeShape(CONE);
@@ -177,9 +894,54 @@ NodeShape* _makeCone(Standard_Real R1, Standard_Real R2, Standard_Real H)
 }
 
 
-NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+NodeShape* _makeCylinder(std::vector<NodeExpression*>& args)
 {
-    BRepAlgoAPI_Fuse* fuse = new BRepAlgoAPI_Fuse(lhs, rhs);
+    BRepPrimAPI_MakeCylinder* cyl = _validateCylinder(args);
+    const TopoDS_Shape* shape = &cyl->Shape();
+
+    NodeShape* me = newNodeShape(CYLINDER);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cyl);
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeBox(std::vector<NodeExpression*>& args)
+{
+    BRepPrimAPI_MakeBox* box = _validateBox(args);
+    const TopoDS_Shape* shape = &box->Shape();
+
+    NodeShape* me = newNodeShape(BOX);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(box);
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeExpression* _addShape(std::vector<NodeExpression*>& args)
+{
+    if(args.size() != 1){
+        fprintf(stderr, "You can only pass 1 argument to addShape\n");
+            }
+    else if(!args[0]){
+        fprintf(stderr, "First argument to addShape is NULL\n");
+    }
+    else if(args[0]->nodeType != SHAPE){
+        fprintf(stderr, "Argument to addShape must be type shape you passed %s\n", nodeTypeToString(args[0]->nodeType));
+    }
+
+
+    NodeShape* sphere = static_cast<NodeShape*>(args[0]);
+    _addShapeVtk(*sphere->shape);
+    return NULL;
+}
+
+
+NodeShape* _makeUnion(std::vector<NodeExpression*>& args)
+{
+    BRepAlgoAPI_Fuse* fuse = static_cast<BRepAlgoAPI_Fuse*>(_validateBoolean(args, FUSE));
     const TopoDS_Shape* shape = &fuse->Shape();
 
     if(shape->IsNull()){
@@ -194,9 +956,9 @@ NodeShape* _makeUnion(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
     return me;
 }
 
-NodeShape* _makeDifference(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+NodeShape* _makeDifference(std::vector<NodeExpression*>& args)
 {
-    BRepAlgoAPI_Cut* cut = new BRepAlgoAPI_Cut(lhs, rhs);
+    BRepAlgoAPI_Cut* cut = static_cast<BRepAlgoAPI_Cut*>(_validateBoolean(args, DIFFERENCE));
     const TopoDS_Shape* shape = &cut->Shape();
 
     if(shape->IsNull()){
@@ -212,9 +974,9 @@ NodeShape* _makeDifference(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
 }
 
 
-NodeShape* _makeIntersection(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
+NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
 {
-    BRepAlgoAPI_Common* common = new BRepAlgoAPI_Common(lhs, rhs);
+    BRepAlgoAPI_Common* common = static_cast<BRepAlgoAPI_Common*>(_validateBoolean(args, INTERSECTION));
     const TopoDS_Shape* shape = &common->Shape();
 
     if(shape->IsNull()){
@@ -230,13 +992,25 @@ NodeShape* _makeIntersection(const TopoDS_Shape& lhs, const TopoDS_Shape& rhs)
 }
 
 
-NodeShape* _rotate(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shapeType,  gp_Ax1 xAxis)
+NodePoint* _makePoint(std::vector<NodeExpression*>& args)
 {
-    gp_Trsf transformation; 
-    transformation.SetRotation(xAxis, angle);
+    gp_Pnt* point = _validatePoint(args);
 
-    BRepBuilderAPI_Transform* rotation = new BRepBuilderAPI_Transform(currShape, transformation);
-    const TopoDS_Shape* shape = &rotation->Shape();
+    NodePoint* pointNode = newNodePoint();
+    pointNode->point = point;
+
+    return pointNode;
+}
+
+
+
+NodeShape* _rotate(std::vector<NodeExpression*>& args)
+{
+    OCCT_SHAPE shapeType;
+
+    BRepBuilderAPI_Transform* rotations = static_cast<BRepBuilderAPI_Transform*>(_validateRotateTranslate(args, ROTATION, shapeType));
+
+    const TopoDS_Shape* shape = &rotations->Shape();
 
     if(shape->IsNull()){
         fprintf(stderr, "Fuse is null exiting...\n");
@@ -244,21 +1018,19 @@ NodeShape* _rotate(const TopoDS_Shape& currShape, double angle, OCCT_SHAPE shape
     }
 
     NodeShape* me = newNodeShape(shapeType);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(rotation);
+    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(rotations);
     me->shape = shape;
 
     return me;
-
 }
 
-NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double z, OCCT_SHAPE shapeType)
+NodeShape* _translate(std::vector<NodeExpression*>& args)
 {
-    gp_Vec vector = gp_Vec(x, y, z);  
-    gp_Trsf transformation;
-    transformation.SetTranslation(vector);
 
+    OCCT_SHAPE shapeType;
 
-    BRepBuilderAPI_Transform* translation = new BRepBuilderAPI_Transform(currShape, transformation);
+    BRepBuilderAPI_Transform* translation = static_cast<BRepBuilderAPI_Transform*>(_validateRotateTranslate(args, TRANSLATION, shapeType));
+
     const TopoDS_Shape* shape = &translation->Shape();
 
     if(shape->IsNull()){
@@ -270,15 +1042,12 @@ NodeShape* _translate(const TopoDS_Shape& currShape, double x, double y, double 
     me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(translation);
     me->shape = shape;
     return me;
-
-
-    return me;
 }
 
 
-NodeShape* _makeFace(const TopoDS_Wire* wire)
+NodeShape* _makeFace(std::vector<NodeExpression*> args)
 {
-    BRepBuilderAPI_MakeFace* face = new BRepBuilderAPI_MakeFace(*wire);
+    BRepBuilderAPI_MakeFace* face = _validateFace(args);
 
 
     NodeShape* me = newNodeShape(FACE);
@@ -289,34 +1058,11 @@ NodeShape* _makeFace(const TopoDS_Wire* wire)
 }
 
 
-NodePoint* _makePoint(double x, double y, double z)
+
+NodeEdge* _makeEdge(std::vector<NodeExpression*>& args)
+//NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
 {
-    gp_Pnt* point = new gp_Pnt(x, y, z);
-
-    NodePoint* pointNode = newNodePoint();
-    pointNode->point = point;
-
-    return pointNode;
-}
-
-
-NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
-{
-    GC_MakeSegment mkSeg(*p1->point, *p2->point);
-    Handle(Geom_TrimmedCurve) aSegment;
-    if(mkSeg.IsDone()){
-        aSegment = mkSeg.Value();
-    }
-    else {
-        fprintf(stderr,
-            "Unable to make edge between points {x: %f, y: %f, z: %f} and {x: %f, y: %f, z: %f} ... exiting ...\n",
-            p1->point->X(), p1->point->Y(), p1->point->Z(),
-            p2->point->X(), p2->point->Y(), p2->point->Z()
-        );
-        exit(1);
-    }
-
-    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    BRepBuilderAPI_MakeEdge* edge = _validateEdge(args);    
     const TopoDS_Edge* result = &edge->Edge();
 
     NodeEdge* me = newNodeEdge();
@@ -331,25 +1077,9 @@ NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
 }
 
 
-NodeEdge* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
+NodeEdge* _makeArc(std::vector<NodeExpression*>& args)
 {
-    GC_MakeArcOfCircle mkArc(*p1->point, *p2->point, *p3->point);
-    Handle(Geom_TrimmedCurve) aSegment;
-    if(mkArc.IsDone()){
-        aSegment = mkArc.Value();
-    }
-    else {
-        fprintf(stderr,
-            "Unable to make edge between points p1 {x: %f, y: %f, z: %f} and p3 {x: %f, y: %f, z: %f} that cross p2 {x: %f, y: %f, z: %f} ... exiting ...\n",
-            p1->point->X(), p1->point->Y(), p1->point->Z(),
-            p3->point->X(), p3->point->Y(), p3->point->Z(),
-            p2->point->X(), p2->point->Y(), p2->point->Z()
-        );
-        exit(1);
-    }
-
-
-    BRepBuilderAPI_MakeEdge* edge = new BRepBuilderAPI_MakeEdge(aSegment);    
+    BRepBuilderAPI_MakeEdge* edge = _validateArc(args);    
     const TopoDS_Edge* result = &edge->Edge();
 
     NodeEdge* me = newNodeEdge();
@@ -364,9 +1094,10 @@ NodeEdge* _makeArc(NodePoint* p1, NodePoint* p2, NodePoint* p3)
 }
 
 
-NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, const TopoDS_Edge* edge3)
+NodeEdge* _connect(std::vector<NodeExpression*> args)
 {
-    BRepBuilderAPI_MakeWire* brepWire = new BRepBuilderAPI_MakeWire(*edge1, *edge2, *edge3);
+
+    BRepBuilderAPI_MakeWire* brepWire = _validateConnect(args);
 
     const TopoDS_Wire* wireShape = &brepWire->Wire();
 
@@ -383,77 +1114,96 @@ NodeEdge* _connect(const TopoDS_Edge* edge1, const TopoDS_Edge* const edge2, con
 }
 
 
-NodeEdge* _connect(const TopoDS_Wire* wire1, const TopoDS_Wire* wire2){
-    BRepBuilderAPI_MakeWire* combinedWire = new BRepBuilderAPI_MakeWire();
-    combinedWire->Add(*wire1);
-    combinedWire->Add(*wire2);
-
-    
-
-    NodeEdge* me = newNodeEdge();
-    me->edge = NULL;
-    me->brepEdge = NULL;
-    me->edgeType = type_wire;
-
-    me->brepWire = combinedWire;
-    me->wireShape = &combinedWire->Wire();
-    return me;    
-
-}
-
 
 /*we need to pass some info on what type of shape we are. For now just assume we passed a wire*/
 /*Also for now we just assume we can only mirror on the X axis */
 
-NodeEdge* _mirror(const TopoDS_Wire* shape) {
-    gp_Ax1 axis = gp::OX();
-    gp_Trsf aTrsf;
-    aTrsf.SetMirror(axis);
+NodeExpression* _mirror(std::vector<NodeExpression*>& args) {
 
+    _validateMirror(args);
 
-    TopoDS_Wire wire = TopoDS::Wire(BRepBuilderAPI_Transform(*shape, aTrsf).Shape());
-
-
-
-    NodeEdge* me = newNodeEdge();
-    me->edge = NULL;
-    me->brepEdge = NULL;
-    me->edgeType = type_wire;
-
-    me->brepWire = new BRepBuilderAPI_MakeWire(wire);
-    me->wireShape = &me->brepWire->Wire();
     
-    return me;
+    gp_Trsf aTrsf;
+    aTrsf.SetMirror(gp::OX());
+
+
+    switch(args[0]->nodeType){
+        case EDGE:{
+            NodeEdge* myEdge = static_cast<NodeEdge*>(args[0]);
+            TopoDS_Wire wire;
+
+
+            if(myEdge->edge){
+                wire = TopoDS::Wire(BRepBuilderAPI_Transform(*myEdge->edge, aTrsf).Shape());
+            }
+            else if(myEdge->wireShape){
+                wire = TopoDS::Wire(BRepBuilderAPI_Transform(*myEdge->wireShape, aTrsf).Shape());
+            }
+            else {
+                fprintf(stderr, "Unable to mirror shape ... exiting ..\n");
+                exit(1);
+            }
+
+            NodeEdge* me = newNodeEdge();
+            me->edge = NULL;
+            me->brepEdge = NULL;
+            me->edgeType = type_wire;
+
+            me->brepWire = new BRepBuilderAPI_MakeWire(wire);
+            me->wireShape = &me->brepWire->Wire();
+            
+            return me;
+        }
+        case SHAPE: {
+            NodeShape* myShape = static_cast<NodeShape*>(args[0]);
+            BRepBuilderAPI_Transform transform(*myShape->shape, aTrsf);
+            
+            BRepPrimAPI_MakeSphere* sphere = _validateSphere(args);
+            const TopoDS_Shape* shape = &sphere->Shape();
+
+            NodeShape* me = newNodeShape(SPHERE);
+            me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(sphere);
+            me->shape = shape;
+
+            return me;
+        }
+        default: {
+            fprintf(stderr, "Hit default case in mirroing shape exiting ...\n");
+            exit(1);
+        }
+    }
+
+
 }
 
 
-
 functionPtr knownFunctions[] {
-    {"sphere", makeSphere,  {.makeSphere = _makeSphere}},
-    {"cone", makeCone,  {.makeCone = _makeCone}},
-    {"cylinder", makeCylinder,  {.makeCylinder = _makeCylinder}},
-    {"box", makeBox,  {.makeBox = _makeBox}},
-
-    {"union", makeUnion,  {.makeUnion = _makeUnion}},
-    {"difference", makeDifference,  {.makeDifference = _makeDifference}},
-    {"intersection", makeIntersection,  {.makeIntersection = _makeIntersection}},
-    {"makeFace", makeFace,  {.makeFace = _makeFace}},
+    {"sphere", makeSphere},
+    {"cone", makeCone},
+    {"cylinder", makeCylinder},
+    {"box", makeBox},
 
 
+    {"union", makeUnion},
+    {"difference", makeDifference},
+    {"intersection", makeIntersection},
+    {"makeFace", makeFace},
 
-    {"rotate", doRotate,  {.rotate = _rotate}},
-    {"translate", doTranslate,  {.translate = _translate}},
-    {"mirror", doMirror, {.mirror = _mirror}},
+
+    {"rotate", doRotate},
+    {"translate", doTranslate},
+    {"mirror", doMirror},
     
 
-    {"dot", makePoint, {.makePoint = _makePoint}},
-    {"line", makeEdge, {.makeEdge = _makeEdge}},
-    {"arc", makeArc, {.makeArc = _makeArc}},
-    {"connect", connect, {.connect = _connect}},
+    {"dot", makePoint},
+    {"line", makeEdge},
+    {"arc", makeArc},
+
+    {"connect", connect},
 
 
-    {"print",  printDouble, {.println =  _print}},
-    {"addShape", addShape,  {.addShapeToVTK = _addShape}}
+    {"print",  printDouble},
+    {"addShape", addShape}
 };
 
 
@@ -471,213 +1221,60 @@ functionPtr* lookUpFunc(const char * funcName)
 }
 
 
-//TODO: WHEN WE CALL A FUNCTION RIGHT BEFORE WE CALL IT WE NEED 
-//      TO VERIFY THAT THE CORRECT ARGUMENTS WHERE PASSED IN
 NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args)
 {
     switch(functionPtr->functionType){
         case printDouble: {
-            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
-            functionPtr->func.println(numNode->value);
+            _print(args);
             return NULL;
         }
         case makeSphere: {
-            NodeNumber* numNode = static_cast<NodeNumber*>(args[0]);
-            return functionPtr->func.makeSphere(numNode->value);
+            return _makeSphere(args);
         }
         case makeCone: {
-            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-            NodeNumber* three = static_cast<NodeNumber*>(args[2]);
-
-            if(one == two){
-                fprintf(stderr, "When creating cone top and bottom radius cannot be equal to each other");
-                exit(1);
-            }
-
-            NodeExpression* result = functionPtr->func.makeCone(
-                one->value,
-                two->value,
-                three->value
-            );
-            return result;
+            return _makeCone(args);
         }
         case makeCylinder: {
-            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-
-            return functionPtr->func.makeCylinder(one->value, two->value);
-        }
-        case addShape: {
-
-            if(args.size() != 1){
-                fprintf(stderr, "You can only pass 1 argument to addShape\n");
-            }
-            else if(!args[0]){
-                fprintf(stderr, "First argument to addShape is NULL\n");
-            }
-            else if(args[0]->nodeType != SHAPE){
-                fprintf(stderr, "Argument to addShape must be type shape you passed %s\n", nodeTypeToString(args[0]->nodeType));
-            }
-
-
-            NodeShape* sphere = static_cast<NodeShape*>(args[0]);
-            _addShape(*sphere->shape);
-            return NULL;
-        }
-        case makeUnion: {
-            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-            return functionPtr->func.makeUnion(*lhs->shape, *rhs->shape);
-        }
-        case makeDifference: {
-            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-            return functionPtr->func.makeDifference(*lhs->shape, *rhs->shape);
-        }
-        case makeIntersection: {
-            NodeShape* lhs = static_cast<NodeShape*>(args[0]);
-            NodeShape* rhs = static_cast<NodeShape*>(args[1]);
-
-            return functionPtr->func.makeIntersection(*lhs->shape, *rhs->shape);
+            return _makeCylinder(args);
         }
         case makeBox: {
-            NodeNumber* one = static_cast<NodeNumber*>(args[0]);
-            NodeNumber* two = static_cast<NodeNumber*>(args[1]);
-            NodeNumber* three = static_cast<NodeNumber*>(args[2]);
-
-            return functionPtr->func.makeBox(one->value, two->value, three->value);
+            return _makeBox(args);
+        }
+        case addShape: {
+            return _addShape(args);
+        }
+        case makeUnion: {
+            return _makeUnion(args);
+        }
+        case makeDifference: {
+            return _makeDifference(args);
+        }
+        case makeIntersection: {
+            return _makeIntersection(args);
         }
         case doRotate: {
-            NodeShape* one = static_cast<NodeShape*>(args[0]);
-            NodeArray* two = static_cast<NodeArray*>(args[1]);
-
-            int length = getExpressionLength(two->array);
-            if( length != 3 ){
-                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
-            }
-            else if(!checkAllExprTypes(two->array, DOUBLE)){
-                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
-            }
-
-            double numOne = static_cast<NodeNumber*>(two->array)->value;
-            double numTwo = static_cast<NodeNumber*>(two->array->nextExpr)->value;
-            double numThree = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
-
-
-            NodeShape* newShape = NULL;
-            newShape = functionPtr->func.rotate(*one->shape, numOne, one->shapeType, gp::OX());
-            newShape = functionPtr->func.rotate(*newShape->shape, numTwo, one->shapeType, gp::OY());
-            newShape = functionPtr->func.rotate(*newShape->shape, numThree, one->shapeType, gp::OZ());
-
-            return newShape;
+            return _rotate(args);
         }
         case doTranslate: {
-            NodeShape* one = static_cast<NodeShape*>(args[0]);
-            NodeArray* two = static_cast<NodeArray*>(args[1]);
-
-            int length = getExpressionLength(two->array);
-            if( length != 3 ){
-                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
-            }
-            else if(!checkAllExprTypes(two->array, DOUBLE)){
-                fprintf(stderr, "The elements for the array in rotation must all evaluate to a double ... exiting ...\n"); 
-            }
-
-            double xTrans = static_cast<NodeNumber*>(two->array)->value;
-            double yTrans = static_cast<NodeNumber*>(two->array->nextExpr)->value;
-            double zTrans = static_cast<NodeNumber*>(two->array->nextExpr->nextExpr)->value;
-
-            return functionPtr->func.translate(*one->shape, xTrans, yTrans, zTrans, one->shapeType);
+            return _translate(args); 
         }
         case makePoint: {
-            NodeArray* arrNode = static_cast<NodeArray*>(args[0]);
-
-            int length = getExpressionLength(arrNode->array);
-            if( length != 3 ){
-                fprintf(stderr, "Array argument to rotation must be length 3 ... exiting ...\n");
-            }
-            else if(!checkAllExprTypes(arrNode->array, DOUBLE)){
-                fprintf(stderr, "All values inside array for making point must be double ... exiting ...\n"); 
-            }
-            
-
-            double x = static_cast<NodeNumber*>(arrNode->array)->value;
-            double y = static_cast<NodeNumber*>(arrNode->array->nextExpr)->value;
-            double z = static_cast<NodeNumber*>(arrNode->array->nextExpr->nextExpr)->value;
-
-
-            return functionPtr->func.makePoint(x, y, z);
+            return _makePoint(args);
         }
         case makeEdge: {
-            if(args.size() != 2){
-                fprintf(stderr, "When creating line must provide 2 points");
-                exit(1);
-            }
-            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT){
-                fprintf(stderr, "When creating an edge it must be between two points p1: %s, p2: %s\n",
-                    nodeTypeToString(args[0]->nodeType),
-                    nodeTypeToString(args[1]->nodeType)
-                ); 
-                exit(1);
-            }
-
-            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
-            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
-
-            return functionPtr->func.makeEdge(p1, p2);
+            return _makeEdge(args);
         }
         case makeArc: {
-            if(args.size() != 3){
-                fprintf(stderr, "When creating arc must provide 3 points");
-                exit(1);
-            }
-            else if(args[0]->nodeType != POINT || args[1]->nodeType != POINT || args[2]->nodeType != POINT){
-                fprintf(stderr, "When creating an edge it must be between three points p: %s, p: %s, p: %s\n",
-                    nodeTypeToString(args[0]->nodeType),
-                    nodeTypeToString(args[1]->nodeType),
-                    nodeTypeToString(args[2]->nodeType)
-                ); 
-                exit(1);
-            }
-
-            NodePoint* p1 = static_cast<NodePoint*>(args[0]);
-            NodePoint* p2 = static_cast<NodePoint*>(args[1]);
-            NodePoint* p3 = static_cast<NodePoint*>(args[2]);
-
-            return functionPtr->func.makeArc(p1, p2, p3);
+            return _makeArc(args);
         }
         case connect:{
-            if(args.size() != 3 && args.size() != 2){
-                fprintf(stderr, "When connecting edges must connect only 2 or 3 at a time, you passed %ld\n", args.size());
-                exit(1);
-            }
-
-            if(args.size() == 3 ){
-                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
-                NodeEdge* e3 = static_cast<NodeEdge*>(args[2]);
-
-                return functionPtr->func.connect(e1->edge, e2->edge, e3->edge);
-            }
-            else {
-                NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-                NodeEdge* e2 = static_cast<NodeEdge*>(args[1]);
-
-                return _connect(e1->wireShape, e2->wireShape);
-            }
+            return _connect(args);
         }
         case doMirror:{
-            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-
-            return functionPtr->func.mirror(e1->wireShape);
+            return _mirror(args);
         }
         case makeFace: {
-            NodeEdge* e1 = static_cast<NodeEdge*>(args[0]);
-
-            return functionPtr->func.makeFace(e1->wireShape);
+            return _makeFace(args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 
