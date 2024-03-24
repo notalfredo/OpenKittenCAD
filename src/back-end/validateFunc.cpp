@@ -33,7 +33,7 @@ void dumpArgumentsAndCorrectArguments(
 
     fprintf(stderr, "(");
     for(int i = 0; i < args.size(); i++){
-        fprintf(stderr, "%s",  nodeTypeToString(args[i]->nodeType));
+        fprintf(stderr, "%s\t",  nodeTypeToString(args[i]->nodeType));
     }
     fprintf(stderr, ") ... exiting ...\n");
     exit(1);
@@ -688,7 +688,7 @@ BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*> args)
     exit(1);
 }
 
-BRepPrimAPI_MakePrism* _makePrism(std::vector<NodeExpression*>& args)
+BRepPrimAPI_MakePrism* _validateExtrude(std::vector<NodeExpression*>& args)
 {
     std::vector<std::vector<PARAM_INFO>> param {
         { {SHAPE, "shape"}, {ARRAY, "dir" } }
@@ -722,4 +722,136 @@ BRepPrimAPI_MakePrism* _makePrism(std::vector<NodeExpression*>& args)
 
     gp_Vec vector(num1->value, num2->value, num3->value); 
     return new BRepPrimAPI_MakePrism(*myShape->shape, vector);
+}
+
+
+BRepFilletAPI_MakeFillet* _validateFillet(std::vector<NodeExpression*>& args, OCCT_SHAPE& shapeType)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {SHAPE, "shape"}, {DOUBLE, "radius" } }
+    };
+
+    int paramIndex = validateFunctionArguments(param, args);
+
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "fillet");
+    }
+
+    switch(paramIndex){
+        case 0: {
+            NodeShape* myShape = static_cast<NodeShape*>(args[0]);
+            NodeNumber* r = static_cast<NodeNumber*>(args[1]);  
+
+            BRepFilletAPI_MakeFillet* myFillet = new BRepFilletAPI_MakeFillet(*myShape->shape);
+
+            for(TopExp_Explorer ex(*myShape->shape, TopAbs_EDGE); ex.More(); ex.Next()){
+                myFillet->Add(r->value, TopoDS::Edge(ex.Current()));
+            }
+            
+            shapeType = myShape->shapeType;
+            return myFillet;
+        }
+        default: {
+
+        }
+    }
+    
+    fprintf(stderr, "Unable to validate fillet exiting ... \n");
+    exit(1);
+}
+
+
+BRepFilletAPI_MakeChamfer* _validateChamfer(std::vector<NodeExpression*>& args, OCCT_SHAPE& shapeType)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {SHAPE, "shape"}, {DOUBLE, "dist" } }
+    };
+
+    int paramIndex = validateFunctionArguments(param, args);
+
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "fillet");
+    }
+
+    switch(paramIndex){
+        case 0: {
+            NodeShape* myShape = static_cast<NodeShape*>(args[0]);
+            NodeNumber* d = static_cast<NodeNumber*>(args[1]);  
+
+            BRepFilletAPI_MakeChamfer* myChamfer = new BRepFilletAPI_MakeChamfer(*myShape->shape);
+
+            for(TopExp_Explorer ex(*myShape->shape, TopAbs_EDGE); ex.More(); ex.Next()){
+                myChamfer->Add(d->value, TopoDS::Edge(ex.Current()));
+            }
+            
+            shapeType = myShape->shapeType;
+            return myChamfer;
+        }
+        default: {
+
+        }
+    }
+    
+    fprintf(stderr, "Unable to validate chamfer exiting ... \n");
+    exit(1);
+}
+
+
+BRepPrimAPI_MakeTorus* _validateTorus(std::vector<NodeExpression*>& args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {DOUBLE, "r1"}, {DOUBLE, "r2"} },
+        { {DOUBLE, "r1"}, {DOUBLE, "r2"}, {DOUBLE, "angle"} },
+        { {DOUBLE, "r1"}, {DOUBLE, "r2"}, {DOUBLE, "a1"}, {DOUBLE, "a2"} },
+        { {DOUBLE, "r1"}, {DOUBLE, "r2"}, {DOUBLE, "a1"}, {DOUBLE, "a2"}, {DOUBLE, "angle"} },
+    };
+
+    int paramIndex = validateFunctionArguments(param, args);
+    
+    if(paramIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "makeTorus");
+    }
+
+    switch(paramIndex){
+        case 0: {
+            double r1 = static_cast<NodeNumber*>(args[0])->value;
+            double r2 = static_cast<NodeNumber*>(args[1])->value;
+
+            return new BRepPrimAPI_MakeTorus(r1, r2);
+        }
+        case 1: {
+            double r1 = static_cast<NodeNumber*>(args[0])->value;
+            double r2 = static_cast<NodeNumber*>(args[1])->value;
+            double angle = static_cast<NodeNumber*>(args[2])->value;
+
+            return new BRepPrimAPI_MakeTorus(r1, r2, angle);
+        }
+        case 2: {
+            double r1 = static_cast<NodeNumber*>(args[0])->value;
+            double r2 = static_cast<NodeNumber*>(args[1])->value;
+            double a1 = static_cast<NodeNumber*>(args[2])->value;
+            double a2 = static_cast<NodeNumber*>(args[3])->value;
+
+            
+            if( (0 < (a2 - a1)) && ( (a2 - a1) < 6.28 ) ){
+                fprintf(stderr, "The angles a1, a2 must follow the relation 0 < a2 - a1 < 2*PI ... exiting ... \n");
+                exit(1);
+            }
+
+
+            return new BRepPrimAPI_MakeTorus(r1, r2, a1, a2);
+        }
+        case 3: {
+            double r1 = static_cast<NodeNumber*>(args[0])->value;
+            double r2 = static_cast<NodeNumber*>(args[1])->value;
+            double a1 = static_cast<NodeNumber*>(args[2])->value;
+            double a2 = static_cast<NodeNumber*>(args[3])->value;
+            double angle = static_cast<NodeNumber*>(args[4])->value;
+
+            return new BRepPrimAPI_MakeTorus(r1, r2, a1, a2, angle);
+        }
+    }
+
+    fprintf(stderr, "Unable to validate torus ... exiting ... \n");
+    exit(1);
 }

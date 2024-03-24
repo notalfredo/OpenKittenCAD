@@ -38,6 +38,7 @@ typedef enum shape {
     CONE,
     CYLINDER,
     SPHERE,
+    TORUS,
     FACE,
     CUSTOM
 } OCCT_SHAPE;

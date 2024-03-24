@@ -12,6 +12,7 @@ enum functionEnum {
     makeUnion,
     makeDifference,
     makeIntersection,
+    makeTorus,
     makeFace,
 
     
@@ -19,6 +20,8 @@ enum functionEnum {
     doTranslate,
     doMirror,
     doExtrude,
+    doFillet,
+    doChamfer,
 
     makePoint,
     makeEdge,

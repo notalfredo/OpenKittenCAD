@@ -32,7 +32,7 @@
 #include <GC_MakeArcOfCircle.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
-
+#include <BRepFilletAPI_MakeFillet.hxx>
 
 #include <vtkStructuredGrid.h>
 #include <vtkDataSetMapper.h>
@@ -188,7 +188,7 @@ NodeShape* _makeCone(std::vector<NodeExpression*>& args)
     const TopoDS_Shape* shape = &cone->Shape();
 
     NodeShape* me = newNodeShape(CONE);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cone);
+    me->brepShape = cone;
     me->shape = shape;
 
     return me;
@@ -201,7 +201,7 @@ NodeShape* _makeCylinder(std::vector<NodeExpression*>& args)
     const TopoDS_Shape* shape = &cyl->Shape();
 
     NodeShape* me = newNodeShape(CYLINDER);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cyl);
+    me->brepShape = cyl;
     me->shape = shape;
 
     return me;
@@ -214,7 +214,7 @@ NodeShape* _makeBox(std::vector<NodeExpression*>& args)
     const TopoDS_Shape* shape = &box->Shape();
 
     NodeShape* me = newNodeShape(BOX);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(box);
+    me->brepShape = box;
     me->shape = shape;
 
     return me;
@@ -251,7 +251,7 @@ NodeShape* _makeUnion(std::vector<NodeExpression*>& args)
     }
 
     NodeShape* me = newNodeShape(CUSTOM);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(fuse);
+    me->brepShape = fuse;
     me->shape = shape;
 
     return me;
@@ -268,7 +268,7 @@ NodeShape* _makeDifference(std::vector<NodeExpression*>& args)
     }
 
     NodeShape* me = newNodeShape(CUSTOM);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(cut);
+    me->brepShape = cut;
     me->shape = shape;
 
     return me;
@@ -286,7 +286,7 @@ NodeShape* _makeIntersection(std::vector<NodeExpression*>& args)
     }
 
     NodeShape* me = newNodeShape(CUSTOM);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(common);
+    me->brepShape = common;
     me->shape = shape;
 
     return me;
@@ -319,7 +319,7 @@ NodeShape* _rotate(std::vector<NodeExpression*>& args)
     }
 
     NodeShape* me = newNodeShape(shapeType);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(rotations);
+    me->brepShape = rotations;
     me->shape = shape;
 
     return me;
@@ -340,7 +340,7 @@ NodeShape* _translate(std::vector<NodeExpression*>& args)
     }
 
     NodeShape* me = newNodeShape(shapeType);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(translation);
+    me->brepShape = translation;
     me->shape = shape;
     return me;
 }
@@ -464,7 +464,7 @@ NodeExpression* _mirror(std::vector<NodeExpression*>& args)
             const TopoDS_Shape* shape = &sphere->Shape();
 
             NodeShape* me = newNodeShape(SPHERE);
-            me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(sphere);
+            me->brepShape = sphere;
             me->shape = shape;
 
             return me;
@@ -485,23 +485,64 @@ NodeShape* _makeSphere(std::vector<NodeExpression*>& args)
     const TopoDS_Shape* shape = &sphere->Shape();
 
     NodeShape* me = newNodeShape(SPHERE);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(sphere);
+    me->brepShape = sphere;
     me->shape = shape;
 
     return me;
 }
 
 
+
 NodeShape* _makeExtrude(std::vector<NodeExpression*>& args)
 {
-    BRepPrimAPI_MakePrism* prism = _makePrism(args);
+    BRepPrimAPI_MakePrism* prism = _validateExtrude(args);
 
     const TopoDS_Shape* shape = &prism->Shape();
 
     NodeShape* me = newNodeShape(CUSTOM);
-    me->brepShape = static_cast<BRepBuilderAPI_MakeShape*>(prism);
+    me->brepShape = prism;
     me->shape = shape;
 
+    return me;
+}
+
+
+NodeShape* _makeFillet(std::vector<NodeExpression*>& args)
+{
+    OCCT_SHAPE shapeType;
+    BRepFilletAPI_MakeFillet* myFillet = _validateFillet(args, shapeType);
+    const TopoDS_Shape* shape = &myFillet->Shape();
+
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = myFillet;
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeChamfer(std::vector<NodeExpression*>& args)
+{
+    OCCT_SHAPE shapeType;
+    BRepFilletAPI_MakeChamfer* myFillet = _validateChamfer(args, shapeType);
+    const TopoDS_Shape* shape = &myFillet->Shape();
+
+    NodeShape* me = newNodeShape(shapeType);
+    me->brepShape = myFillet;
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeTorus(std::vector<NodeExpression*> &args)
+{
+    BRepPrimAPI_MakeTorus* myTorus = _validateTorus(args);
+    const TopoDS_Shape* shape = &myTorus->Shape();
+
+    NodeShape* me = newNodeShape(TORUS);
+    me->brepShape = myTorus;
+    me->shape = shape;
     return me;
 }
 
@@ -511,6 +552,7 @@ functionPtr knownFunctions[] {
     {"cone", makeCone},
     {"cylinder", makeCylinder},
     {"box", makeBox},
+    {"torus", makeTorus},
 
 
     {"union", makeUnion},
@@ -523,6 +565,8 @@ functionPtr knownFunctions[] {
     {"translate", doTranslate},
     {"mirror", doMirror},
     {"extrude", doExtrude}, 
+    {"fillet", doFillet},
+    {"chamfer", doChamfer},
     
 
     {"dot", makePoint},
@@ -597,6 +641,9 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         case makeArc: {
             return _makeArc(args);
         }
+        case makeTorus: {
+            return _makeTorus(args);
+        }
         case connect:{
             return _connect(args);
         }
@@ -608,6 +655,12 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
         case doExtrude: {
             return _makeExtrude(args); 
+        }
+        case doFillet: {
+            return _makeFillet(args); 
+        }
+        case doChamfer: {
+            return _makeChamfer(args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

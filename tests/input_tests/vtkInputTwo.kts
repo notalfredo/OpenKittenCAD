@@ -21,6 +21,11 @@
 
 
     addShape(
-        myFace |> extrude(%, [0, 0, 5])
+        myFace |> extrude(%, [0, 0, 5]) |> chamfer(%, 1.0)
     );
+
+    addShape(
+        torus(.5, .5, 0, 3.14/2, 3.14) |> translate(%, [0, 0, 10]) 
+    );
+
 };
