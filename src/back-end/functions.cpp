@@ -558,7 +558,6 @@ functionPtr knownFunctions[] {
     {"union", makeUnion},
     {"difference", makeDifference},
     {"intersection", makeIntersection},
-    {"makeFace", makeFace},
 
 
     {"rotate", doRotate},
@@ -572,10 +571,10 @@ functionPtr knownFunctions[] {
     {"dot", makePoint},
     {"line", makeEdge},
     {"arc", makeArc},
+    {"makeFace", makeFace},
+
 
     {"connect", connect},
-
-
     {"print",  printDouble},
     {"addShape", addShape}
 };
