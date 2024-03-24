@@ -33,6 +33,8 @@
 #include <TopExp_Explorer.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <BRepFilletAPI_MakeChamfer.hxx>
+#include <BRepPrimAPI_MakeTorus.hxx>
+
 
 typedef struct paramInfo {
     nodeType type;
@@ -101,5 +103,9 @@ extern BRepPrimAPI_MakePrism* _validateExtrude(std::vector<NodeExpression*>& arg
 
 extern BRepFilletAPI_MakeFillet* _validateFillet(std::vector<NodeExpression*>& args, OCCT_SHAPE& shapeType);
 
+
 extern BRepFilletAPI_MakeChamfer* _validateChamfer(std::vector<NodeExpression*>& args, OCCT_SHAPE& shapeType);
+
+
+extern BRepPrimAPI_MakeTorus* _validateTorus(std::vector<NodeExpression*>& args);
 #endif

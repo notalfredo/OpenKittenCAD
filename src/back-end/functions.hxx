@@ -12,6 +12,7 @@ enum functionEnum {
     makeUnion,
     makeDifference,
     makeIntersection,
+    makeTorus,
     makeFace,
 
     
