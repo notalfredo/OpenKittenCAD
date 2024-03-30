@@ -118,7 +118,7 @@ NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* r
 }
 
 
-NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value)
+NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value, DECL_MUT_STATE mutState)
 {
     NodeExpression* temp = value;
     if(!temp){
@@ -132,12 +132,27 @@ NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value)
             case _void: {
                 //TODO 
             }
+            case point: {
+                //TODO
+            }
+            case edge: {
+                //TODO
+            }
         }
     }
 
-    NodeDecl* me = new NodeDecl(id, type, temp, _prevAlloc);
+
+    NodeDecl* me = new NodeDecl(id, type, temp, _prevAlloc, mutState);
     _prevAlloc = me;
 
+    return me;
+}
+
+
+NodeReAssign* newReAssignNode(NodeIdentifier* id, NodeExpression* value)
+{
+    NodeReAssign* me = new NodeReAssign(id, value, _prevAlloc);
+    _prevAlloc = me;
     return me;
 }
 

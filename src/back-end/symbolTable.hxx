@@ -70,6 +70,8 @@ typedef struct symbol {
                       
     NodeEdge* edge; 
 
+    DECL_MUT_STATE mutState;
+
     struct symbol* next;
 } Symbol ;
 
@@ -93,6 +95,7 @@ int containsSymbolName(SymbolTableHead* symTable, const char* searchName);
 Symbol* getSymbolNode(SymbolTableHead* symTable, const char* searchName);
 int getCurrentSize(SymbolTableHead* symTable);
 void resetBlockCounter();
+void updateSymbol(Symbol* mySymbol, NodeExpression* expr);
 
 
 SymbolTableHead* functionCallNewSymbolTable(SymbolTableHead* currentSymbolTable, Symbol* sym);

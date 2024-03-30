@@ -10,6 +10,12 @@
 #include "gp_Pnt.hxx"
 #include <TopoDS_Shape.hxx>
 
+typedef enum declMutState {
+    MUT,
+    NON_MUT,
+} DECL_MUT_STATE;
+
+
 typedef enum edgeType {
     type_edge,
     type_wire,
@@ -63,6 +69,7 @@ typedef enum nodeType {
     UNTIL,
 
     DECL,
+    REASSIGN,
     STMT,
 
     FUNCTION,
@@ -329,12 +336,15 @@ class NodeDecl: public NodeStatement {
         NodeType* type;
         NodeDecl* nextDecl;
         NodeExpression* value;
+        DECL_MUT_STATE mutState; 
+
         NodeDecl(
             NodeIdentifier* id,
             NodeType* type,
             NodeExpression* value,
-            Node* _prevAlloc
-        ): id(id), type(type), value(value) {
+            Node* _prevAlloc,
+            DECL_MUT_STATE mutState
+        ): id(id), type(type), value(value), mutState(mutState) {
             this->nextStmt = NULL;
             this->nextDecl = NULL;
             this->nodeType = DECL;
@@ -342,6 +352,26 @@ class NodeDecl: public NodeStatement {
             this->_allocatedLinkedList = _prevAlloc;
         };
 };
+
+
+class NodeReAssign: public NodeStatement {
+    public:
+        NodeIdentifier* id;
+        NodeExpression* value;
+
+    NodeReAssign(
+        NodeIdentifier* id,
+        NodeExpression* value,
+        Node* _prevAlloc
+    ): id(id), value(value) {
+        this->nextStmt = NULL;
+        this->nodeType = REASSIGN;
+
+        this->_allocatedLinkedList = _prevAlloc;
+    }
+
+};
+
 
 class NodeStmtList: public Node {
     public:
@@ -517,7 +547,8 @@ NodeShape* newNodeShape(OCCT_SHAPE shape);
 NodeEdge* newNodeEdge();
 NodePoint* newNodePoint();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
-NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value);
+NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value, DECL_MUT_STATE mutState);
+NodeReAssign* newReAssignNode(NodeIdentifier* id, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newNodeBlock(NodeStmtList* stmts);

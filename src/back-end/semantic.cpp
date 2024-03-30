@@ -132,6 +132,35 @@ NodeExpression* _processExprStmt(NodeExprStmt* node)
 }
 
 
+NodeExpression* _processReAssignNode(NodeReAssign* node)
+{
+    Symbol* mySymbol = getSymbolNode(symTableHead, node->id->idName);
+
+    if(!mySymbol){
+        fprintf(stderr, "Trying to assign to %s before decloration ... exiting ...\n", node->id->idName);
+        exit(1);
+    }
+    else if (mySymbol->symbolType != variable){
+        fprintf(stderr, "TODO YOU CAN ONLY UPDATE VARIABLES FOR NOW ... exiting ...\n");
+        exit(1);
+    
+    }
+
+    switch(mySymbol->mutState){
+        case MUT: {
+            NodeExpression* nodeExpr = evalExpr(node->value);
+            _validateRhsEqualsDeclType(mySymbol->idType, nodeExpr->nodeType);
+            updateSymbol(mySymbol, nodeExpr);
+            break;
+        }
+        case NON_MUT: {
+            fprintf(stderr, "Trying to re assign to %s which is a non-mutable varaible\n", node->id->idName);
+            exit(1);
+        }
+    }
+}
+
+
 NodeExpression* _processDeclNode(NodeDecl* node)
 {
     if(!node->value){
@@ -213,6 +242,9 @@ NodeExpression* _processStmtNode(Node* node)
         }
         case FUNCTION: {
             return _processFunctionNode(static_cast<NodeFunction*>(node));
+        }
+        case REASSIGN: {
+            return _processReAssignNode(static_cast<NodeReAssign*>(node));
         }
         default: {
             fprintf(stderr, "Hit non stmt node in _processStmtNode: %s", nodeTypeToString(node->nodeType)); 

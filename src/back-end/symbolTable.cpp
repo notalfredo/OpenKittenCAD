@@ -69,11 +69,45 @@ void freeSymbolTable(SymbolTableHead** symTableHead)
         freeTopBlock(symTableHead);
     }
 }
+
+
 /* 
    =================================================== 
    =================================================== 
    =================================================== 
 */
+
+
+void updateSymbol(Symbol* mySymbol, NodeExpression* expr)
+{
+    switch (mySymbol->idType){
+        case num: {
+            NodeNumber* numNode = static_cast<NodeNumber*>(expr);
+            mySymbol->numVal = numNode;
+            break;
+        }
+        case shape: {
+            NodeShape* shapeNode = static_cast<NodeShape*>(expr);
+            mySymbol->shapeType = shapeNode->shapeType;
+            mySymbol->shape = shapeNode;
+            break;
+        }
+        case point: {
+            NodePoint* nodePoint = static_cast<NodePoint*>(expr);
+            mySymbol->point = nodePoint;
+            break;
+        }
+        case edge: {
+            NodeEdge* nodeEdge = static_cast<NodeEdge*>(expr);
+            mySymbol->edge = nodeEdge;
+            break;
+        }
+        case _void: {
+            fprintf(stderr, "HIT _VOID IN SWITCH INSIDE symbolFromTreeNode\n");
+            exit(1);
+        }
+    }
+}
 
 
 static struct functionArg* _argFromNodeDecl(NodeDecl* declNode)
@@ -148,6 +182,7 @@ static Symbol* _symbolFromTreeNode(Node* node)
             newSym->name = strdup(declNode->id->idName);
             newSym->symbolType = variable;
             newSym->next = NULL;
+            newSym->mutState = declNode->mutState;
             
             switch (declNode->type->idType){
                 case num: {

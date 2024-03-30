@@ -57,6 +57,7 @@ typedef struct keyword {
 ktsKeywords ktsKeywordsArr[] = {
     {"fn",       tok_FN},
     {"let",      tok_LET},
+    {"const",    tok_CONST},
 
     {"break",    tok_BREAK},
     {"continue", tok_CONTINUE},
