@@ -61,6 +61,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 
   NodeDecl*       declNode;
+  NodeReAssign*   reAssignNode;
+
   NodeIdentifier* idNode;
   NodeType*       typeNode;
   NodeDeclList*   declList ;
@@ -89,7 +91,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_FOR tok_WHILE
 %token tok_AND tok_OR
 %token tok_FN tok_RETURN
-%token tok_LET
+%token tok_LET tok_CONST
 %token tok_EQ tok_NE tok_GE tok_LE 
 %token tok_PIPE
 %token tok_ASSIGN
@@ -114,6 +116,8 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type <untilNode>                    untilStmt
 
 %type <declNode>                     paramDecl declStmt
+%type <reAssignNode>                 reAssignStmt
+
 %type <declList>                     paramDeclList
 %type <stmtListNodes>                stmtList 
 
@@ -153,6 +157,7 @@ stmt:
     block           { $$ = $1; }
   | functionStmt    { $$ = $1; }
   | declStmt        { $$ = $1; }
+  | reAssignStmt    { $$ = $1; }
   | exprStmt        { $$ = $1; }
   | returnStmt      { $$ = $1; }
   ;
@@ -199,13 +204,23 @@ returnStmt:
   ;
 
 paramDecl:
-    tok_ID ':' tok_TYPE    { $$ = newDeclNode($1, $3, NULL); }
+    tok_ID ':' tok_TYPE    { $$ = newDeclNode($1, $3, NULL, MUT); }
   ;
+
+
+reAssignStmt:
+    tok_ID tok_ASSIGN expr { $$ = newReAssignNode($1, $3); }
+  ;
+
 
 declStmt:
     tok_LET tok_ID ':' tok_TYPE initOpt {
-        if(!$5) { $$ = newDeclNode($2, $4, NULL); }
-        $$ = newDeclNode($2, $4, $5);
+        if(!$5) { $$ = newDeclNode($2, $4, NULL, MUT); }
+        $$ = newDeclNode($2, $4, $5, MUT);
+    }
+  | tok_CONST tok_ID ':' tok_TYPE initOpt {
+        if(!$5) { $$ = newDeclNode($2, $4, NULL, NON_MUT); }
+        $$ = newDeclNode($2, $4, $5, NON_MUT);
     }
   ;
 

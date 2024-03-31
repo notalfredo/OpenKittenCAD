@@ -48,7 +48,8 @@ void insertIntoTopBlock(SymbolTableHead* symTable, int suiteNum)
         NodeDecl* declNode = newDeclNode(
             idNode,
             newNodeType(num),   
-            newNumberNode(i)
+            newNumberNode(i),
+            MUT
         );
         insertSymbolFromNode(symTable, declNode);
 
