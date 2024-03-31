@@ -142,7 +142,7 @@ NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value,
     }
 
 
-    NodeDecl* me = new NodeDecl(id, type, temp, _prevAlloc, mutState);
+    NodeDecl* me = new NodeDecl(id, type, temp,  mutState, _prevAlloc);
     _prevAlloc = me;
 
     return me;

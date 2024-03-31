@@ -342,8 +342,8 @@ class NodeDecl: public NodeStatement {
             NodeIdentifier* id,
             NodeType* type,
             NodeExpression* value,
-            Node* _prevAlloc,
-            DECL_MUT_STATE mutState
+            DECL_MUT_STATE mutState,
+            Node* _prevAlloc
         ): id(id), type(type), value(value), mutState(mutState) {
             this->nextStmt = NULL;
             this->nextDecl = NULL;
