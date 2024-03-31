@@ -359,6 +359,11 @@ NodeShape* _makeFace(std::vector<NodeExpression*> args)
 }
 
 
+NodeEdge* _lineTo(std::vector<NodeExpression*>& args)
+{
+    
+}
+
 
 NodeEdge* _makeEdge(std::vector<NodeExpression*>& args)
 //NodeEdge* _makeEdge(NodePoint* p1, NodePoint* p2)
@@ -568,6 +573,7 @@ functionPtr knownFunctions[] {
     {"chamfer", doChamfer},
     
 
+    {"lineTo", lineTo},
     {"dot", makePoint},
     {"line", makeEdge},
     {"arc", makeArc},
@@ -660,6 +666,9 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
         case doChamfer: {
             return _makeChamfer(args);
+        }
+        case lineTo: {
+            return _lineTo(args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

@@ -1,4 +1,5 @@
 #include "validateFunc.hxx"
+#include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepPrimAPI_MakePrism.hxx"
 #include "node.hxx"
 
@@ -603,6 +604,125 @@ BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args)
 }
 
 
+NodeArray* _validateLineTo(std::vector<NodeExpression*> args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        /* First array [point_0 ... point_N],
+         * or incoming point [x, y, z]
+         *
+         * second is current point [x, y, z]
+        */
+        { {ARRAY, "POINT"}, {ARRAY, "POINT"} }, 
+
+        /* First array [point_0 ... point_N],
+         * or incoming point [x, y, z]
+        */
+        { {ARRAY, "POINT"}, {POINT, "POINT"} }, 
+
+        { {POINT, "POINT"}, {POINT, "POINT"} }, 
+        { {POINT, "POINT"}, {ARRAY, "POINT"} }, 
+    };
+
+    int argIndex = validateFunctionArguments(param, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(param, args, "lineTo");
+    }
+    
+    NodeArray* prevPoints = NULL;
+    
+
+
+    switch(argIndex){
+        case 0:
+        case 1: {
+            //Figure out if we are [point_0, point_n] or [x, y, z]
+            NodeArray* returnArray = NULL;     
+
+             
+            NodeArray* argsArray = static_cast<NodeArray*>(args[0]); 
+
+            //If we are [point_0, point_n]
+            if(checkAllExprTypes(argsArray->array, POINT)){
+                returnArray =  argsArray;
+            }
+            else if(checkAllExprTypes(argsArray->array, DOUBLE)){
+                if(getExpressionLength(argsArray->array) != 3){
+                    fprintf(stderr, "dest point array must be of length 3 ... exiting ...\n");
+                    exit(1);
+                }
+
+                std::vector<NodeExpression*> pointArr {
+                    argsArray->array
+                };
+                returnArray = newArrayNode(_makePoint(pointArr));
+            }
+
+            //If we made it this far we have our array of points from lhs
+            if(args[1]->nodeType == ARRAY) {
+                NodeArray* newArr = static_cast<NodeArray*>(args[1]);
+
+                if(!checkAllExprTypes(newArr, DOUBLE)){
+                    fprintf(stderr, "rhs lineTo array all members do not evalutae to double ... exiting ...\n");
+                    exit(1);
+                }
+                if(getExpressionLength(newArr) != 3){
+                    fprintf(stderr, "rhs lineTo array must be length 3... exiting ...\n");
+                    exit(1);
+                }
+                
+                std::vector<NodeExpression*> param { newArr };
+
+                appendExprLinkedList(
+                    &returnArray->array,
+                    _makePoint(param)
+                );
+
+                return returnArray;
+            }
+            else if(args[1]->nodeType == POINT) {
+                appendExprLinkedList(
+                    &returnArray->array,
+                    args[1]
+                );
+                return returnArray;
+            }
+            else {
+                fprintf(stderr, "Cannot create line from lineTo ... exiting ... \n");
+                exit(1);
+            }
+        }
+        case 2:
+        case 3: {
+            NodeArray* returnArray = newArrayNode(args[0]);
+
+            
+            if(args[1]->nodeType == POINT){
+                appendExprLinkedList(
+                    &returnArray->array,
+                    args[1]
+                );
+                return returnArray;
+            }
+            else if(args[1]->nodeType == ARRAY){  
+                std::vector<NodeExpression*> pointArr {args[1]}; 
+                appendExprLinkedList(
+                    &returnArray->array,
+                    _makePoint(pointArr)
+                );
+                return returnArray;
+            }
+            else {
+                fprintf(stderr, "Unable to create lineTo to the rhs point ... exiting ...\n");
+                exit(1);
+            }
+        }
+        default: {
+            fprintf(stderr, "Hit default case in lineTo this should not happen ... exiting .. \n");
+            exit(1);
+        }
+    }
+}
+
 
 BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*> args)
 {
@@ -628,7 +748,7 @@ BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*> args)
                 break;
             }
             case type_wire: {
-                myWire->Add(*myEdge->brepWire);
+                myWire->Add(*myEdge->wireShape);
                 break;
             }
             case type_error: {
