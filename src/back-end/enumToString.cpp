@@ -1,7 +1,6 @@
 #include "BRepBuilderAPI_WireError.hxx"
 #include "node.hxx"
 
-
 const char* nodeTypeToString(NODE_TYPE type)
 {  
     switch(type) {
@@ -27,13 +26,18 @@ const char* nodeTypeToString(NODE_TYPE type)
         case DECL_LIST:      { return "DOUBLE";        }
         case EXPR_STMT:      { return "EXPR_STMT";     }
         case POINT:          { return "POINT";         }
+        case REASSIGN:       { return "REASSIGN";      }
+        case UN_OP:          { return "UN_OP";         }
+        case EDGE:           { return "EDGE";          }
+        case RETURN_EVAL:    { return "RETURN_EVAL";   }
+        case ARRAY:          { return "ARRAY";         }
+        case PLACEHOLDER:    { return "PLACEHOLDER";   }
+        case RETURN_STMT:    { return "RETURN_STMT";   }
         default: {
-            fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
+            fprintf(stderr, "Hit default case in nodeTypeToString() %d exiting...\n", type);
             exit(0);
         }
     }
-    //Make the compiler happy
-    return NULL;
 }
 
 const char* nodeOpToString(NODE_OP nodeOp)

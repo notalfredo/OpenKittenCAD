@@ -359,9 +359,9 @@ NodeShape* _makeFace(std::vector<NodeExpression*> args)
 }
 
 
-NodeEdge* _lineTo(std::vector<NodeExpression*>& args)
+NodeArray* _lineTo(std::vector<NodeExpression*>& args)
 {
-    
+    return _validateLineTo(args);  
 }
 
 

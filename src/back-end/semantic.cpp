@@ -1,4 +1,5 @@
 #include "functions.hxx"
+#include "gp_Pnt.hxx"
 #include "node.hxx"
 #include "symbolTable.hxx"
 #include "enumToString.hxx"
@@ -376,7 +377,14 @@ NodeExpression* _processShape(NodeShape* node)
 
 NodeExpression* _processPoint(NodePoint* node)
 {
-    return node;
+    NodePoint* newPntNode = newNodePoint();
+    newPntNode->point =  new gp_Pnt(
+        node->point->X(),
+        node->point->Y(),
+        node->point->Z()
+    );
+
+    return newPntNode;
 }
 
 
