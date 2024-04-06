@@ -15,6 +15,7 @@ enum functionEnum {
     makeTorus,
     makeFace,
 
+    lineTo,
     
     doRotate,
     doTranslate,

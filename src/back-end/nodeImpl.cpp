@@ -2,6 +2,35 @@
 #include "node.hxx"
 #include <iostream>
 
+/*
+ * Checks if there is a circular loop ... not checking this has
+ * bitten me in the ass enough times I decided to add it.
+ *
+ * 0: no loop exist
+ * 1: loop exist
+*/
+int _checkExprLoop(NodeExpression* list)
+{
+    if(!list){
+        return 0;
+    }
+
+    NodeExpression* turtle = list;
+    NodeExpression* hare = list->nextExpr;
+
+    while(hare && hare->nextExpr && hare->nextExpr->nextExpr){
+        if(turtle == hare){
+            return 1;
+        }
+        
+        turtle = turtle->nextExpr;
+        hare = hare->nextExpr->nextExpr;
+    }
+
+    return 0;
+}
+
+
 void appendExprLinkedList(NodeExpression** head, NodeExpression* newMember)
 {
     if(!newMember){
@@ -24,6 +53,13 @@ void appendExprLinkedList(NodeExpression** head, NodeExpression* newMember)
 
 int getExpressionLength(NodeExpression* expr)
 {
+
+    if(_checkExprLoop(expr)){
+        fprintf(stderr, "DANGER!! Found linked list loop in getExpressionLength ... exiting ... \n");
+        exit(1);
+    }
+
+
     NodeExpression* tempHead = expr;
     int count = 0;
 
@@ -58,6 +94,13 @@ NodeExpression* indexExprList(NodeExpression* node, int index)
 */
 int checkAllExprTypes(NodeExpression* head, NODE_TYPE type)
 {   
+
+    if(_checkExprLoop(head)){
+        fprintf(stderr, "DANGER!! Found linked list loop checkAllExprTypes ... exiting ... \n");
+        exit(1);
+    }
+
+
     NodeExpression* tempHead = head;
 
     while(tempHead){

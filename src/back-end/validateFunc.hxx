@@ -86,13 +86,13 @@ extern BRepBuilderAPI_MakeEdge* _validateEdge(std::vector<NodeExpression*>& args
 extern BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args);
 
 
-extern BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*> args);
+extern BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*>& args);
 
 
 extern void _validateMirror(std::vector<NodeExpression*>& args);
 
 
-extern BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*> args);
+extern BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*>& args);
 
 
 extern NodeShape* _makeSphere(std::vector<NodeExpression*>& args);
@@ -108,4 +108,6 @@ extern BRepFilletAPI_MakeChamfer* _validateChamfer(std::vector<NodeExpression*>&
 
 
 extern BRepPrimAPI_MakeTorus* _validateTorus(std::vector<NodeExpression*>& args);
+
+extern NodeArray* _validateLineTo(std::vector<NodeExpression*>& args);
 #endif
