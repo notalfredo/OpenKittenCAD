@@ -118,13 +118,13 @@ void startViewer()
 */
 void _addShapeVtk(const TopoDS_Shape& shapeToAdd)
 {
-    //vtkNew<IVtkTools_ShapeDataSource> occSourceOne;
-    //occSourceOne->SetShape(new IVtkOCC_Shape(shapeToAdd));
-    //vtkNew<vtkPolyDataMapper> mapperOne;
-    //mapperOne->SetInputConnection(occSourceOne->GetOutputPort());
-    //vtkNew<vtkActor> actorOne;
-    //actorOne->SetMapper(mapperOne);
-    //ren->AddActor(actorOne);
+    vtkNew<IVtkTools_ShapeDataSource> occSourceOne;
+    occSourceOne->SetShape(new IVtkOCC_Shape(shapeToAdd));
+    vtkNew<vtkPolyDataMapper> mapperOne;
+    mapperOne->SetInputConnection(occSourceOne->GetOutputPort());
+    vtkNew<vtkActor> actorOne;
+    actorOne->SetMapper(mapperOne);
+    ren->AddActor(actorOne);
 }
 
 
