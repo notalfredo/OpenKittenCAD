@@ -133,29 +133,28 @@ NodeExpression* _processExprStmt(NodeExprStmt* node)
 }
 
 
-NodeExpression* _processReAssignNode(NodeReAssign* node)
+void _binOpReAssign(NodeIdentifier* node, NodeExpression* rhs)
 {
-    Symbol* mySymbol = getSymbolNode(symTableHead, node->id->idName);
+    Symbol* mySymbol = getSymbolNode(symTableHead, node->idName);
 
     if(!mySymbol){
-        fprintf(stderr, "Trying to assign to %s before decloration ... exiting ...\n", node->id->idName);
+        fprintf(stderr, "Trying to assign to %s before decloration ... exiting ...\n", node->idName);
         exit(1);
     }
     else if (mySymbol->symbolType != variable){
         fprintf(stderr, "TODO YOU CAN ONLY UPDATE VARIABLES FOR NOW ... exiting ...\n");
         exit(1);
-    
     }
 
     switch(mySymbol->mutState){
         case MUT: {
-            NodeExpression* nodeExpr = evalExpr(node->value);
+            NodeExpression* nodeExpr = evalExpr(rhs);
             _validateRhsEqualsDeclType(mySymbol->idType, nodeExpr->nodeType);
             updateSymbol(mySymbol, nodeExpr);
             break;
         }
         case NON_MUT: {
-            fprintf(stderr, "Trying to re assign to %s which is a non-mutable varaible\n", node->id->idName);
+            fprintf(stderr, "Trying to re assign to %s which is a non-mutable varaible\n", node->idName);
             exit(1);
         }
     }
@@ -244,9 +243,6 @@ NodeExpression* _processStmtNode(Node* node)
         case FUNCTION: {
             return _processFunctionNode(static_cast<NodeFunction*>(node));
         }
-        case REASSIGN: {
-            return _processReAssignNode(static_cast<NodeReAssign*>(node));
-        }
         default: {
             fprintf(stderr, "Hit non stmt node in _processStmtNode: %s", nodeTypeToString(node->nodeType)); 
             exit(1);
@@ -260,10 +256,11 @@ NodeExpression* _processStmtNode(Node* node)
 
 NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
 {
-    NodeExpression* lhs = evalExpr(binOp->lhs);
 
 
     if(binOp->binaryOperatorType == OP_PIPE){
+        NodeExpression* lhs = evalExpr(binOp->lhs);
+
         if(binOp->rhs->nodeType != FUNCTION_CALL){
             fprintf(stderr, "RHS of pipe operator is not a function call\n");
                 exit(1);
@@ -283,10 +280,23 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
         replacePipeInput(&funcCall->args, lhs, checkPipe);
         return evalExpr(funcCall);
     }
+    else if(binOp->binaryOperatorType == OP_REASSIGN){
+        
+        if(binOp->lhs->nodeType != ID){
+            fprintf(stderr, "Trying to assign to a non ID node, lhs evaluated to %s\n", nodeTypeToString(binOp->lhs->nodeType)); 
+            exit(0);
+        }
+
+        NodeIdentifier* id = static_cast<NodeIdentifier*>(binOp->lhs);
+        _binOpReAssign(id, evalExpr(binOp->rhs));
 
 
+        return NULL;
+    }
 
+    NodeExpression* lhs = evalExpr(binOp->lhs);
     NodeExpression* rhs = evalExpr(binOp->rhs);
+
 
     if(lhs->nodeType != rhs->nodeType){
         fprintf(stderr, "--EXITING--: lhs: \"%s\" != rhs: \"%s\"",
@@ -301,6 +311,7 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
         );
         exit(0);
     }
+
                 
     switch(binOp->binaryOperatorType){
         case OP_PLUS: {
@@ -323,23 +334,20 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
             NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
             return newNumberNode(lhsNum->value * rhsNum->value);
         }
-        case OP_ASSIGN: {
-            if(lhs->nodeType != ID){
-                fprintf(stderr, "Trying to assign to a non ID node\n"); 
-                exit(0);
-            }
-            //TODO UPDATE LHS IN SYMBOL TABLE
-        }
         default: {
             fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
-                exit(0);
-            }
+            exit(0);
         }
+    }
 }
 
 
 
-
+/*
+ * This function is called whenever we want to evaluate 
+ * what a variable is equal to.
+*/
+ 
 NodeExpression* _processId(NodeIdentifier* id)
 {
     Symbol* sym = getSymbolNode(symTableHead, id->idName);

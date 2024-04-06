@@ -149,14 +149,6 @@ NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value,
 }
 
 
-NodeReAssign* newReAssignNode(NodeIdentifier* id, NodeExpression* value)
-{
-    NodeReAssign* me = new NodeReAssign(id, value, _prevAlloc);
-    _prevAlloc = me;
-    return me;
-}
-
-
 NodeStmtList* newStmtList(NodeStatement* nextStmt)
 {
     NodeStmtList* me = new NodeStmtList(nextStmt, _prevAlloc);

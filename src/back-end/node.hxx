@@ -34,7 +34,7 @@ typedef enum nodeOp {
     OP_MUL,
     OP_DIV,
     OP_MOD,
-    OP_ASSIGN,
+    OP_REASSIGN,
     OP_PIPE,
     OP_NEGATE
 } NODE_OP;
@@ -69,7 +69,6 @@ typedef enum nodeType {
     UNTIL,
 
     DECL,
-    REASSIGN,
     STMT,
 
     FUNCTION,
@@ -354,25 +353,6 @@ class NodeDecl: public NodeStatement {
 };
 
 
-class NodeReAssign: public NodeStatement {
-    public:
-        NodeIdentifier* id;
-        NodeExpression* value;
-
-    NodeReAssign(
-        NodeIdentifier* id,
-        NodeExpression* value,
-        Node* _prevAlloc
-    ): id(id), value(value) {
-        this->nextStmt = NULL;
-        this->nodeType = REASSIGN;
-
-        this->_allocatedLinkedList = _prevAlloc;
-    }
-
-};
-
-
 class NodeStmtList: public Node {
     public:
         NodeStatement* nextStmt; 
@@ -548,7 +528,6 @@ NodeEdge* newNodeEdge();
 NodePoint* newNodePoint();
 NodeBinaryOperator* newBinaryOperatorNode(NodeExpression* lhs, NodeExpression* rhs, NODE_OP binaryOperatorType);
 NodeDecl* newDeclNode(NodeIdentifier* id, NodeType* type, NodeExpression* value, DECL_MUT_STATE mutState);
-NodeReAssign* newReAssignNode(NodeIdentifier* id, NodeExpression* value);
 NodeStmtList* newStmtList(NodeStatement* nextStmt);
 NodeDeclList* newDeclList(NodeDecl* nextDecl);
 NodeBlock* newNodeBlock(NodeStmtList* stmts);
