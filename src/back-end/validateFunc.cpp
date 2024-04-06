@@ -806,7 +806,7 @@ BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*>& args)
             exit(1);
         }
         case 1: {
-            BRepBuilderAPI_MakeWire* myWire = new BRepBuilderAPI_MakeWire();
+            BRepBuilderAPI_MakeWire myWire = BRepBuilderAPI_MakeWire();
             NodeArray* myArray = static_cast<NodeArray*>(args[0]);
 
             int exprLength = getExpressionLength(myArray->array);
@@ -821,7 +821,7 @@ BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*>& args)
 
             NodeExpression* currPoint = myArray->array;
             while(currPoint->nextExpr){
-                myWire->Add(
+                myWire.Add(
                     BRepBuilderAPI_MakeEdge(
                         *static_cast<NodePoint*>(currPoint)->point,
                         *static_cast<NodePoint*>(currPoint->nextExpr)->point
@@ -830,7 +830,9 @@ BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*>& args)
                 
                 currPoint = currPoint->nextExpr;
             }
-            return new BRepBuilderAPI_MakeFace(myWire->Wire());
+
+
+            return new BRepBuilderAPI_MakeFace(myWire.Wire());
         }
         default: {
             fprintf(stderr, "Unable to make face ... exiting ... \n");

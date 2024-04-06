@@ -13,7 +13,7 @@ TAU_MAIN()
 
 TEST(VTK, testOne) {
     
-    FILE* filePtr = fopen("/home/alfredo/repos/OpenKittenCad/tests/input_tests/vtkInputFour.kts", "r");
+    FILE* filePtr = fopen("/home/alfredo/repos/OpenKittenCad/tests/input_tests/vtkInputSix.kts", "r");
     
     if(!filePtr){
         fprintf(stderr, "Error opening file semantic testOne\n");

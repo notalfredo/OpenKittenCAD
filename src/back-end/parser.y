@@ -132,6 +132,9 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %type<returnStmtNode>                returnStmt
 
+%type<idType>                        initType
+
+
 %left '+' '-'
 %left '*' '/'
 %nonassoc tok_ASSIGN
@@ -205,17 +208,20 @@ paramDecl:
   ;
 
 
-
 declStmt:
-    tok_LET tok_ID ':' tok_TYPE initOpt {
-        if(!$5) { $$ = newDeclNode($2, $4, NULL, MUT); }
-        $$ = newDeclNode($2, $4, $5, MUT);
+    tok_LET tok_ID initType initOpt {
+        $$ = newDeclNode($2, $3, $4, MUT);
     }
-  | tok_CONST tok_ID ':' tok_TYPE initOpt {
-        if(!$5) { $$ = newDeclNode($2, $4, NULL, NON_MUT); }
-        $$ = newDeclNode($2, $4, $5, NON_MUT);
+  | tok_CONST tok_ID initType initOpt {
+        $$ = newDeclNode($2, $3, $4, NON_MUT);
     }
+ 
+
+initType: 
+    %empty                { $$ = NULL; }
+  | ':' tok_TYPE          { $$ = $2;   }
   ;
+
 
 initOpt: 
   %empty                { $$ = NULL; }

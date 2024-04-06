@@ -33,10 +33,12 @@ TEST(semantic, testOne) {
     
     if(parseState != 0){
         fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
         semantic((NodeStmtList*)result, 0);
+        CHECK(1);
     }
 
 
@@ -68,10 +70,12 @@ TEST(semantic, testTwo) {
     
     if(parseState != 0){
         fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
         semantic((NodeStmtList*)result, 0);
+        CHECK(1);
     }
 
 
@@ -104,10 +108,12 @@ TEST(semantic, testThree) {
     
     if(parseState != 0){
         fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
         semantic((NodeStmtList*)result, 0);
+        CHECK(1);
     }
 
     yylex_destroy(scanner);
@@ -138,10 +144,12 @@ TEST(semantic, testFour) {
     
     if(parseState != 0){
         fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
         semantic((NodeStmtList*)result, 0);
+        CHECK(1);
     }
 
     yylex_destroy(scanner);
@@ -172,19 +180,18 @@ TEST(semantic, testFive) {
     
     if(parseState != 0){
         fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
         semantic((NodeStmtList*)result, 0);
+        CHECK(1);
     }
 
     yylex_destroy(scanner);
     freeAllNodes();
     fclose(filePtr);
 }
-
-
-
 
 
 TEST(semantic, testSix) {
@@ -209,10 +216,12 @@ TEST(semantic, testSix) {
     
     if(parseState != 0){
         fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
         semantic((NodeStmtList*)result, 0);
+        CHECK(1);
     }
 
 
@@ -220,3 +229,79 @@ TEST(semantic, testSix) {
     freeAllNodes();
     fclose(filePtr);
 }
+
+
+
+TEST(semantic, testSeven) {
+    
+    FILE* filePtr = fopen("/home/alfredo/repos/OpenKittenCad/tests/input_tests/semanticInputSeven.kts", "r");
+    
+    if(!filePtr){
+        fprintf(stderr, "Error opening file semantic testOne\n");
+        fclose(filePtr); 
+    }
+
+     
+    //yydebug = 1;
+    yyscan_t scanner;
+    yylex_init(&scanner);
+    yyrestart(filePtr, scanner);
+    yyset_lineno(1, scanner);
+
+    void *result = NULL;
+    int parseState = yyparse(scanner, &result);
+
+    
+    if(parseState != 0){
+        fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
+    }
+    else {
+        fprintf(stdout, "Now performing semantic analysis\n\n");        
+        semantic((NodeStmtList*)result, 0);
+        CHECK(1);
+    }
+
+
+    yylex_destroy(scanner);
+    freeAllNodes();
+    fclose(filePtr);
+}
+
+
+TEST(semantic, testEight) {
+    
+    FILE* filePtr = fopen("/home/alfredo/repos/OpenKittenCad/tests/input_tests/semanticInputEight.kts", "r");
+    
+    if(!filePtr){
+        fprintf(stderr, "Error opening file semantic testOne\n");
+        fclose(filePtr); 
+    }
+
+     
+    //yydebug = 1;
+    yyscan_t scanner;
+    yylex_init(&scanner);
+    yyrestart(filePtr, scanner);
+    yyset_lineno(1, scanner);
+
+    void *result = NULL;
+    int parseState = yyparse(scanner, &result);
+
+    
+    if(parseState != 0){
+        fprintf(stderr, "Error parsing exiting...\n");
+        CHECK(0);
+    }
+    else {
+        fprintf(stdout, "Now performing semantic analysis\n\n");        
+        semantic((NodeStmtList*)result, 0);
+        CHECK(1);
+    }
+
+
+    yylex_destroy(scanner);
+    freeAllNodes();
+    fclose(filePtr);
+}
+

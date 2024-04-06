@@ -16,6 +16,5 @@
 
     let myFace: shape := makeFace(connectedStuff);
 
-    let extrudeFace: shape := myFace |> extrude(%, [0, 0, 10);
-
+    let extrudeFace: shape := myFace |> extrude(%, [0, 0, 10]);
 };
