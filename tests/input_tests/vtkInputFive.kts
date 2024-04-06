@@ -7,7 +7,4 @@ const customFace: shape := [0, 0, 0]
                      |> extrude(%, [0, 0, 10])
                      |> fillet(%, 1);
                      
-
-
-
 addShape(customFace);

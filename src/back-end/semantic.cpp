@@ -22,6 +22,31 @@ void printText(int tabCount, const char* text)
 }
 
 
+static NodeType* _createIdTypeFromNodeExpr(NODE_TYPE type)
+{
+    switch(type){
+        case DOUBLE: {
+            return newNodeType(num); 
+        }
+        case SHAPE: {
+            return newNodeType(shape);
+        }
+        case POINT: {
+            return newNodeType(point);
+        }
+        case EDGE: {
+            return newNodeType(edge);
+        }
+        case FUNCTION: {
+            return newNodeType(_void);
+        }
+        default: {
+            return NULL;
+        }
+    }
+}
+
+
 static void _validateRhsEqualsDeclType(ID_TYPE lhs, nodeType rhs)
 {
     if((rhs != DOUBLE) && (rhs != SHAPE) && (rhs != POINT) && (rhs != EDGE)){
@@ -184,6 +209,23 @@ NodeExpression* _processDeclNode(NodeDecl* node)
 
 
         node->value = funcCall->result;
+    }
+    else if(!node->type){
+        /* If we made it in here it means our variable was declared without a type so assign it a type*/         
+        NodeType* type = _createIdTypeFromNodeExpr(newExprStmt->nodeType);
+
+        if(!type){
+            fprintf(stderr, "Unable to create type for %s, which was not declared with a type, rhs type was %s\n",
+                node->id->idName,
+                nodeTypeToString(newExprStmt->nodeType)
+
+            );
+            exit(1);
+        }
+
+        node->type = type;
+        _validateRhsEqualsDeclType(node->type->idType, newExprStmt->nodeType);
+        node->value = newExprStmt;
     }
     else{
         _validateRhsEqualsDeclType(node->type->idType, newExprStmt->nodeType);
