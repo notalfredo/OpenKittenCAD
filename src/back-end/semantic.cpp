@@ -435,7 +435,7 @@ NodeExpression* _processFunctionCall(NodeFunctionCall* funcCallNode)
     if(!funcPtr){
         Symbol* sym = getSymbolNode(symTableHead, funcCallNode->id->idName);
         if(!sym){
-            fprintf(stderr, "Unable to find function with name %s ... exiting ... \n", sym->name);
+            fprintf(stderr, "Unable to find function with name %s ... exiting ... \n", funcCallNode->id->idName);
             exit(1);
         }
         else if(sym->symbolType != function){
