@@ -26,7 +26,6 @@ const char* nodeTypeToString(NODE_TYPE type)
         case DECL_LIST:      { return "DOUBLE";        }
         case EXPR_STMT:      { return "EXPR_STMT";     }
         case POINT:          { return "POINT";         }
-        case REASSIGN:       { return "REASSIGN";      }
         case UN_OP:          { return "UN_OP";         }
         case EDGE:           { return "EDGE";          }
         case RETURN_EVAL:    { return "RETURN_EVAL";   }
@@ -43,12 +42,12 @@ const char* nodeTypeToString(NODE_TYPE type)
 const char* nodeOpToString(NODE_OP nodeOp)
 {
     switch (nodeOp) {
-        case OP_PLUS:   { return "+";    } 
-        case OP_SUB:    { return "-";    }
-        case OP_MUL:    { return "*";    }
-        case OP_DIV:    { return "/";    }
-        case OP_MOD:    { return "mod";  }
-        case OP_ASSIGN: { return ":=";   }
+        case OP_PLUS:     { return "+";    } 
+        case OP_SUB:      { return "-";    }
+        case OP_MUL:      { return "*";    }
+        case OP_DIV:      { return "/";    }
+        case OP_MOD:      { return "mod";  }
+        case OP_REASSIGN: { return ":=";   }
         default: {
             fprintf(stderr, "Hit default case in nodeTypeToString() exiting...\n");
             exit(0);

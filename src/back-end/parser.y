@@ -61,7 +61,6 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 
   NodeDecl*       declNode;
-  NodeReAssign*   reAssignNode;
 
   NodeIdentifier* idNode;
   NodeType*       typeNode;
@@ -116,7 +115,6 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %type <untilNode>                    untilStmt
 
 %type <declNode>                     paramDecl declStmt
-%type <reAssignNode>                 reAssignStmt
 
 %type <declList>                     paramDeclList
 %type <stmtListNodes>                stmtList 
@@ -157,7 +155,6 @@ stmt:
     block           { $$ = $1; }
   | functionStmt    { $$ = $1; }
   | declStmt        { $$ = $1; }
-  | reAssignStmt    { $$ = $1; }
   | exprStmt        { $$ = $1; }
   | returnStmt      { $$ = $1; }
   ;
@@ -208,10 +205,6 @@ paramDecl:
   ;
 
 
-reAssignStmt:
-    tok_ID tok_ASSIGN expr { $$ = newReAssignNode($1, $3); }
-  ;
-
 
 declStmt:
     tok_LET tok_ID ':' tok_TYPE initOpt {
@@ -244,7 +237,7 @@ expr:
   | expr '*' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_MUL); }
   | expr '/' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_DIV); }
   | expr tok_PIPE expr             { $$ = newBinaryOperatorNode($1, $3, OP_PIPE); }
-  | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_ASSIGN); }
+  | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_REASSIGN); }
   | tok_NUM                        { $$ = $1; }
   | '[' arrayList ']'              { $$ = newArrayNode($2); } 
   | tok_ID                         { $$ = $1; }
