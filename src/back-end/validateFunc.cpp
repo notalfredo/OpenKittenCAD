@@ -6,6 +6,7 @@
 #include "gp_Pnt.hxx"
 #include "node.hxx"
 
+#define PI 3.14159265359
 
 NodePoint* _makePoint(std::vector<NodeExpression*>& args);
 
@@ -1066,11 +1067,18 @@ BRepPrimAPI_MakeRevol* _validateRevol(std::vector<NodeExpression*> & args)
     gp_Vec myVector(pointOne, pointTwo);
 
 
+
+
     switch(paramIndex){
         case 0: {
-            NodeNumber* angle = static_cast<NodeNumber*>(args[3]);
+            double angle = static_cast<NodeNumber*>(args[3])->value;
 
-            return new BRepPrimAPI_MakeRevol(*myShape->shape, gp_Ax1(pointOne, myVector), angle->value);
+            if( (angle <= 0) || (angle >= (PI * 2)) ){
+                fprintf(stderr, "Angle must be between 0 <= angle <= 2*PI ... exiting ... \n");
+                exit(1);
+            }
+
+            return new BRepPrimAPI_MakeRevol(*myShape->shape, gp_Ax1(pointOne, myVector), angle);
         }
         case 1: {
             return new BRepPrimAPI_MakeRevol(*myShape->shape, gp_Ax1(pointOne, myVector));
