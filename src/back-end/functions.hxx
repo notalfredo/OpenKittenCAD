@@ -28,7 +28,7 @@ enum functionEnum {
     makeEdge,
     makeArc,
     connect,
-    
+    revol,   
 
     printDouble,
     addShape

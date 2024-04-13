@@ -1,4 +1,5 @@
 #include "BRepBuilderAPI_ModifyShape.hxx"
+#include "BRepPrimAPI_MakeRevol.hxx"
 #include "Geom_TrimmedCurve.hxx"
 #include "TopoDS_Wire.hxx"
 #include "enumToString.hxx"
@@ -215,6 +216,20 @@ NodeShape* _makeBox(std::vector<NodeExpression*>& args)
 
     NodeShape* me = newNodeShape(BOX);
     me->brepShape = box;
+    me->shape = shape;
+
+    return me;
+}
+
+
+NodeShape* _makeRevolve(std::vector<NodeExpression*>& args)
+{
+    BRepPrimAPI_MakeRevol* revol = _validateRevol(args);
+    const TopoDS_Shape* shape = &revol->Shape();
+
+    
+    NodeShape* me = newNodeShape(CUSTOM);
+    me->brepShape = revol;
     me->shape = shape;
 
     return me;
@@ -578,7 +593,7 @@ functionPtr knownFunctions[] {
     {"line", makeEdge},
     {"arc", makeArc},
     {"makeFace", makeFace},
-
+    {"revolve", revol},
 
     {"connect", connect},
     {"print",  printDouble},
@@ -669,6 +684,9 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         }
         case lineTo: {
             return _lineTo(args);
+        }
+        case revol: {
+            return _makeRevolve(args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 

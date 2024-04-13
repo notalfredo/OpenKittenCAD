@@ -1,6 +1,7 @@
 #ifndef VALIDATEFUNC_HXX
 #define VALIDATEFUNC_HXX
 
+#include "BRepPrimAPI_MakeRevol.hxx"
 #include "BRepBuilderAPI_ModifyShape.hxx"
 #include "Geom_TrimmedCurve.hxx"
 #include "TopoDS_Wire.hxx"
@@ -109,5 +110,9 @@ extern BRepFilletAPI_MakeChamfer* _validateChamfer(std::vector<NodeExpression*>&
 
 extern BRepPrimAPI_MakeTorus* _validateTorus(std::vector<NodeExpression*>& args);
 
+
 extern NodeArray* _validateLineTo(std::vector<NodeExpression*>& args);
+
+
+extern BRepPrimAPI_MakeRevol* _validateRevol(std::vector<NodeExpression*> & args);
 #endif
