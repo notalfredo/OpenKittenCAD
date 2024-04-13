@@ -2,6 +2,8 @@
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepPrimAPI_MakePrism.hxx"
+#include "BRepPrimAPI_MakeRevol.hxx"
+#include "gp_Pnt.hxx"
 #include "node.hxx"
 
 
@@ -36,9 +38,7 @@ void dumpArgumentsAndCorrectArguments(
     fprintf(stderr, "(");
     for(int i = 0; i < args.size(); i++){
         fprintf(stderr, "%s\t",  nodeTypeToString(args[i]->nodeType));
-    }
-    fprintf(stderr, ") ... exiting ...\n");
-    exit(1);
+    } fprintf(stderr, ") ... exiting ...\n"); exit(1);
 }
 
 
@@ -1007,4 +1007,77 @@ BRepPrimAPI_MakeTorus* _validateTorus(std::vector<NodeExpression*>& args)
 
     fprintf(stderr, "Unable to validate torus ... exiting ... \n");
     exit(1);
+}
+
+
+BRepPrimAPI_MakeRevol* _validateRevol(std::vector<NodeExpression*> & args)
+{
+    std::vector<std::vector<PARAM_INFO>> param {
+        { {SHAPE, "S"}, {ARRAY, "POINT1"}, {ARRAY, "POINT2"}, {DOUBLE, "ANGLE"} },
+        { {SHAPE, "S"}, {ARRAY, "POINT1"}, {ARRAY, "POINT2"} },
+    };
+
+    int paramIndex = validateFunctionArguments(param, args);
+    
+    if(paramIndex == 1){
+        dumpArgumentsAndCorrectArguments(param, args, "Revol");
+    }
+
+    NodeShape* myShape = static_cast<NodeShape*>(args[0]);
+
+    if(myShape->shapeType != FACE){
+        fprintf(stderr, "Revolve can only be perfomed on a 2D shape"); 
+        exit(1);
+    }
+    
+
+    NodeArray* pointOneLocation = static_cast<NodeArray*>(args[1]);
+    if(getExpressionLength(pointOneLocation->array) != 3){
+        fprintf(stderr, "Point location array must be length 3\n") ;
+        exit(1);
+    }
+    if(!checkAllExprTypes(pointOneLocation->array, DOUBLE)){
+        fprintf(stderr, "Point location array must all be a double ... exiting ...\n");
+        exit(1);
+    }
+    
+    
+    NodeArray* pointTwoLocation = static_cast<NodeArray*>(args[2]);
+    if(getExpressionLength(pointTwoLocation->array) != 3){
+        fprintf(stderr, "Direction array must be length 3\n") ;
+        exit(1);
+    }
+    if(!checkAllExprTypes(pointTwoLocation->array, DOUBLE)){
+        fprintf(stderr, "Direction array array must all be a double ... exiting ...\n");
+        exit(1);
+    }
+
+    
+    double point1X = static_cast<NodeNumber*>(pointOneLocation->array)->value;
+    double point1Y = static_cast<NodeNumber*>(pointOneLocation->array->nextExpr)->value;
+    double point1Z = static_cast<NodeNumber*>(pointOneLocation->array->nextExpr->nextExpr)->value;
+
+    double point2X = static_cast<NodeNumber*>(pointTwoLocation->array)->value;
+    double point2Y = static_cast<NodeNumber*>(pointTwoLocation->array->nextExpr)->value;
+    double point2Z = static_cast<NodeNumber*>(pointTwoLocation->array->nextExpr->nextExpr)->value;
+
+    gp_Pnt pointOne(point1X, point1Y, point1Z);
+    gp_Pnt pointTwo(point2X, point2Y, point2Z);
+    gp_Vec myVector(pointOne, pointTwo);
+
+
+    switch(paramIndex){
+        case 0: {
+            NodeNumber* angle = static_cast<NodeNumber*>(args[3]);
+
+            return new BRepPrimAPI_MakeRevol(*myShape->shape, gp_Ax1(pointOne, myVector), angle->value);
+        }
+        case 1: {
+            return new BRepPrimAPI_MakeRevol(*myShape->shape, gp_Ax1(pointOne, myVector));
+        }
+        default: {
+            fprintf(stderr, "Unable to validate revol ... exiting ...");
+            exit(1);
+        }
+    }
 }
