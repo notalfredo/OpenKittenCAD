@@ -95,12 +95,12 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 %token tok_PIPE
 %token tok_ASSIGN
 %token tok_ARROW
+%token tok_MOD
 
 
 %token <idNode>         tok_ID
 %token <numberNode>     tok_NUM
 %token <idType>         tok_TYPE
-
 
 
 
@@ -137,6 +137,7 @@ extern void yyerror( YYLTYPE *, void *, void *, const char * );
 
 %left '+' '-'
 %left '*' '/'
+%left tok_MOD
 %nonassoc tok_ASSIGN
 %left tok_PIPE
 
@@ -242,6 +243,7 @@ expr:
   | expr '-' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_SUB); }
   | expr '*' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_MUL); }
   | expr '/' expr                  { $$ = newBinaryOperatorNode($1, $3, OP_DIV); }
+  | expr tok_MOD expr              { $$ = newBinaryOperatorNode($1, $3, OP_MOD); }
   | expr tok_PIPE expr             { $$ = newBinaryOperatorNode($1, $3, OP_PIPE); }
   | expr tok_ASSIGN expr           { $$ = newBinaryOperatorNode($1, $3, OP_REASSIGN); }
   | tok_NUM                        { $$ = $1; }

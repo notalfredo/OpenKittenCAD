@@ -72,6 +72,8 @@ ktsKeywords ktsKeywordsArr[] = {
     {"if",       tok_IF},
     {"elif",     tok_ELIF},
     {"else",     tok_ELSE},
+
+    {"mod",      tok_MOD},
 };
 
 const int KEYWORD_ARR_SIZE = sizeof(ktsKeywordsArr) /sizeof(ktsKeywords);

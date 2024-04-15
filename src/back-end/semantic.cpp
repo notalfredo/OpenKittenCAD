@@ -298,8 +298,6 @@ NodeExpression* _processStmtNode(Node* node)
 
 NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
 {
-
-
     if(binOp->binaryOperatorType == OP_PIPE){
         NodeExpression* lhs = evalExpr(binOp->lhs);
 
@@ -375,6 +373,11 @@ NodeExpression* _processBinOp(NodeBinaryOperator* binOp)
             NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
             NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
             return newNumberNode(lhsNum->value * rhsNum->value);
+        }
+        case OP_MOD: {
+            NodeNumber* lhsNum = static_cast<NodeNumber*>(lhs);
+            NodeNumber* rhsNum = static_cast<NodeNumber*>(rhs);
+            return newNumberNode((int)lhsNum->value % (int)rhsNum->value);
         }
         default: {
             fprintf(stderr, "case(binOp) in evalExpr hit defualt case\n");
