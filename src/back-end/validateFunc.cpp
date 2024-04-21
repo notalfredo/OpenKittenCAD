@@ -70,6 +70,37 @@ int validateFunctionArguments(std::vector<std::vector<PARAM_INFO>>& paramInfo, s
 }
 
 
+int validateFunction(
+    std::vector<std::vector<PARAM_INFO>>& validParams,
+    std::vector<NodeExpression*>& args,
+    const char* functionName
+)
+{
+    int minSize = 1000; int maxSize = -1000;
+
+    for(int i = 0; i < validParams.size(); i++){
+        int currSize = validParams[i].size();
+        if(currSize >= maxSize){
+            maxSize = currSize;
+        }
+        if(currSize <= minSize){
+            minSize = currSize;
+        }
+    }
+
+    if( (args.size() < minSize) && (args.size() > maxSize) ){
+        dumpArgumentsAndCorrectArguments(validParams, args, functionName);  
+    }
+
+    int argIndex = validateFunctionArguments(validParams, args);
+    if(argIndex == -1){
+        dumpArgumentsAndCorrectArguments(validParams, args, functionName);  
+    }
+
+    return argIndex;
+}
+
+
 BRepPrimAPI_MakeSphere* _validateSphere(std::vector<NodeExpression*>& args)
 {
     std::vector<std::vector<PARAM_INFO>> validParams {
@@ -79,18 +110,7 @@ BRepPrimAPI_MakeSphere* _validateSphere(std::vector<NodeExpression*>& args)
         { {DOUBLE, "radius"}, {DOUBLE, "angleOne"}, {DOUBLE, "angleTwo"}, {DOUBLE, "angle"} },
     };
 
-
-
-    if((args.size() < 1) && (args.size() > 4)){
-        fprintf(stderr, "Sphere can only be invoked with 1-4 arguments you passed %ld ... exiting ...", args.size());
-        exit(1);
-    }
-
-    int argIndex = validateFunctionArguments(validParams, args);
-    if(argIndex == -1){
-        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
-    }
-
+    int argIndex = validateFunction(validParams, args, "Sphere");
 
     switch(argIndex){
         case 0: {
@@ -142,18 +162,7 @@ BRepPrimAPI_MakeCone* _validateCone(std::vector<NodeExpression*>& args)
         { {DOUBLE, "radius1"}, {DOUBLE, "radius2"}, {DOUBLE, "height"}, {DOUBLE, "angle"} },
     };
 
-
-
-    if((args.size() < 3) && (args.size() > 4)){
-        fprintf(stderr, "Cone can only be invoked with 3-4 arguments you passed %ld ... exiting ...", args.size());
-        exit(1);
-    }
-
-    int argIndex = validateFunctionArguments(validParams, args);
-    if(argIndex == -1){
-        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
-    }
-
+    int argIndex = validateFunction(validParams, args, "Cone");
 
     switch(argIndex){
         case 0: {
@@ -196,18 +205,8 @@ BRepPrimAPI_MakeCylinder* _validateCylinder(std::vector<NodeExpression*>& args)
         { {DOUBLE, "radius"}, {DOUBLE, "height"} },
         { {DOUBLE, "radius"}, {DOUBLE, "height"}, {DOUBLE, "angle"} },
     };
-
-
-    if((args.size() < 2) && (args.size() > 3)){
-        fprintf(stderr, "Cone can only be invoked with 2-4 arguments you passed %ld ... exiting ...", args.size());
-        exit(1);
-    }
-
-    int argIndex = validateFunctionArguments(validParams, args);
-    if(argIndex == -1){
-        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
-    }
-
+    
+    int argIndex = validateFunction(validParams, args, "Cylinder");
 
     switch(argIndex){
         case 0: {
@@ -239,17 +238,7 @@ BRepPrimAPI_MakeBox* _validateBox(std::vector<NodeExpression*>& args)
         { {POINT, "point1"}, {POINT, "point2"} },
     };
 
-
-    if((args.size() < 3) && (args.size() > 4)){
-        fprintf(stderr, "Box can only be invoked with 3-4 arguments you passed %ld ... exiting ...", args.size());
-        exit(1);
-    }
-
-    int argIndex = validateFunctionArguments(validParams, args);
-    if(argIndex == -1){
-        dumpArgumentsAndCorrectArguments(validParams, args, "sphere");  
-    }
-
+    int argIndex = validateFunction(validParams, args, "Box");
 
     switch(argIndex){
         case 0: {
@@ -287,14 +276,9 @@ BRepAlgoAPI_BooleanOperation* _validateBoolean(std::vector<NodeExpression*>& arg
         { {SHAPE, "lhs"}, {SHAPE, "rhs"} },
     };
 
-    if( args.size() != 2 ){
-        fprintf(stderr, "Boolean operations can only be invoked with 2 arguments you passed %ld ... exiting ...", args.size());
-        exit(1);
-    }
+    int argIndex = validateFunction(validParams, args, "Boolean operation");
 
-    int index = validateFunctionArguments(validParams, args);
-
-    if(index == -1){
+    if(argIndex == -1){
         switch(booleanType){
             case FUSE: {
                 dumpArgumentsAndCorrectArguments(validParams, args, "FUSE");
@@ -335,13 +319,9 @@ BRepBuilderAPI_ModifyShape* _validateRotateTranslate(std::vector<NodeExpression*
         { {SHAPE, "shape"}, {ARRAY, "rotation"} },
     };
 
-    if( args.size() != 2 ){
-        fprintf(stderr, "Rotation operation can only be invoked with 2 arguments you passed %ld ... exiting ...", args.size());
-        exit(1);
-    }
+    int argIndex = validateFunction(validParams, args, "Rotation");
 
-    int index = validateFunctionArguments(validParams, args);
-    if(index == -1){
+    if(argIndex == -1){
         switch(transformation){
             case ROTATION: {
                 dumpArgumentsAndCorrectArguments(validParams, args, "rotate");
@@ -353,8 +333,8 @@ BRepBuilderAPI_ModifyShape* _validateRotateTranslate(std::vector<NodeExpression*
     }
 
 
-    switch(index){
-        case 0:{
+    switch(argIndex){
+        case 0: {
             int length = getExpressionLength(static_cast<NodeArray*>(args[1])->array);
             
             if( (length < 1) || (length > 3) ){
@@ -410,6 +390,10 @@ BRepBuilderAPI_ModifyShape* _validateRotateTranslate(std::vector<NodeExpression*
                 }
             }
         }
+        default: {  
+            fprintf(stderr, "Unable to perform translation");
+            exit(1);
+        }
     }
 }
 
@@ -419,19 +403,14 @@ gp_Pnt* _validatePoint(std::vector<NodeExpression*>& args)
         { {ARRAY, "point"} }
     };
 
-    int index = validateFunctionArguments(paramInfo, args);
-
-    if(index == -1){
-        dumpArgumentsAndCorrectArguments(paramInfo, args, "point");
-    }
-
+    int argIndex = validateFunction(paramInfo, args, "Point");
 
     int length = getExpressionLength(static_cast<NodeArray*>(args[0])->array);
 
 
     double x, y ,z;
 
-    switch(index){
+    switch(argIndex){
         case 0: {
             if( length != 3 ){
                 fprintf(stderr, "Array argument to point must be length 3 ... exiting ...\n");
@@ -464,19 +443,13 @@ BRepBuilderAPI_MakeEdge* _validateEdge(std::vector<NodeExpression*>& args)
         { {ARRAY, "point1"}, {ARRAY, "point2"} }
     };
 
-    int index = validateFunctionArguments(paramInfo, args);
-
-
-    if(index == -1){
-        dumpArgumentsAndCorrectArguments(paramInfo, args, "edge") ;
-    }
-
+    int argIndex = validateFunction(paramInfo, args, "Edge");
 
     GC_MakeSegment* mkSeg = NULL;
     NodePoint* point1 = NULL;
     NodePoint* point2 = NULL;
 
-    switch(index){
+    switch(argIndex){
         case 0: {
             point1 = static_cast<NodePoint*>(args[0]);
             point2 = static_cast<NodePoint*>(args[1]);
@@ -533,18 +506,14 @@ BRepBuilderAPI_MakeEdge* _validateArc(std::vector<NodeExpression*>& args)
         { {ARRAY, "point1"}, {ARRAY, "point2"}, {ARRAY, "point3"}}
     };
 
-    int index = validateFunctionArguments(paramInfo, args);
-    if(index == -1){
-        dumpArgumentsAndCorrectArguments(paramInfo, args, "arc");
-    }
-
+    int argIndex = validateFunction(paramInfo, args, "Arc");
     
     GC_MakeArcOfCircle* mkArc = NULL;
     NodePoint* p1 = NULL;
     NodePoint* p2 = NULL;
     NodePoint* p3 = NULL;
 
-    switch(index){
+    switch(argIndex){
         case 0: {
             p1 = static_cast<NodePoint*>(args[0]);
             p2 = static_cast<NodePoint*>(args[1]);
@@ -625,10 +594,8 @@ NodeArray* _validateLineTo(std::vector<NodeExpression*>& args)
         { {POINT, "POINT"}, {ARRAY, "POINT"} }, 
     };
 
-    int argIndex = validateFunctionArguments(param, args);
-    if(argIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "lineTo");
-    }
+
+    int argIndex = validateFunction(param, args, "lineTo");
     
     NodeArray* prevPoints = NULL;
     NodeArray* returnArray = NULL;     
@@ -728,10 +695,7 @@ BRepBuilderAPI_MakeWire* _validateConnect(std::vector<NodeExpression*>& args)
     };
 
     
-    int argIndex = validateFunctionArguments(param, args);
-    if(argIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "connect");
-    }
+    int argIndex = validateFunction(param, args, "Connect");
 
     BRepBuilderAPI_MakeWire* myWire = new BRepBuilderAPI_MakeWire();
 
@@ -771,11 +735,9 @@ void _validateMirror(std::vector<NodeExpression*>& args)
     };
 
     
-    int paramIndex = validateFunctionArguments(param, args);
-    if(paramIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "mirror");
-    }
+    int argIndex = validateFunction(param, args, "Mirror");
 }
+
 
 
 BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*>& args)
@@ -785,11 +747,7 @@ BRepBuilderAPI_MakeFace* _validateFace(std::vector<NodeExpression*>& args)
         { {ARRAY, "POINTARRAY"} }
     };
 
-    int paramIndex = validateFunctionArguments(param, args);
-
-    if(paramIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "makeFace");
-    }
+    int paramIndex = validateFunction(param, args, "Face");
     
     switch(paramIndex){
         case 0: {
@@ -848,11 +806,7 @@ BRepPrimAPI_MakePrism* _validateExtrude(std::vector<NodeExpression*>& args)
         { {SHAPE, "shape"}, {ARRAY, "dir" } }
     };
 
-    int paramIndex = validateFunctionArguments(param, args);
-
-    if(paramIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "extrude");
-    }
+    int paramIndex = validateFunction(param, args, "Extrude");
 
     NodeShape* myShape = static_cast<NodeShape*>(args[0]);
     NodeArray* myArray = static_cast<NodeArray*>(args[1]);
@@ -885,11 +839,7 @@ BRepFilletAPI_MakeFillet* _validateFillet(std::vector<NodeExpression*>& args, OC
         { {SHAPE, "shape"}, {DOUBLE, "radius" } }
     };
 
-    int paramIndex = validateFunctionArguments(param, args);
-
-    if(paramIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "fillet");
-    }
+    int paramIndex = validateFunction(param, args, "Fillet");
 
     switch(paramIndex){
         case 0: {
@@ -921,11 +871,7 @@ BRepFilletAPI_MakeChamfer* _validateChamfer(std::vector<NodeExpression*>& args, 
         { {SHAPE, "shape"}, {DOUBLE, "dist" } }
     };
 
-    int paramIndex = validateFunctionArguments(param, args);
-
-    if(paramIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "fillet");
-    }
+    int paramIndex = validateFunction(param, args, "Chamfer");
 
     switch(paramIndex){
         case 0: {
@@ -960,11 +906,7 @@ BRepPrimAPI_MakeTorus* _validateTorus(std::vector<NodeExpression*>& args)
         { {DOUBLE, "r1"}, {DOUBLE, "r2"}, {DOUBLE, "a1"}, {DOUBLE, "a2"}, {DOUBLE, "angle"} },
     };
 
-    int paramIndex = validateFunctionArguments(param, args);
-    
-    if(paramIndex == -1){
-        dumpArgumentsAndCorrectArguments(param, args, "makeTorus");
-    }
+    int paramIndex = validateFunction(param, args, "Torus");
 
     switch(paramIndex){
         case 0: {
@@ -1018,11 +960,7 @@ BRepPrimAPI_MakeRevol* _validateRevol(std::vector<NodeExpression*> & args)
         { {SHAPE, "S"}, {ARRAY, "POINT1"}, {ARRAY, "POINT2"} },
     };
 
-    int paramIndex = validateFunctionArguments(param, args);
-    
-    if(paramIndex == 1){
-        dumpArgumentsAndCorrectArguments(param, args, "Revol");
-    }
+    int paramIndex = validateFunction(param, args, "Revol");
 
     NodeShape* myShape = static_cast<NodeShape*>(args[0]);
 
@@ -1065,8 +1003,6 @@ BRepPrimAPI_MakeRevol* _validateRevol(std::vector<NodeExpression*> & args)
     gp_Pnt pointOne(point1X, point1Y, point1Z);
     gp_Pnt pointTwo(point2X, point2Y, point2Z);
     gp_Vec myVector(pointOne, pointTwo);
-
-
 
 
     switch(paramIndex){
