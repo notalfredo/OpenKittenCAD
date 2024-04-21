@@ -320,7 +320,7 @@ NodePoint* _makePoint(std::vector<NodeExpression*>& args)
 
 
 
-NodeShape* _rotate(std::vector<NodeExpression*>& args)
+NodeShape* _makeRotate(std::vector<NodeExpression*>& args)
 {
     OCCT_SHAPE shapeType;
 
@@ -340,7 +340,7 @@ NodeShape* _rotate(std::vector<NodeExpression*>& args)
     return me;
 }
 
-NodeShape* _translate(std::vector<NodeExpression*>& args)
+NodeShape* _makeTranslate(std::vector<NodeExpression*>& args)
 {
 
     OCCT_SHAPE shapeType;
@@ -374,7 +374,7 @@ NodeShape* _makeFace(std::vector<NodeExpression*> args)
 }
 
 
-NodeArray* _lineTo(std::vector<NodeExpression*>& args)
+NodeArray* _createLineTo(std::vector<NodeExpression*>& args)
 {
     return _validateLineTo(args);  
 }
@@ -415,7 +415,7 @@ NodeEdge* _makeArc(std::vector<NodeExpression*>& args)
 }
 
 
-NodeEdge* _connect(std::vector<NodeExpression*> args)
+NodeEdge* _createConnect(std::vector<NodeExpression*> args)
 {
 
     BRepBuilderAPI_MakeWire* brepWire = _validateConnect(args);
@@ -568,36 +568,34 @@ NodeShape* _makeTorus(std::vector<NodeExpression*> &args)
 
 
 functionPtr knownFunctions[] {
-    {"sphere", makeSphere},
-    {"cone", makeCone},
-    {"cylinder", makeCylinder},
-    {"box", makeBox},
-    {"torus", makeTorus},
+    {"sphere",   threeDim, {.threeDimCall = makeSphere}   },
+    {"cone",     threeDim, {.threeDimCall = makeCone}     },
+    {"cylinder", threeDim, {.threeDimCall = makeCylinder} },
+    {"box",      threeDim, {.threeDimCall = makeBox}      },
+    {"torus",    threeDim, {.threeDimCall = makeTorus}    },
 
+    {"union",        booleanOperations, {.booleanOperationsCall = performUnion} },
+    {"difference",   booleanOperations, {.booleanOperationsCall = performDifference} },
+    {"intersection", booleanOperations, {.booleanOperationsCall = performIntersection} },
 
-    {"union", makeUnion},
-    {"difference", makeDifference},
-    {"intersection", makeIntersection},
+    {"rotate",     transformation, {.transformationCall = performRotate}    },
+    {"translate",  transformation, {.transformationCall = performTranslate} },
+    {"mirror",     transformation, {.transformationCall = performMirror}    },
 
+    {"extrude",    geomOp, {.geomOpCall = performExtrude} },
+    {"fillet",     geomOp, {.geomOpCall = performFillet } },
+    {"chamfer",    geomOp, {.geomOpCall = performChamfer} },
+    {"revolve",    geomOp, {.geomOpCall = performRevolve} },
 
-    {"rotate", doRotate},
-    {"translate", doTranslate},
-    {"mirror", doMirror},
-    {"extrude", doExtrude}, 
-    {"fillet", doFillet},
-    {"chamfer", doChamfer},
-    
+    {"dot",      twoDim,    {.twoDimCall = makePoint} },
+    {"line",     twoDim,    {.twoDimCall = makeEdge} },
+    {"arc",      twoDim,    {.twoDimCall = makeArc} },
+    {"makeFace", twoDim,    {.twoDimCall = makeFace}},
 
-    {"lineTo", lineTo},
-    {"dot", makePoint},
-    {"line", makeEdge},
-    {"arc", makeArc},
-    {"makeFace", makeFace},
-    {"revolve", revol},
-
-    {"connect", connect},
-    {"print",  printDouble},
-    {"addShape", addShape}
+    {"lineTo",   miscFunc,   {.miscFuncCall = createLineTo}},
+    {"connect",  miscFunc,   {.miscFuncCall = createConnection}},
+    {"print",    miscFunc,   {.miscFuncCall = print}},
+    {"addShape", miscFunc,   {.miscFuncCall = addShape}}
 };
 
 
@@ -615,43 +613,29 @@ functionPtr* lookUpFunc(const char * funcName)
 }
 
 
-NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args)
+NodeExpression* execBooleanOperations(functionCategory category, std::vector<NodeExpression*>& args)
 {
-    switch(functionPtr->functionType){
-        case printDouble: {
-            _print(args);
-            return NULL;
-        }
-        case makeSphere: {
-            return _makeSphere(args);
-        }
-        case makeCone: {
-            return _makeCone(args);
-        }
-        case makeCylinder: {
-            return _makeCylinder(args);
-        }
-        case makeBox: {
-            return _makeBox(args);
-        }
-        case addShape: {
-            return _addShape(args);
-        }
-        case makeUnion: {
+    switch(category.booleanOperationsCall){
+        case performUnion: {
             return _makeUnion(args);
         }
-        case makeDifference: {
-            return _makeDifference(args);
-        }
-        case makeIntersection: {
+        case performIntersection: {
             return _makeIntersection(args);
         }
-        case doRotate: {
-            return _rotate(args);
+        case performDifference: {
+            return _makeDifference(args);
         }
-        case doTranslate: {
-            return _translate(args); 
+        default: {
+            fprintf(stderr, "Hit default case in execBooleanOperations ... exiting ... \n");
+            exit(1);
         }
+    }
+}
+
+
+NodeExpression* execTwoDim(functionCategory category, std::vector<NodeExpression*>& args)
+{
+    switch(category.twoDimCall){
         case makePoint: {
             return _makePoint(args);
         }
@@ -661,32 +645,131 @@ NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>&
         case makeArc: {
             return _makeArc(args);
         }
-        case makeTorus: {
-            return _makeTorus(args);
-        }
-        case connect:{
-            return _connect(args);
-        }
-        case doMirror:{
-            return _mirror(args);
-        }
         case makeFace: {
             return _makeFace(args);
         }
-        case doExtrude: {
-            return _makeExtrude(args); 
+        default: {
+            fprintf(stderr, "Hit default case inside of execTwoDim exiting ... ");
+            exit(1);
         }
-        case doFillet: {
-            return _makeFillet(args); 
+    }
+}
+
+
+NodeExpression* execThreeDim(functionCategory category, std::vector<NodeExpression*>& args)
+{
+    switch(category.threeDimCall){
+        case makeSphere: {
+            return _makeSphere(args);
         }
-        case doChamfer: {
+        case makeCone: {
+            return _makeCone(args);
+        }
+        case makeCylinder: {
+            return _makeCylinder(args);
+        }
+        case makeBox: { 
+            return _makeBox(args);
+        }
+        case makeTorus: {
+            return _makeTorus(args);
+        }
+        default: {
+            fprintf(stderr, "Hit default case inside of execThreeDim ... exiting ... \n");
+            exit(1);
+        }
+    }
+}
+
+
+NodeExpression* execTransformation(functionCategory category, std::vector<NodeExpression*>& args)
+{
+    switch(category.transformationCall){
+        case performRotate: {
+            return _makeRotate(args);
+        }
+        case performTranslate: { 
+            return _makeTranslate(args);
+        }
+        case performMirror: {
+            return _mirror(args);
+        }
+        default: {
+            fprintf(stderr, "Hit default case in execTransformation exiting ... \n");
+            exit(1);
+        }
+    }
+}
+
+
+NodeExpression* execGeomOp(functionCategory category, std::vector<NodeExpression*>& args)
+{
+    switch (category.geomOpCall) {
+        case performExtrude:{
+            return _makeExtrude(args);
+        }
+        case performFillet: {
+            return _makeFillet(args);
+        }
+        case performChamfer:{
             return _makeChamfer(args);
         }
-        case lineTo: {
-            return _lineTo(args);
-        }
-        case revol: {
+        case performRevolve:{
             return _makeRevolve(args);
+        }
+        default: {
+            fprintf(stderr,"Hit default case in exec geom op exiting ... \n");
+            exit(1);
+        }
+    }
+}
+
+
+NodeExpression* execMiscFunc(functionCategory category, std::vector<NodeExpression*>& args)
+{
+    switch (category.miscFuncCall){
+        case print: {
+            _print(args);
+            return NULL;
+        }
+        case addShape: {
+            return _addShape(args);
+        }
+        case createConnection: {
+            return _createConnect(args);
+        }
+        case createLineTo: {
+            return _createLineTo(args);
+        }
+        default: {
+            fprintf(stderr, "execMiscFunc hit default case exiting ... \n");
+            exit(1);
+        }
+    }
+}
+
+
+
+NodeExpression* execFunc(functionPtr* functionPtr, std::vector<NodeExpression*>& args)
+{
+    switch(functionPtr->funcType){
+        case twoDim: { 
+            return execTwoDim(functionPtr->functionVal, args);
+        }
+        case threeDim: {
+            return execThreeDim(functionPtr->functionVal, args);
+        }
+        case booleanOperations: {
+            return execBooleanOperations(functionPtr->functionVal, args);
+        }
+        case transformation: {
+            return execTransformation(functionPtr->functionVal, args);
+        }
+        case geomOp: {
+            return execGeomOp(functionPtr->functionVal, args);
+        }
+        case miscFunc: {
+            return execMiscFunc(functionPtr->functionVal, args);
         }
         default: {
            fprintf(stderr, "Inside ExecFunc you are looking for function that does not exist how did you end up here ?\n"); 
