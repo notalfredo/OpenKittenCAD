@@ -22,9 +22,8 @@ if(OpenCASCADE_DIR_ARG)
     set(OpenCASCADE_DIR "${OpenCASCADE_DIR_ARG}")
 endif()
 
-if(BUILD_MAIN)
-    add_subdirectory("./src/back-end/")
-endif()
+
+add_subdirectory("./src/")
 
 if(BUILD_TEST)
     add_subdirectory("./tau/")

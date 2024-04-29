@@ -113,9 +113,8 @@ static NodeExpression* evalExpr(NodeExpression* state);
 static NodeExpression* _processBinOp(NodeBinaryOperator* binOp);
 
 
-void semantic(NodeStmtList* head, int displayVTK = 1)
+void semantic(NodeStmtList* head)
 {
-    if(displayVTK){initViewer();}
     symTableHead = newSymbolTable();
 
     
@@ -126,7 +125,6 @@ void semantic(NodeStmtList* head, int displayVTK = 1)
 
     _processStmtListNode(head);
 
-    if(displayVTK){startViewer();}
     freeSymbolTable(&symTableHead);
 }
 
