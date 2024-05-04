@@ -5,18 +5,14 @@ project(
     LANGUAGES CXX
 )
 
+
 add_definitions(-DPROJ_DIR="${PROJECT_SOURCE_DIR}")
 
 option(BUILD_TEST "Enable or disable testing" OFF)
 option(BUILD_MAIN "Enable or disable testing" OFF)
 
-# Allow users to specify VTK_DIR and OpenCASCADE_DIR
-set(VTK_DIR_ARG "" CACHE PATH "Path to VTK directory")
-set(OpenCASCADE_DIR_ARG "" CACHE PATH "Path to OpenCASCADE directory")
-
-if(VTK_DIR_ARG)
-    set(VTK_DIR "${VTK_DIR_ARG}")
-endif()
+#set(OpenCASCADE_DIR_ARG "" CACHE PATH "Path to OpenCASCADE directory")
+set(OpenCASCADE_DIR_ARG "/usr/local/occt_install_vtk/lib/cmake/opencascade/")
 
 if(OpenCASCADE_DIR_ARG)
     set(OpenCASCADE_DIR "${OpenCASCADE_DIR_ARG}")

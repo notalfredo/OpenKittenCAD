@@ -8,7 +8,7 @@
 
 extern int numIllegalCharacters;
 extern void semantic(NodeStmtList* head);
-
+extern shapesVector getShapes();
 
 
 programResponse* newProgramResponse(errorStatus status, const char* message)
@@ -18,12 +18,18 @@ programResponse* newProgramResponse(errorStatus status, const char* message)
     prog->message = strdup(message);
     prog->status = status;
 
+    
+    if(status == success){
+        prog->vec = getShapes();
+    }
+
+
     return prog;
 }
 
 
 
- programResponse* frontEndEntryPoint(char* program, programType progType) {
+programResponse* frontEndEntryPoint(const char* program, programType progType) {
 
     FILE* filePtr = NULL;
      
@@ -31,6 +37,8 @@ programResponse* newProgramResponse(errorStatus status, const char* message)
     yylex_init(&scanner);
 
     if(progType == file){
+        std::cout << "Opening file" << std::endl;
+
 
         FILE* filePtr = fopen(program, "r");
 
@@ -42,7 +50,11 @@ programResponse* newProgramResponse(errorStatus status, const char* message)
         yyrestart(filePtr, scanner);
     }
     else if(progType == string){
+        std::cout << "Using string" << std::endl;
+
         yy_scan_string(program, scanner);
+
+        std::cout << "yy_scan_string" << std::endl;
     }
 
     yyset_lineno(1, scanner);

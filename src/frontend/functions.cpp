@@ -36,8 +36,36 @@
 #include <BRepFilletAPI_MakeFillet.hxx>
 #include "validateFunc.hxx"
 
+#include <AIS_Shape.hxx>
 
-std::vector<NodeShape*> myShapes;
+typedef std::vector<Handle(AIS_Shape)> shapesVector;
+
+static std::vector<NodeShape*> myShapes;
+
+shapesVector getShapes()
+{
+    shapesVector aisShapes;
+
+    for(int index = 0; index < myShapes.size(); index++){
+        switch(myShapes[index]->nodeType){
+            case SHAPE: {
+                Handle(AIS_Shape) myShape = new AIS_Shape(
+                    static_cast<NodeShape*>(myShapes[index])->brepShape->Shape()
+                );
+
+                aisShapes.push_back(myShape);
+                break;
+            }
+            default: {
+                fprintf(stderr, "Default case hit in getShapes() ... exiting ... hit %s\n", nodeTypeToString(myShapes[index]->nodeType));
+                exit(1);
+            }
+        }
+    }
+
+    return aisShapes;
+}
+
 
 void _addShape(NodeShape* myShape)
 {
