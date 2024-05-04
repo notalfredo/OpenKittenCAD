@@ -23,6 +23,9 @@
 
 #include "ApplicationCommon.h"
 #include "Transparency.h"
+#include "V3d_TypeOfView.hxx"
+#include "V3d_View.hxx"
+#include "V3d_Viewer.hxx"
 
 #include <Standard_WarningsDisable.hxx>
 #include <QApplication>
@@ -50,33 +53,29 @@ Handle(V3d_Viewer) DocumentCommon::Viewer(const Standard_ExtString,
                                           const Standard_Boolean theComputedMode,
                                           const Standard_Boolean theDefaultComputedMode)
 {
-  static Handle(OpenGl_GraphicDriver) aGraphicDriver;
-  if (aGraphicDriver.IsNull())
-  {
-    Handle(Aspect_DisplayConnection) aDisplayConnection;
-#if !defined(_WIN32) && !defined(__WIN32__) && (!defined(__APPLE__) || defined(MACOSX_USE_GLX))
-    aDisplayConnection = new Aspect_DisplayConnection(OSD_Environment("DISPLAY").Value());
-#endif
-    aGraphicDriver = new OpenGl_GraphicDriver(aDisplayConnection);
-  }
+    static Handle(OpenGl_GraphicDriver) aGraphicDriver;
+    if (aGraphicDriver.IsNull())
+    {
+      Handle(Aspect_DisplayConnection) aDisplayConnection;
+  #if !defined(_WIN32) && !defined(__WIN32__) && (!defined(__APPLE__) || defined(MACOSX_USE_GLX))
+      aDisplayConnection = new Aspect_DisplayConnection(OSD_Environment("DISPLAY").Value());
+  #endif
+      aGraphicDriver = new OpenGl_GraphicDriver(aDisplayConnection);
+    }
+  
+    Handle(V3d_Viewer) aViewer = new V3d_Viewer(aGraphicDriver);
+  
+    aViewer->SetDefaultViewSize(15);
+    aViewer->SetDefaultViewProj(theViewProj);
+    aViewer->SetDefaultLights();
+    aViewer->SetLightOn();
+    aViewer->SetDefaultTypeOfView (V3d_PERSPECTIVE);
+    aViewer->ActivateGrid (Aspect_GT_Rectangular, Aspect_GDM_Lines);
+    aViewer->SetRectangularGridGraphicValues(10, 10, 0);
+    aViewer->SetRectangularGridValues(0, 0, 1, 1, 0); 
+    
 
-  Handle(V3d_Viewer) aViewer = new V3d_Viewer(aGraphicDriver);
-
-  //aViewer->SetDefaultViewSize(theViewSize);
-  //aViewer->SetDefaultViewProj(theViewProj);
-  //aViewer->SetComputedMode(theComputedMode);
-  //aViewer->SetDefaultTypeOfView (V3d_PERSPECTIVE);
-  //aViewer->SetDefaultComputedMode(theDefaultComputedMode);
-  //aViewer->ActivateGrid (Aspect_GT_Rectangular, Aspect_GDM_Lines);
-
-  aViewer->SetDefaultLights();
-  aViewer->SetLightOn();
-  aViewer->SetDefaultTypeOfView (V3d_PERSPECTIVE);
-  aViewer->ActivateGrid (Aspect_GT_Rectangular, Aspect_GDM_Lines);
-
-
-
-  return aViewer;
+    return aViewer;
 }
 
 DocumentCommon::DocumentCommon(ApplicationCommonWindow* theApp)

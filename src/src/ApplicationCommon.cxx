@@ -95,7 +95,7 @@ ApplicationCommonWindow::ApplicationCommonWindow (ApplicationType theCategory)
   QFont aCodeViewFont;
   aCodeViewFont.setFamily("Courier");
   aCodeViewFont.setFixedPitch(true);
-  aCodeViewFont.setPointSize(20);
+  aCodeViewFont.setPointSize(16);
 
   QGroupBox* aCodeFrame = new QGroupBox(tr("Sample code"));
   QVBoxLayout* aCodeLayout = new QVBoxLayout(aCodeFrame);
