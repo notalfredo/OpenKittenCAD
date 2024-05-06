@@ -75,6 +75,7 @@ protected:
 
 protected:
   static const TCollection_AsciiString FILE_EXTENSION;
+  static const TCollection_AsciiString START;
 
 private:
   Standard_Integer findEndOfPhrase (const TCollection_AsciiString& theText,

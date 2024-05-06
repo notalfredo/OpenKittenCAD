@@ -33,12 +33,13 @@
 
 #include <BRepPrimAPI_MakeCone.hxx>
 #include <AIS_Shape.hxx>
-
+#include <QDebug>
 
 
 void Viewer3dSamples::ExecuteSample (const TCollection_AsciiString& theSampleName)
 {
   Standard_Boolean anIsSamplePresent = Standard_True;
+
   FindSourceCode(theSampleName);
   if (theSampleName == "SpotLight3dSample")
     SpotLight3dSample();

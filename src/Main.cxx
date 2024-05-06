@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 #include "ApplicationCommon.h"
+#include "src/ApplicationCommon.h"
 
 #include <OSD_Environment.hxx>
 
@@ -33,47 +34,50 @@
 
 int main ( int argc, char* argv[] )
 {
-  QApplication aQApp( argc, argv );
+    QApplication aQApp( argc, argv );
 
-#include <Standard_WarningsDisable.hxx>
-  Q_INIT_RESOURCE(OCCTOverview);
-#include <Standard_WarningsRestore.hxx>
+    #include <Standard_WarningsDisable.hxx>
+        Q_INIT_RESOURCE(OCCTOverview);
+    #include <Standard_WarningsRestore.hxx>
 
-  QSettings settings("OCCTOverview.conf", QSettings::IniFormat);
-  settings.beginGroup("ApplicationSetting");
-    ApplicationType aCategory = static_cast<ApplicationType>(settings.value("ApplicationType", "").toInt());
-  settings.endGroup();
+    QSettings settings("OCCTOverview.conf", QSettings::IniFormat);
+    settings.beginGroup("ApplicationSetting");
+    settings.value("ApplicationType", "").toInt();
+    settings.endGroup();
 
-  ApplicationCommonWindow* aWindow = new ApplicationCommonWindow(aCategory);
-  QString aResName(":/icons/lamp.png");
-  aWindow->setWindowIcon(QPixmap(aResName));
 
-  settings.beginGroup("WindowPosition");
+    ApplicationType aCategory = AppType_Viewer3d;
+    ApplicationCommonWindow* aWindow = new ApplicationCommonWindow(aCategory);
+
+
+    QString aResName(":/icons/lamp.png");
+    aWindow->setWindowIcon(QPixmap(aResName));
+
+    settings.beginGroup("WindowPosition");
     int x = settings.value("x", -1).toInt();
     int y = settings.value("y", -1).toInt();
     int width = settings.value("width", -1).toInt();
     int height = settings.value("height", -1).toInt();
-  settings.endGroup();
+    settings.endGroup();
 
-  if (x > 0 && y > 0 && width > 0 && height > 0)
-  {
-    aWindow->setGeometry(x, y, width, height);
-  }
-  aWindow->SetApplicationType(aCategory);
+    if (x > 0 && y > 0 && width > 0 && height > 0) {
+      aWindow->setGeometry(x, y, width, height);
+    }
+    aWindow->SetApplicationType(aCategory);
 
-  aWindow->show();
-  int aResult = aQApp.exec();
+    aWindow->show();
+    int aResult = aQApp.exec();
 
-  settings.beginGroup("WindowPosition");
-    settings.setValue("x", aWindow->x());
-    settings.setValue("y", aWindow->y());
-    settings.setValue("width", aWindow->width());
-    settings.setValue("height", aWindow->height());
-  settings.endGroup();
+    settings.beginGroup("WindowPosition");
+      settings.setValue("x", aWindow->x());
+      settings.setValue("y", aWindow->y());
+      settings.setValue("width", aWindow->width());
+      settings.setValue("height", aWindow->height());
+    settings.endGroup();
 
-  settings.beginGroup("ApplicationSetting");
-    settings.setValue("ApplicationType", aWindow->GetApplicationType());
-  settings.endGroup();
+    settings.beginGroup("ApplicationSetting");
+      settings.setValue("ApplicationType", aWindow->GetApplicationType());
+    settings.endGroup();
 
-  return aResult;
+    return aResult;
 }

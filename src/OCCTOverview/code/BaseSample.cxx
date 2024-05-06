@@ -36,7 +36,11 @@
 #include <QDir>
 #include <Standard_WarningsRestore.hxx>
 
+#include <QDebug>
+
 const TCollection_AsciiString BaseSample::FILE_EXTENSION = "cxx";
+const TCollection_AsciiString BaseSample::START = "/home/alfredo/repos/OpenKittenCad/src/OCCTOverview/code";
+
 
 void BaseSample::Clear()
 {
@@ -65,6 +69,7 @@ void BaseSample::Process (const TCollection_AsciiString& theSampleName)
   myObject2d.Clear();
   myCode.Clear();
   myIsProcessed = Standard_False;
+
   try
   {
     ExecuteSample(theSampleName);
@@ -90,8 +95,10 @@ void BaseSample::FindSourceCode (const TCollection_AsciiString& theSampleName)
 {
   TCollection_AsciiString aClassName = DynamicType()->Name();
   char aSeparator = QDir::separator().toLatin1();
-  TCollection_AsciiString aCxxFilePach = myCodePath + aSeparator + aClassName + '.' + FILE_EXTENSION;
+  TCollection_AsciiString aCxxFilePach = START + myCodePath + aSeparator + aClassName + '.' + FILE_EXTENSION;
   OSD_File aCxxFile(aCxxFilePach);
+
+
   try
   {
     const Standard_Integer aFileBufferSize = 100 * 1024;

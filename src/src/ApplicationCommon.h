@@ -29,25 +29,15 @@
 #include "CommonSample.h"
 #include "DocumentCommon.h"
 
-#include "./../OCCTOverview/code/GeometrySamples.h"
-
 #include "GeomWidget.h"
 
-#include "./../OCCTOverview/code/OcafSamples.h"
 
 #include "OcctHighlighter.h"
-
-#include "./../OCCTOverview/code/TopologySamples.h"
 
 
 #include "TranslateDialog.h"
 
-#include "./../OCCTOverview/code/TriangulationSamples.h"
-
-
 #include "View.h"
-
-#include "./../OCCTOverview/code/Viewer2dSamples.h"
 
 #include "./../OCCTOverview/code/Viewer3dSamples.h"
 
@@ -73,14 +63,9 @@ enum StdActions
 
 enum ApplicationType
 {
-  AppType_Geometry,
-  AppType_Topology,
-  AppType_Triangulation,
-  AppType_DataExchange,
-  AppType_Ocaf,
-  AppType_Viewer2d,
-  AppType_Viewer3d,
-  AppType_Unknown
+    AppType_Viewer3d,
+    AppType_DataExchange,
+    AppType_Unknown,
 };
 
 
@@ -131,9 +116,7 @@ private slots:
 
   void onProcessSample(const QString& theSampleName);
   void onProcessExchange(const QString& theSampleName);
-  void onProcessOcaf(const QString& theSampleName);
   void onProcessViewer3d(const QString& theSampleName);
-  void onProcessViewer2d(const QString& theSampleName);
 
   void GenCode(const char* p);
 
@@ -146,54 +129,44 @@ private:
 
   QString selectFileName(const QString& theSampleName, TranslateDialog* theDialog, int& theMode);
   TranslateDialog* getDataExchangeDialog(const QString& theSampleName);
-  TranslateDialog* getOcafDialog(const QString& theSampleName);
 
 private:
-  ApplicationType myAppType;
-  QMap<ApplicationType, QString> ALL_CATEGORIES;
+    ApplicationType myAppType;
+    QMap<ApplicationType, QString> ALL_CATEGORIES;
 
-  Handle(GeometrySamples)      myGeometrySamples;
-  Handle(TopologySamples)      myTopologySamples;
-  Handle(TriangulationSamples) myTriangulationSamples;
-  Handle(DataExchangeSamples)  myDataExchangeSamples;
-  Handle(OcafSamples)          myOcafSamples;
-  Handle(Viewer3dSamples)      myViewer3dSamples;
-  Handle(Viewer2dSamples)      myViewer2dSamples;
+    Handle(DataExchangeSamples)  myDataExchangeSamples;
 
-  QMap<StdActions,               QAction*>  myStdActions;
-  QMap<ApplicationType,          QAction*>  myCategoryActions;
-  QMap<Graphic3d_NameOfMaterial, QAction*>  myMaterialActions;
 
-  QToolBar*        myStdToolBar;
-  QToolBar*        myViewBar;
-  QToolBar*        myCasCadeBar;
-  QMenu*           myFilePopup;
-  QMenu*           myCategoryPopup;
 
-  QList<QMenu*>    myGeometryMenus;
-  QList<QMenu*>    myTopologyMenus;
-  QList<QMenu*>    myTriangulationMenus;
-  QList<QMenu*>    myDataExchangeMenus;
-  QList<QMenu*>    myOcafMenus;
-  QList<QMenu*>    myViewer3dMenus;
-  QList<QMenu*>    myViewer2dMenus;
+    Handle(Viewer3dSamples)      myViewer3dSamples;
 
-  QSignalMapper*   mySampleMapper;
-  QSignalMapper*   myExchangeMapper;
-  QSignalMapper*   myOcafMapper;
-  QSignalMapper*   myViewer3dMapper;
-  QSignalMapper*   myViewer2dMapper;
+    QMap<StdActions,               QAction*>  myStdActions;
+    QMap<ApplicationType,          QAction*>  myCategoryActions;
+    QMap<Graphic3d_NameOfMaterial, QAction*>  myMaterialActions;
 
-  QSignalMapper*   myCategoryMapper;
+    QToolBar*        myStdToolBar;
+    QToolBar*        myViewBar;
+    QToolBar*        myCasCadeBar;
+    QMenu*           myFilePopup;
+    QMenu*           myCategoryPopup;
 
-  QTextEdit*       myCodeView;
-  QTextEdit*       myResultView;
-  OcctHighlighter* myCodeViewHighlighter;
+    QList<QMenu*>    myViewer3dMenus;
+    QList<QMenu*>    myDataExchangeMenus;
 
-  GeomWidget*  myGeomWidget;
 
-  DocumentCommon*  myDocument3d;
-  DocumentCommon*  myDocument2d;
+    QSignalMapper*   myExchangeMapper;
+    QSignalMapper*   myViewer3dMapper;
+
+    QSignalMapper*   myCategoryMapper;
+
+    QTextEdit*       myCodeView;
+    QTextEdit*       myResultView;
+    OcctHighlighter* myCodeViewHighlighter;
+
+    GeomWidget*  myGeomWidget;
+
+    DocumentCommon*  myDocument3d;
+    DocumentCommon*  myDocument2d;
 };
 
 #endif
