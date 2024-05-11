@@ -354,7 +354,6 @@ void ApplicationCommonWindow::onChangeCategory(const QString& theCategory)
 
     switch (myAppType) {
         case AppType_Viewer3d: {
-            myViewer3dSamples->AppendBottle();
             myDocument3d->SetObjects(GetCurrentSamples()->Get3dObjects());
             myGeomWidget->Show3d();
             break;
@@ -431,52 +430,53 @@ void ApplicationCommonWindow::resizeEvent(QResizeEvent* e)
 
 void ApplicationCommonWindow::onProcessSample(const QString& theSampleName)
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  setWindowTitle(ALL_CATEGORIES[myAppType] + " - " + theSampleName);
-  GetCurrentSamples()->Process(theSampleName.toUtf8().data());
-  myDocument3d->SetObjects(GetCurrentSamples()->Get3dObjects());
-  myDocument2d->SetObjects(GetCurrentSamples()->Get2dObjects());
-  myCodeView->setPlainText(GetCurrentSamples()->GetCode().ToCString());
-  myResultView->setPlainText(GetCurrentSamples()->GetResult().ToCString());
-  myGeomWidget->FitAll();
-  QApplication::restoreOverrideCursor();
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    setWindowTitle(ALL_CATEGORIES[myAppType] + " - " + theSampleName);
+    GetCurrentSamples()->Process(theSampleName.toUtf8().data());
+    myDocument3d->SetObjects(GetCurrentSamples()->Get3dObjects());
+    myDocument2d->SetObjects(GetCurrentSamples()->Get2dObjects());
+    myCodeView->setPlainText(GetCurrentSamples()->GetCode().ToCString());
+    myResultView->setPlainText(GetCurrentSamples()->GetResult().ToCString());
+
+    myGeomWidget->FitAll();
+
+    QApplication::restoreOverrideCursor();
 }
 
 void ApplicationCommonWindow::onProcessExchange(const QString& theSampleName)
 {
-  setWindowTitle(ALL_CATEGORIES[myAppType] + " - " + theSampleName);
-  int aMode = 0;
-  QString aFileName = selectFileName(theSampleName, getDataExchangeDialog(theSampleName), aMode);
-  if (aFileName.isEmpty())
-  {
-    return;
-  }
+    setWindowTitle(ALL_CATEGORIES[myAppType] + " - " + theSampleName);
+    int aMode = 0;
+    QString aFileName = selectFileName(theSampleName, getDataExchangeDialog(theSampleName), aMode);
+    if (aFileName.isEmpty())
+    {
+      return;
+    }
 
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  myDataExchangeSamples->SetFileName(aFileName.toUtf8().data());
-  myDataExchangeSamples->SetStepType(static_cast<STEPControl_StepModelType>(aMode));
-  myDataExchangeSamples->Process(theSampleName.toUtf8().data());
-  myDocument3d->SetObjects(myDataExchangeSamples->Get3dObjects());
-  myDocument2d->SetObjects(myDataExchangeSamples->Get2dObjects());
-  myCodeView->setPlainText(myDataExchangeSamples->GetCode().ToCString());
-  myResultView->setPlainText(myDataExchangeSamples->GetResult().ToCString());
-  myGeomWidget->FitAll();
-  QApplication::restoreOverrideCursor();
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    myDataExchangeSamples->SetFileName(aFileName.toUtf8().data());
+    myDataExchangeSamples->SetStepType(static_cast<STEPControl_StepModelType>(aMode));
+    myDataExchangeSamples->Process(theSampleName.toUtf8().data());
+    myDocument3d->SetObjects(myDataExchangeSamples->Get3dObjects());
+    myDocument2d->SetObjects(myDataExchangeSamples->Get2dObjects());
+    myCodeView->setPlainText(myDataExchangeSamples->GetCode().ToCString());
+    myResultView->setPlainText(myDataExchangeSamples->GetResult().ToCString());
+
+
+    myGeomWidget->FitAll();
+
+    QApplication::restoreOverrideCursor();
 }
 
 
 void ApplicationCommonWindow::onProcessViewer3d(const QString& theSampleName)
 {
+    setWindowTitle(ALL_CATEGORIES[myAppType] + " - " + theSampleName);
 
-  setWindowTitle(ALL_CATEGORIES[myAppType] + " - " + theSampleName);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    myViewer3dSamples->Process(theSampleName.toUtf8().data());
 
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  myViewer3dSamples->Process(theSampleName.toUtf8().data());
-  //myCodeView->setPlainText(myViewer3dSamples->GetCode().ToCString());
-  //myResultView->setPlainText(myViewer3dSamples->GetResult().ToCString());
-  myGeomWidget->FitAll();
-  QApplication::restoreOverrideCursor();
-
+    QApplication::restoreOverrideCursor();
 }
 
 

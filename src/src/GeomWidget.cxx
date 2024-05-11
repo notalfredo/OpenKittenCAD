@@ -72,24 +72,27 @@ GeomWidget::GeomWidget (DocumentCommon* theDocument3d,
 
 void GeomWidget::FitAll()
 {
-  if (myDocument2d->IsEmpty())
-    Show3d();
-  else
-    Show2d();
+    if (myDocument2d->IsEmpty()) {
+        Show3d();
+    }
+    else {
+        Show2d();
+    }
 }
 
 void GeomWidget::Show3d()
 {
-  myView3d->axo();
-  myView3d->fitAll();
-  QAction* aShadingAction = myView3d->getViewAction(ViewAction_Shading);
-  aShadingAction->trigger();
-  aShadingAction->setChecked(true);
-  QAction* aHlrOffAction = myView3d->getViewAction(ViewAction_HlrOff);
-  aHlrOffAction->trigger();
-  aHlrOffAction->setChecked(true);
-  myStackWidget->setCurrentWidget(my3dVidget);
-  setStatusTip("Mouse buttons: Right-Zoom, Middle-Pan, Left-Rotate");
+    myView3d->axo();
+    myView3d->fitAll();
+
+    QAction* aShadingAction = myView3d->getViewAction(ViewAction_Shading);
+    aShadingAction->trigger();
+    aShadingAction->setChecked(true);
+    QAction* aHlrOffAction = myView3d->getViewAction(ViewAction_HlrOff);
+    aHlrOffAction->trigger();
+    aHlrOffAction->setChecked(true);
+    myStackWidget->setCurrentWidget(my3dVidget);
+    setStatusTip("Mouse buttons: Right-Zoom, Middle-Pan, Left-Rotate");
 }
 
 void GeomWidget::Show2d()

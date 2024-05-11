@@ -194,9 +194,9 @@ void View::OnSelectionChanged(const Handle(AIS_InteractiveContext)& theCtx,
 
 void View::fitAll()
 {
-  myV3dView->FitAll();
-  myV3dView->ZFitAll();
-  myV3dView->Redraw();
+    myV3dView->FitAll();
+    myV3dView->ZFitAll();
+    myV3dView->Redraw();
 }
 
 void View::axo()
