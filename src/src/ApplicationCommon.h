@@ -126,6 +126,7 @@ private:
   void RebuildMenu();
   Handle(BaseSample)   GetCurrentSamples();
   const QList<QMenu*>& GetCurrentMenus();
+  const QList<QMenu*>& GetMenu(ApplicationType application);
 
   QString selectFileName(const QString& theSampleName, TranslateDialog* theDialog, int& theMode);
   TranslateDialog* getDataExchangeDialog(const QString& theSampleName);

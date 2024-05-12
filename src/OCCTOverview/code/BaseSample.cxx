@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 #include "BaseSample.h"
+#include "AIS_ListOfInteractive.hxx"
 
 #include <iostream>
 #include <regex>
@@ -37,6 +38,8 @@
 #include <Standard_WarningsRestore.hxx>
 
 #include <QDebug>
+
+#include <AIS_InteractiveContext.hxx>
 
 const TCollection_AsciiString BaseSample::FILE_EXTENSION = "cxx";
 const TCollection_AsciiString BaseSample::START = "/home/alfredo/repos/OpenKittenCad/src/OCCTOverview/code";
@@ -63,9 +66,9 @@ void BaseSample::AppendCube()
   myObject3d.Append(aViewCube);
 }
 
-void BaseSample::Process (const TCollection_AsciiString& theSampleName)
+void BaseSample::Process(const TCollection_AsciiString& theSampleName)
 {
-  myObject3d.Clear();
+  //myObject3d.Clear();
   myObject2d.Clear();
   myCode.Clear();
   myIsProcessed = Standard_False;

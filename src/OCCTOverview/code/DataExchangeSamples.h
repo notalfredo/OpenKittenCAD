@@ -43,9 +43,11 @@ public:
     //
   }
 
-  virtual void Process (const TCollection_AsciiString& theSampleName) Standard_OVERRIDE;
+  NCollection_Vector<Handle(AIS_InteractiveObject)>* Viewer3dObjectsPointer;
 
-  void AppendBottle();
+
+  virtual void Process (const TCollection_AsciiString& theSampleName, NCollection_Vector<Handle(AIS_InteractiveObject)>& Sample3dViewerObject);
+
   void SetFileName(TCollection_AsciiString theFileName) { myFileName = theFileName; };
   void SetStepType(STEPControl_StepModelType theStepType) { myStepType = theStepType; };
 

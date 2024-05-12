@@ -73,9 +73,10 @@ void Viewer3dSamples::AppendBottle()
   //myResult << "A bottle shape was created." << std::endl;
 }
 
-void Viewer3dSamples::GenRandomConeInside(Handle(AIS_Shape) shape)
+void Viewer3dSamples::AddShape(Handle(AIS_Shape) shape)
 {
     myContext->Display(shape, AIS_Shaded, 0, false);
+    myObject3d.Append(shape);
     myContext->UpdateCurrentViewer();
 }
 

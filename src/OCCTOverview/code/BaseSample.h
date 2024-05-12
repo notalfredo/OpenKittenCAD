@@ -22,6 +22,7 @@
 #ifndef BASESAMPLE_H
 #define BASESAMPLE_H
 
+#include "AIS_ListOfInteractive.hxx"
 #include <sstream>
 
 #include <AIS_InteractiveObject.hxx>
@@ -35,52 +36,69 @@ class BaseSample: public Standard_Transient
 public:
   BaseSample (const TCollection_AsciiString& theSampleSourcePath,
               const Handle(AIS_InteractiveContext)& theContext)
-  : myCodePath (theSampleSourcePath),
-    myContext (theContext)
-  {
-    //
-  }
+    : myCodePath (theSampleSourcePath),
+      myContext (theContext)
+    {
+      //
+    }
 
-  void Clear();
-  void AppendCube();
+    void Clear();
+    void AppendCube();
+  
 
-  Standard_Boolean IsProcessed() const { return myIsProcessed; }
+    NCollection_Vector<Handle(AIS_InteractiveObject)> myObject3d;
 
-  const NCollection_Vector<Handle(AIS_InteractiveObject)>& Get2dObjects() const { return myObject2d; }
 
-  const NCollection_Vector<Handle(AIS_InteractiveObject)>& Get3dObjects() const { return myObject3d; }
+    Standard_Boolean IsProcessed() const { return myIsProcessed; }
+  
+    const NCollection_Vector<Handle(AIS_InteractiveObject)>& Get2dObjects() const { return myObject2d; }
+  
+    const NCollection_Vector<Handle(AIS_InteractiveObject)>& Get3dObjects() const { 
+        std::cout << "Get3dObjects(): " << myObject3d.Size() << std::endl;
+        return myObject3d; 
+    }
+  
+    
+    void SetObject3d(NCollection_Vector<Handle(AIS_InteractiveObject)>& myObject3d) {
+        std::cout << "SetObject3d(): " << &myObject3d << std::endl;
 
-  TCollection_AsciiString GetResult();
+        this->myObject3d = myObject3d; 
 
-  TCollection_AsciiString GetCode() const { return myCode; }
-
-  virtual void Process (const TCollection_AsciiString& theSampleName);
-
-protected:
-  virtual void ExecuteSample (const TCollection_AsciiString& theSampleName) = 0;
-
-  void FindSourceCode (const TCollection_AsciiString& theSampleName);
-  void TraceError (const TCollection_AsciiString& theErrorMessage);
-
-protected:
-
-  Standard_Boolean                                  myIsProcessed;
-  NCollection_Vector<Handle(AIS_InteractiveObject)> myObject2d;
-  NCollection_Vector<Handle(AIS_InteractiveObject)> myObject3d;
-
-  std::ostringstream             myResult;
-  TCollection_AsciiString        myCode;
-  TCollection_AsciiString        myCodePath;
-  Handle(AIS_InteractiveContext) myContext;
-
-protected:
-  static const TCollection_AsciiString FILE_EXTENSION;
-  static const TCollection_AsciiString START;
-
-private:
-  Standard_Integer findEndOfPhrase (const TCollection_AsciiString& theText,
-                                    const TCollection_AsciiString& theRegexpTemplate);
-  Standard_Integer findClosingBracket (const TCollection_AsciiString& theText,
+        std::cout << "SetObject3d(): " << &this->myObject3d << std::endl;
+    }
+    
+  
+    Handle(AIS_InteractiveContext) myContext;
+  
+    TCollection_AsciiString GetResult();
+  
+    TCollection_AsciiString GetCode() const { return myCode; }
+  
+    virtual void Process (const TCollection_AsciiString& theSampleName);
+  
+  protected:
+    virtual void ExecuteSample (const TCollection_AsciiString& theSampleName) = 0;
+  
+    void FindSourceCode (const TCollection_AsciiString& theSampleName);
+    void TraceError (const TCollection_AsciiString& theErrorMessage);
+  
+  protected:
+  
+    Standard_Boolean                                  myIsProcessed;
+    NCollection_Vector<Handle(AIS_InteractiveObject)> myObject2d;
+  
+    std::ostringstream             myResult;
+    TCollection_AsciiString        myCode;
+    TCollection_AsciiString        myCodePath;
+  
+  protected:
+    static const TCollection_AsciiString FILE_EXTENSION;
+    static const TCollection_AsciiString START;
+  
+  private:
+    Standard_Integer findEndOfPhrase (const TCollection_AsciiString& theText,
+                                      const TCollection_AsciiString& theRegexpTemplate);
+    Standard_Integer findClosingBracket (const TCollection_AsciiString& theText,
                                        Standard_Integer theOpeningBracketIndex,
                                        Standard_Character theClosingBracketSymbol);
 };

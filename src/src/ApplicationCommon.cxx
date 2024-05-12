@@ -56,6 +56,7 @@
 
 #include "../frontend/frontEndEntryPoint.hxx"
 #include "AIS_DisplayMode.hxx"
+#include "TopTools_HSequenceOfShape.hxx"
 
 
 ApplicationCommonWindow::ApplicationCommonWindow (ApplicationType theCategory)
@@ -68,8 +69,8 @@ ApplicationCommonWindow::ApplicationCommonWindow (ApplicationType theCategory)
   myCategoryPopup (nullptr)
 {
     ALL_CATEGORIES[AppType_DataExchange] = "DataExchange";
-    ALL_CATEGORIES[AppType_Viewer3d] = "3D viewer";
-    
+    ALL_CATEGORIES[AppType_Viewer3d] = "3D viewer settings";
+
     myViewer3dMapper = new QSignalMapper(this);
     myExchangeMapper = new QSignalMapper(this);
     myCategoryMapper = new QSignalMapper(this);
@@ -123,8 +124,6 @@ ApplicationCommonWindow::ApplicationCommonWindow (ApplicationType theCategory)
         std::cout << codeText_ << std::endl;
         std::cout << p_ << std::endl;
     });
-
-
 
 
     connect(aCodeButton, &QPushButton::clicked, this, [this](){
@@ -190,6 +189,8 @@ ApplicationCommonWindow::ApplicationCommonWindow (ApplicationType theCategory)
                                                  myDocument3d->getContext());
 
 
+    myDataExchangeSamples->SetObject3d(myViewer3dSamples->myObject3d);
+
     MenuFormXml(":/menus/DataExchange.xml",  myExchangeMapper, myDataExchangeMenus);
     MenuFormXml(":/menus/Viewer3d.xml",      myViewer3dMapper, myViewer3dMenus);
 
@@ -227,11 +228,8 @@ void ApplicationCommonWindow::GenCode(const char* p)
         case success: {
             myResultView->setPlainText("Success !!!");
 
-            std::cout << result->vec.size() << std::endl;
-
-
             for(int index = 0; index < result->vec.size(); index++){
-                myViewer3dSamples->GenRandomConeInside(result->vec[index]);
+                myViewer3dSamples->AddShape(result->vec[index]);
             }
 
             break;
@@ -262,6 +260,11 @@ void ApplicationCommonWindow::RebuildMenu()
   {
     QString aCategoryName = ALL_CATEGORIES.value(aCategory);
 
+    if(aCategoryName.toStdString() == "DataExchange"){
+        continue;
+    }
+
+    qDebug() << aCategory;
     qDebug() << aCategoryName;
 
     QAction* anAction = myCategoryPopup->addAction(aCategoryName);
@@ -273,10 +276,16 @@ void ApplicationCommonWindow::RebuildMenu()
     myCategoryActions.insert(aCategory, anAction);
   }
 
-  foreach (QMenu* aSampleMenu, GetCurrentMenus())
-  {
+  foreach (QMenu* aSampleMenu, GetCurrentMenus()) {
     menuBar()->addMenu(aSampleMenu);
   }
+
+  
+  foreach (QMenu* aSampleMenu, GetMenu(AppType_DataExchange)) {
+    menuBar()->addMenu(aSampleMenu);
+  }
+
+
 
   // add a help menu
   QMenu* aHelp = new QMenu(this);
@@ -305,6 +314,26 @@ Handle(BaseSample) ApplicationCommonWindow::GetCurrentSamples()
     
 
     qDebug() << "GetCurrentSamples()" << myAppType;
+    throw QString("Unknown Application type");
+}
+
+
+const QList<QMenu*>&  ApplicationCommonWindow::GetMenu(ApplicationType application) {
+    switch (application) {
+        case AppType_Viewer3d: {
+            return myViewer3dMenus;
+        }   
+        case AppType_Unknown: {
+            break;
+        }
+        case AppType_DataExchange: {
+            return myDataExchangeMenus;
+        }
+        default: {
+            break; 
+        }
+    }
+    qDebug() << "GetCurrentMenus()";
     throw QString("Unknown Application type");
 }
 
@@ -359,7 +388,6 @@ void ApplicationCommonWindow::onChangeCategory(const QString& theCategory)
             break;
         }
         case AppType_DataExchange: {
-            myDataExchangeSamples->AppendBottle();
             myDocument3d->SetObjects(GetCurrentSamples()->Get3dObjects());
             myGeomWidget->Show3d();
             break;
@@ -456,7 +484,9 @@ void ApplicationCommonWindow::onProcessExchange(const QString& theSampleName)
     QApplication::setOverrideCursor(Qt::WaitCursor);
     myDataExchangeSamples->SetFileName(aFileName.toUtf8().data());
     myDataExchangeSamples->SetStepType(static_cast<STEPControl_StepModelType>(aMode));
-    myDataExchangeSamples->Process(theSampleName.toUtf8().data());
+
+    myDataExchangeSamples->Process(theSampleName.toUtf8().data(), this->myViewer3dSamples->myObject3d);
+
     myDocument3d->SetObjects(myDataExchangeSamples->Get3dObjects());
     myDocument2d->SetObjects(myDataExchangeSamples->Get2dObjects());
     myCodeView->setPlainText(myDataExchangeSamples->GetCode().ToCString());

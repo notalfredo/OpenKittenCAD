@@ -1,5 +1,5 @@
 <Menu>
-  <MenuItem name="Viewer 3D">
+  <MenuItem name="3D viewer settings">
     <MenuItem name="Selection mode">
       <Sample name="Vertices" function="VerticesSelect3dSample"/>
       <Sample name="Edges" function="EdgesSelect3dSample"/>

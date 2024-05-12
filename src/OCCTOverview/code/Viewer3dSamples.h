@@ -43,7 +43,7 @@ public:
   {}
 
   void AppendBottle();
-  void GenRandomConeInside(Handle(AIS_Shape) shape);
+  void AddShape(Handle(AIS_Shape) shape);
   void ClearExtra();
 
 protected:

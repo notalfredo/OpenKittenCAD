@@ -47,7 +47,10 @@
 #include <TopTools_HSequenceOfShape.hxx>
 #include <VrmlAPI_Writer.hxx>
 
-void DataExchangeSamples::Process (const TCollection_AsciiString& theSampleName)
+
+void DataExchangeSamples::Process(
+    const TCollection_AsciiString& theSampleName,
+    NCollection_Vector<Handle(AIS_InteractiveObject)>& Sample3dViewerObject)
 {
   if (IsImportSample(theSampleName))
   {
@@ -58,6 +61,7 @@ void DataExchangeSamples::Process (const TCollection_AsciiString& theSampleName)
   myIsProcessed = Standard_False;
   try
   {
+    this->Viewer3dObjectsPointer = &Sample3dViewerObject;
     ExecuteSample(theSampleName);
   }
   catch (...)
@@ -66,17 +70,10 @@ void DataExchangeSamples::Process (const TCollection_AsciiString& theSampleName)
   }
 }
 
-void DataExchangeSamples::AppendBottle()
-{
-  TopoDS_Shape aBottle = MakeBottle(50, 70, 30);
-  Handle(AIS_InteractiveObject) aShape = new AIS_Shape(aBottle);
-  myObject3d.Append(aShape);
-  Handle(AIS_ViewCube) aViewCube = new AIS_ViewCube();
-  myObject3d.Append(aViewCube);
-  myResult << "A bottle shape was created." << std::endl;
-}
 
-void DataExchangeSamples::ExecuteSample (const TCollection_AsciiString& theSampleName)
+void DataExchangeSamples::ExecuteSample(
+    const TCollection_AsciiString& theSampleName
+)
 {
   Standard_Boolean anIsSamplePresent = Standard_True;
   FindSourceCode(theSampleName);
@@ -128,7 +125,7 @@ void DataExchangeSamples::ExecuteSample (const TCollection_AsciiString& theSampl
 void DataExchangeSamples::BrepExportSample()
 {
   Standard_Boolean anIsShapeExist = Standard_False;
-  for(NCollection_Vector<Handle(AIS_InteractiveObject)>::Iterator anIter(myObject3d); 
+  for(NCollection_Vector<Handle(AIS_InteractiveObject)>::Iterator anIter(GetAllDispalyedObjects()); 
       anIter.More(); anIter.Next())
   {
     const Handle(AIS_InteractiveObject)& anObject = anIter.Value();
@@ -241,37 +238,53 @@ void DataExchangeSamples::IgesExportSample()
 
 void DataExchangeSamples::StlExportSample()
 {
-  TopoDS_Compound aTopoCompound;
-  BRep_Builder aBuilder;
-  aBuilder.MakeCompound(aTopoCompound);
+    TopoDS_Compound aTopoCompound;
+    BRep_Builder aBuilder;
+    aBuilder.MakeCompound(aTopoCompound);
 
-  Standard_Boolean anIsShapeExist = Standard_False;
-  for(NCollection_Vector<Handle(AIS_InteractiveObject)>::Iterator anIter(myObject3d);
-      anIter.More(); anIter.Next())
-  {
-    const Handle(AIS_InteractiveObject)& anObject = anIter.Value();
-    if (Handle(AIS_Shape) aShape = Handle(AIS_Shape)::DownCast(anObject))
-    {
-      anIsShapeExist = Standard_True;
-      aBuilder.Add(aTopoCompound, aShape->Shape());
+    Standard_Boolean anIsShapeExist = Standard_False;
+
+
+    NCollection_Vector<Handle(AIS_InteractiveObject)> objects = *this->Viewer3dObjectsPointer;
+    
+
+    if(objects.Size() == 0){
+      myResult << "Shapes do not exist in vector" <<  std::endl;
+      return;
     }
-  }
-  if (anIsShapeExist)
-  {
-    StlAPI_Writer aStlWriter;
-    if (aStlWriter.Write(aTopoCompound, myFileName.ToCString()))
+
+    for(NCollection_Vector<Handle(AIS_InteractiveObject)>::Iterator anIter(objects);
+        anIter.More(); anIter.Next())
     {
-      myResult << "A STL file was successfully written" << std::endl;
+
+      if(anIter.Value().IsNull()){
+          myResult << "Found null shape in creating stl shape" << std::endl;
+          break;
+      }
+
+      const Handle(AIS_InteractiveObject)& anObject = anIter.Value();
+      if (Handle(AIS_Shape) aShape = Handle(AIS_Shape)::DownCast(anObject))
+      {
+        anIsShapeExist = Standard_True;
+        aBuilder.Add(aTopoCompound, aShape->Shape());
+      }
+    }
+    if (anIsShapeExist)
+    {
+      StlAPI_Writer aStlWriter;
+      if (aStlWriter.Write(aTopoCompound, myFileName.ToCString()))
+      {
+        myResult << "A STL file was successfully written" << std::endl;
+      }
+      else
+      {
+        myResult << "A STL file was not written" << std::endl;
+      }
     }
     else
     {
-      myResult << "A STL file was not written" << std::endl;
+      myResult << "Shapes do not exist" << std::endl;
     }
-  }
-  else
-  {
-    myResult << "Shapes do not exist" << std::endl;
-  }
 }
 
 void DataExchangeSamples::VrmlExportSample()
