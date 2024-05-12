@@ -42,7 +42,6 @@ public:
     myView (theView)
   {}
 
-  void AppendBottle();
   void AddShape(Handle(AIS_Shape) shape);
   void ClearExtra();
 

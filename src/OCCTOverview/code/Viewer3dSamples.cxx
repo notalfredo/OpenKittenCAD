@@ -21,7 +21,6 @@
 
 #include "Viewer3dSamples.h"
 
-#include "MakeBottle.h"
 
 #include <AIS_Shape.hxx>
 #include <AIS_ViewCube.hxx>
@@ -57,20 +56,6 @@ void Viewer3dSamples::ExecuteSample(const TCollection_AsciiString& theSampleName
     anIsSamplePresent = Standard_False;
   }
   myIsProcessed = anIsSamplePresent;
-}
-
-void Viewer3dSamples::AppendBottle()
-{
-  //TopoDS_Shape aBottle = MakeBottle(50, 70, 30);
-  //Handle(AIS_InteractiveObject) aShape = new AIS_Shape(aBottle);
-  //myObject3d.Append(aShape);
-
-  //Handle(AIS_ViewCube) aViewCube = new AIS_ViewCube();
-  //myObject3d.Append(aViewCube);
-
-
-
-  //myResult << "A bottle shape was created." << std::endl;
 }
 
 void Viewer3dSamples::AddShape(Handle(AIS_Shape) shape)

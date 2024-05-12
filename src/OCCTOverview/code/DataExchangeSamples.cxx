@@ -21,8 +21,6 @@
 
 #include "DataExchangeSamples.h"
 
-#include "MakeBottle.h"
-
 #include <AIS_ViewCube.hxx>
 #include <AIS_Shape.hxx>
 #include <BRepTools.hxx>
