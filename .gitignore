@@ -1,5 +1,5 @@
 build/
-src/back-end/lexer.yy.*
-src/back-end/parser.tab.*
+src/frontend/lexer.yy.*
+src/frontend/parser.tab.*
 tests/parser.tab.h
 tests/lexer.yy.h
