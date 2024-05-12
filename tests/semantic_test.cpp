@@ -4,7 +4,7 @@
 #include "lexer.yy.h"
 #include <cstdio>
 
-extern void semantic(NodeStmtList* head, int displayVTK = 1);
+extern void semantic(NodeStmtList* head);
 extern int yydebug;
 
 
@@ -37,7 +37,7 @@ TEST(semantic, testOne) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -74,7 +74,7 @@ TEST(semantic, testTwo) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -112,7 +112,7 @@ TEST(semantic, testThree) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -148,7 +148,7 @@ TEST(semantic, testFour) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -184,7 +184,7 @@ TEST(semantic, testFive) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -220,7 +220,7 @@ TEST(semantic, testSix) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -258,7 +258,7 @@ TEST(semantic, testSeven) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -295,7 +295,7 @@ TEST(semantic, testEight) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 
@@ -332,7 +332,7 @@ TEST(semantic, testNine) {
     }
     else {
         fprintf(stdout, "Now performing semantic analysis\n\n");        
-        semantic((NodeStmtList*)result, 0);
+        semantic((NodeStmtList*)result);
         CHECK(1);
     }
 

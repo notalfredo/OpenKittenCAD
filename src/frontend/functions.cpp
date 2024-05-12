@@ -42,6 +42,13 @@ typedef std::vector<Handle(AIS_Shape)> shapesVector;
 
 static std::vector<NodeShape*> myShapes;
 
+
+std::vector<NodeShape*> nodeShapeVector()
+{
+    return myShapes;
+}
+
+
 shapesVector getShapes()
 {
     shapesVector aisShapes;
