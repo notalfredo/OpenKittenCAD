@@ -87,6 +87,7 @@ void Viewer3dSamples::ClearExtra()
   myView->Viewer()->SetDefaultLights(); // Setting the default lights on
   myView->Update();
 
+
   myContext->RemoveAll (Standard_True);
 }
 

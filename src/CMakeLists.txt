@@ -7,7 +7,7 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Xml REQUIRED)
 
 set(SRC_FOLDER "${PROJECT_SOURCE_DIR}/src/")
 set(CURR_PROJECT_SRC_FOLDER "${PROJECT_SOURCE_DIR}/src/src/")
-set(MORE_CODE "${PROJECT_SOURCE_DIR}/src/OCCTOverview/code/")
+set(MORE_CODE "${PROJECT_SOURCE_DIR}/src/common")
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

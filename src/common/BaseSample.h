@@ -71,6 +71,8 @@ public:
   
     virtual void Process (const TCollection_AsciiString& theSampleName);
   
+    
+
   protected:
     virtual void ExecuteSample (const TCollection_AsciiString& theSampleName) = 0;
   

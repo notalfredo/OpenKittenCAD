@@ -42,7 +42,7 @@
 #include <AIS_InteractiveContext.hxx>
 
 const TCollection_AsciiString BaseSample::FILE_EXTENSION = "cxx";
-const TCollection_AsciiString BaseSample::START = "/home/alfredo/repos/OpenKittenCad/src/OCCTOverview/code";
+const TCollection_AsciiString BaseSample::START = "/home/alfredo/repos/OpenKittenCad/src/common/";
 
 
 void BaseSample::Clear()
@@ -94,7 +94,7 @@ void BaseSample::TraceError (const TCollection_AsciiString& theErrorMessage)
   myResult << "\nERROR: " << theErrorMessage << std::endl;
 }
 
-void BaseSample::FindSourceCode (const TCollection_AsciiString& theSampleName)
+void BaseSample::FindSourceCode(const TCollection_AsciiString& theSampleName)
 {
   TCollection_AsciiString aClassName = DynamicType()->Name();
   char aSeparator = QDir::separator().toLatin1();

@@ -23,8 +23,9 @@
 #define APPLICATION_COMMON_OVERVIEW_H
 
 
-#include "./../OCCTOverview/code/BaseSample.h"
-#include "./../OCCTOverview/code/DataExchangeSamples.h"
+#include "./../common/BaseSample.h"
+#include "./../common/DataExchangeSamples.h"
+#include "./../common/Viewer3dSamples.h"
 
 #include "CommonSample.h"
 #include "DocumentCommon.h"
@@ -39,7 +40,6 @@
 
 #include "View.h"
 
-#include "./../OCCTOverview/code/Viewer3dSamples.h"
 
 #include <Standard_WarningsDisable.hxx>
 #include <QApplication>

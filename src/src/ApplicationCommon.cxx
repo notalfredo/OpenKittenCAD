@@ -461,7 +461,6 @@ void ApplicationCommonWindow::onProcessSample(const QString& theSampleName)
     GetCurrentSamples()->Process(theSampleName.toUtf8().data());
     myDocument3d->SetObjects(GetCurrentSamples()->Get3dObjects());
     myDocument2d->SetObjects(GetCurrentSamples()->Get2dObjects());
-    myCodeView->setPlainText(GetCurrentSamples()->GetCode().ToCString());
     myResultView->setPlainText(GetCurrentSamples()->GetResult().ToCString());
 
     myGeomWidget->FitAll();
@@ -482,16 +481,9 @@ void ApplicationCommonWindow::onProcessExchange(const QString& theSampleName)
     QApplication::setOverrideCursor(Qt::WaitCursor);
     myDataExchangeSamples->SetFileName(aFileName.toUtf8().data());
     myDataExchangeSamples->SetStepType(static_cast<STEPControl_StepModelType>(aMode));
-
     myDataExchangeSamples->Process(theSampleName.toUtf8().data(), this->myViewer3dSamples->myObject3d);
-
-    myDocument3d->SetObjects(myDataExchangeSamples->Get3dObjects());
-    myDocument2d->SetObjects(myDataExchangeSamples->Get2dObjects());
-    myCodeView->setPlainText(myDataExchangeSamples->GetCode().ToCString());
+    myDocument3d->SetObjects(*myDataExchangeSamples->Viewer3dObjectsPointer);
     myResultView->setPlainText(myDataExchangeSamples->GetResult().ToCString());
-
-
-    myGeomWidget->FitAll();
 
     QApplication::restoreOverrideCursor();
 }
