@@ -13,7 +13,7 @@ include_directories ( SYSTEM ${OpenCASCADE_INCLUDE_DIR} )
 
 BISON_TARGET(
     MyParser 
-    ${PROJECT_SOURCE_DIR}/src/back-end/parser.y
+    ${PROJECT_SOURCE_DIR}/src/frontend/parser.y
     ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
     COMPILE_FLAGS "--report=itemset --graph --report=lookaheads"
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h"
@@ -21,70 +21,71 @@ BISON_TARGET(
 
 FLEX_TARGET(
     MyScanner
-    ${PROJECT_SOURCE_DIR}/src/back-end/lexer.l
+    ${PROJECT_SOURCE_DIR}/src/frontend/lexer.l
     ${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.c
     DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/lexer.yy.h"
 )
  
-include_directories("${PROJECT_SOURCE_DIR}/src/back-end/") 
+include_directories("${PROJECT_SOURCE_DIR}/src/frontend/") 
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 
 add_library(CommonSources
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeImpl.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
 
 set(COMMON_INCLUDE_DIRECTORIES
     ./
-    ${PROJECT_SOURCE_DIR}/src/back-end/node.hxx
+    ${PROJECT_SOURCE_DIR}/src/frontend/node.hxx
 )
 
 
 add_executable(lexer_test ./lexer_test.cpp)
 add_executable(parser_test
     ./parser_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeImpl.cpp
 )
 add_executable(
     symbol_table_test 
     ./symbol_table_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/symbolTable.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeImpl.cpp
 )
 add_executable(semantic_test
     ./semantic_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/validateFunc.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/semantic.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/validateFunc.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/functions.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/symbolTable.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/semantic.cpp
 )
 add_executable(vtk_test
     ./vtk_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/validateFunc.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/symbolTable.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/semantic.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/validateFunc.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/functions.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/symbolTable.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/semantic.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/frontEndEntryPoint.cpp
 )
 add_executable(functions_test
     ./functions_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/validateFunc.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/enumToString.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeImpl.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/nodeAllocFree.cpp
-    ${PROJECT_SOURCE_DIR}/src/back-end/functions.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/validateFunc.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/enumToString.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeImpl.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/nodeAllocFree.cpp
+    ${PROJECT_SOURCE_DIR}/src/frontend/functions.cpp
 )
 
 
@@ -107,19 +108,17 @@ target_link_libraries(functions_test tau)
 
 
 foreach (LIB ${VTK_LIBRARIES})
-    target_link_libraries(semantic_test "${LIB}")
     target_link_libraries(vtk_test "${LIB}")
-    target_link_libraries(functions_test "${LIB}")
 endforeach()
 foreach (LIB ${OpenCASCADE_LIBRARIES})
-  target_link_libraries(semantic_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
-  target_link_libraries(semantic_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+    target_link_libraries(semantic_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+    target_link_libraries(semantic_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
 
-  target_link_libraries(vtk_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
-  target_link_libraries(vtk_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+    target_link_libraries(vtk_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+    target_link_libraries(vtk_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
 
-  target_link_libraries(functions_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
-  target_link_libraries(functions_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+    target_link_libraries(functions_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+    target_link_libraries(functions_test "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
 endforeach()
 
 

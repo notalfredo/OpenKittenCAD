@@ -214,6 +214,9 @@ ALPHA_NUM   {ALPHA}|{DIGIT}
 .       {
     std::cout << "tok_ILLEGAL |" << yytext << "| at ";
     std::cout << "line = " << yylineno << " column = " << yycolumn << std::endl; 
+
+    numIllegalCharacters += 1;
+
     return tok_ILLEGAL;
 }
 

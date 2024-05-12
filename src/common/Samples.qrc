@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/menus">
+        <file>DataExchange.xml</file>
+        <file>Viewer3d.xml</file>
+    </qresource>
+</RCC>

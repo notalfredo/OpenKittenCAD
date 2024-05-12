@@ -1,8 +1,9 @@
+set(OpenCASCADE_DIR "/usr/local/occt_install_vtk/lib/cmake/opencascade")
+
+
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
-find_package(VTK)
 find_package(OpenCASCADE)
-
 
 include_directories ( SYSTEM ${OpenCASCADE_INCLUDE_DIR} )
 
@@ -29,9 +30,9 @@ ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}) # Add the current build directory to include paths
 
 # C++ executable target
-add_executable(
-    driver
-    main.cpp
+add_library(
+    frontEnd
+    frontEndEntryPoint.cpp
     validateFunc.cpp
     functions.cpp
     enumToString.cpp
@@ -58,14 +59,13 @@ set_source_files_properties(
 
 
 # Link against the Flex library
-target_include_directories(driver PUBLIC ./)
+target_include_directories(frontEnd PUBLIC ./)
 
 
-foreach (LIB ${VTK_LIBRARIES})
-    target_link_libraries(driver "${LIB}")
-endforeach()
+message("---------- ${OpenCASCADE_LIBRARY_DIR}")
+
 foreach (LIB ${OpenCASCADE_LIBRARIES})
-  target_link_libraries(driver "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
-  target_link_libraries(driver "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
+  target_link_libraries(frontEnd "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so")
+  target_link_libraries(frontEnd "${OpenCASCADE_LIBRARY_DIR}/lib${LIB}.so.7.8")
 endforeach()
 
