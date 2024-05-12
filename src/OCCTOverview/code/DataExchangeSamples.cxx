@@ -124,8 +124,17 @@ void DataExchangeSamples::ExecuteSample(
 
 void DataExchangeSamples::BrepExportSample()
 {
+    NCollection_Vector<Handle(AIS_InteractiveObject)> objects = *this->Viewer3dObjectsPointer;
+    
+
+    if(objects.Size() == 0){
+      myResult << "Shapes do not exist in vector" <<  std::endl;
+      return;
+    }
+
+
   Standard_Boolean anIsShapeExist = Standard_False;
-  for(NCollection_Vector<Handle(AIS_InteractiveObject)>::Iterator anIter(GetAllDispalyedObjects()); 
+  for(NCollection_Vector<Handle(AIS_InteractiveObject)>::Iterator anIter(objects); 
       anIter.More(); anIter.Next())
   {
     const Handle(AIS_InteractiveObject)& anObject = anIter.Value();

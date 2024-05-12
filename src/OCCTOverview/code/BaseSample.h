@@ -54,17 +54,12 @@ public:
     const NCollection_Vector<Handle(AIS_InteractiveObject)>& Get2dObjects() const { return myObject2d; }
   
     const NCollection_Vector<Handle(AIS_InteractiveObject)>& Get3dObjects() const { 
-        std::cout << "Get3dObjects(): " << myObject3d.Size() << std::endl;
         return myObject3d; 
     }
   
     
     void SetObject3d(NCollection_Vector<Handle(AIS_InteractiveObject)>& myObject3d) {
-        std::cout << "SetObject3d(): " << &myObject3d << std::endl;
-
         this->myObject3d = myObject3d; 
-
-        std::cout << "SetObject3d(): " << &this->myObject3d << std::endl;
     }
     
   

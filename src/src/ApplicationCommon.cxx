@@ -189,8 +189,6 @@ ApplicationCommonWindow::ApplicationCommonWindow (ApplicationType theCategory)
                                                  myDocument3d->getContext());
 
 
-    myDataExchangeSamples->SetObject3d(myViewer3dSamples->myObject3d);
-
     MenuFormXml(":/menus/DataExchange.xml",  myExchangeMapper, myDataExchangeMenus);
     MenuFormXml(":/menus/Viewer3d.xml",      myViewer3dMapper, myViewer3dMenus);
 

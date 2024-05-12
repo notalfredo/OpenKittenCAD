@@ -437,6 +437,7 @@ void View::initViewActions()
     return;
   myViewActions[ViewAction_FitAll] = RegisterAction(":/icons/view_fitall.png", tr("Fit all"));
   connect(myViewActions[ViewAction_FitAll], SIGNAL(triggered()), this, SLOT(fitAll()));
+
   if (myIs3dView)
   {
     myViewActions[ViewAction_Axo] = RegisterAction(":/icons/view_axo.png", tr("Isometric"));
@@ -504,16 +505,6 @@ void View::initRaytraceActions()
   myRaytraceActions[RaytraceAction_Antialiasing] = anAntiAliasingAction;
   anAntiAliasingAction->setCheckable(true);
   anAntiAliasingAction->setChecked(false);
-
-
-
-  QAction* some_test = RegisterAction(":/icons/antialiasing.png", tr("Random"));
-  connect(some_test, SIGNAL(triggered()), this, SLOT(AddRandomCone()));
-  myRaytraceActions[testing] = some_test;
-  some_test->setCheckable(true);
-  some_test->setChecked(false);
-
-
 }
 
 void View::activateCursor(const CurrentAction3d theMode)
