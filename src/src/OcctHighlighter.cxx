@@ -110,7 +110,6 @@ OcctHighlighter::OcctHighlighter(QTextDocument* theParent)
 void OcctHighlighter::highlightBlock (const QString& theText)
 {
     foreach (const HighlightingRule &rule, myHighlightingRules) {
-        qDebug() << rule.myPattern;
 
         QRegExp expression(rule.myPattern);
         int index = expression.indexIn(theText);
