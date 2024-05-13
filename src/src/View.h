@@ -68,7 +68,12 @@ enum ViewAction
   ViewAction_HlrOn, 
   ViewAction_Shading, 
   ViewAction_Wireframe, 
-  ViewAction_Transparency 
+  ViewAction_Transparency,
+
+
+    VertexSelectionMode,
+    EdgeSelectionMode,
+    FaceSelectionMode
 };
 enum RaytraceAction 
 { 
@@ -143,6 +148,12 @@ public slots:
   void onRaytraceAction();
 
   void AddRandomCone();
+
+
+  void VertexSelection();
+  void EdgeSelection();
+  void FaceSelection();
+
 
 private slots:
 void onTransparencyChanged(int theVal);

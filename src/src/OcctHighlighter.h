@@ -63,15 +63,15 @@ private:
   QRegExp myCommentStartExpression;
   QRegExp myCommentEndExpression;
 
+  QTextCharFormat myOperatorFormat;
   QTextCharFormat myKeywordFormat;
+  QTextCharFormat identifierFormat;
+  QTextCharFormat typeFormat;
+  QTextCharFormat myFunctionFormat;
+
+
   QTextCharFormat mySingleLineCommentFormat;
   QTextCharFormat myMultiLineCommentFormat;
-  QTextCharFormat myQuotationFormat;
-  QTextCharFormat myFunctionFormat;
-  QTextCharFormat myOcctFormat;
-  QTextCharFormat myMemberFormat;
-  QTextCharFormat myLocalFormat;
-  QTextCharFormat myHelperFormat;
 };
 
 #endif

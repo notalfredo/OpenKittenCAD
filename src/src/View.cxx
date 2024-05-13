@@ -472,6 +472,21 @@ void View::initViewActions()
     QAction* aTransparencyAction = RegisterAction(":/icons/tool_transparency.png", tr("Transparency"));
     connect(aTransparencyAction, SIGNAL(triggered()), this, SLOT(onTransparency()));
     myViewActions[ViewAction_Transparency] = aTransparencyAction;
+
+
+    QAction* vertexSelection = RegisterAction("/home/alfredo/repos/OpenKittenCad/src/res/corner.png", tr("VertexSelection"));
+    connect(vertexSelection, SIGNAL(triggered()), this, SLOT(VertexSelection()));
+    myViewActions[VertexSelectionMode] = vertexSelection;
+
+
+    QAction* edgeSelection = RegisterAction("/home/alfredo/repos/OpenKittenCad/src/res/edge.png", tr("EdgeSelection"));
+    connect(edgeSelection, SIGNAL(triggered()), this, SLOT(EdgeSelection()));
+    myViewActions[EdgeSelectionMode] = edgeSelection;
+
+
+    QAction* faceSelection = RegisterAction("/home/alfredo/repos/OpenKittenCad/src/res/face.png", tr("FaceSelection"));
+    connect(faceSelection, SIGNAL(triggered()), this, SLOT(FaceSelection()));
+    myViewActions[FaceSelectionMode] = faceSelection;
   }
 }
 
@@ -709,3 +724,24 @@ void View::onTransparencyChanged(int theVal)
   }
   myContext->UpdateCurrentViewer();
 }
+
+void View::VertexSelection()
+{
+    myContext->Deactivate();
+    myContext->Activate(AIS_Shape::SelectionMode(TopAbs_VERTEX));
+}
+
+
+void View::EdgeSelection()
+{
+    myContext->Deactivate();
+    myContext->Activate(AIS_Shape::SelectionMode(TopAbs_EDGE));
+}
+
+
+void View::FaceSelection()
+{
+    myContext->Deactivate();
+    myContext->Activate(AIS_Shape::SelectionMode(TopAbs_FACE));
+}
+
